@@ -1,0 +1,384 @@
+<template>
+  <section ref="contactRef" v-bind="$attrs" class="fixed inset-0 w-full h-dvh flex flex-col overflow-hidden bg-[#050505] z-10"
+           :class="[
+             isMenuTransitioning ? 'transition-opacity' : '',
+             isMenuOpenLocal ? '!opacity-0 duration-[500ms] delay-[100ms]' : (isMenuTransitioning ? 'duration-[500ms] delay-[200ms]' : '')
+           ]">
+    
+    <div class="relative w-full h-full px-6 pt-[2rem] flex flex-col transition duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]"
+         :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
+         :style="{ paddingBottom: `calc(2rem + ${keyboardOffset}px)` }">
+         
+      <!-- Top Section: Header & Progress (Fixed) -->
+      <div class="w-full shrink-0 collapsible transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" 
+           :class="isTyping ? 'is-closed mb-0' : 'is-open mb-6'">
+        <div class="collapsible-inner flex flex-col w-full">
+          <!-- Этот блок заменяет верхний padding и плавно сжимается вместе с заголовком -->
+          <div class="w-full h-[4.5rem] shrink-0"></div>
+          
+          <div class="flex justify-between items-end mb-4" :class="step < 6 ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'">
+            <h2 class="font-primary text-3xl font-black uppercase tracking-tight leading-none text-white relative">
+              <Transition name="title-fade" mode="out-in">
+                <span :key="step === 1 ? 'svyaz' : 'detali'" class="block">{{ step === 1 ? 'СВЯЗЬ' : 'ДЕТАЛИ' }}</span>
+              </Transition>
+            </h2>
+            <!-- Прогресс -->
+            <div class="text-[0.625rem] font-secondary tracking-widest text-white/50 uppercase flex items-center gap-2 pb-1">
+              <span>{{ step <= steps.length ? `${step} / ${steps.length}` : '' }}</span>
+            </div>
+          </div>
+          
+          <!-- Progress Bar -->
+          <div v-if="step <= steps.length" class="w-full h-[0.125rem] bg-white/10 overflow-hidden relative rounded-full">
+            <div class="absolute top-0 left-0 h-full bg-white transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" :style="{ width: `${(step / steps.length) * 100}%` }"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Section: Brief Content (Flexible & Scrollable) -->
+      <div class="w-full flex-1 relative overflow-hidden mb-4">
+        <!-- Внутренний контейнер для абсолютного позиционирования шагов -->
+        <div class="absolute inset-0 w-full h-full">
+          <Transition name="form-step">
+            <div :key="step" v-if="step <= steps.length"
+                 class="absolute inset-0 w-full h-full flex flex-col overflow-y-auto no-scrollbar pb-4">
+                 
+                 <div class="w-full mt-auto mb-auto flex flex-col shrink-0">
+                   <h3 class="font-primary text-[1.25rem] md:text-[1.5rem] leading-[1.2] font-bold uppercase tracking-tight mb-6 text-white text-balance w-full shrink-0">
+                     {{ currentStepData.question }}
+                   </h3>
+
+                   <MobileContactStepInput 
+                     v-if="currentStepData.type === 'input'"
+                     v-model="answers[currentStepData.key as keyof typeof answers]"
+                     :is-textarea="step === 4"
+                     :placeholder="currentStepData.placeholder"
+                     @focus="onFocus"
+                     @blur="onBlur"
+                     @enter="nextStep"
+                     class="w-full shrink-0"
+                   />
+
+                   <MobileContactStepPlaques
+                     v-if="currentStepData.type === 'plaques'"
+                     :options="currentStepData.options || []"
+                     :selected-options="answers[currentStepData.key as keyof typeof answers]"
+                     @toggle="toggleOption(currentStepData.key, $event, !!currentStepData.multi)"
+                     class="w-full shrink-0"
+                   />
+                 </div>
+            </div>
+          </Transition>
+
+          <Transition name="form-step">
+            <div v-show="step === 6" class="absolute inset-0 w-full h-full flex flex-col justify-center">
+              <ContactStepSuccess />
+            </div>
+          </Transition>
+        </div>
+      </div>
+
+      <!-- Bottom Section: Navigation (Fixed) -->
+      <div class="flex flex-col items-center w-full shrink-0 z-20"
+           :class="step <= steps.length ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'">
+        
+        <Transition name="error-fade">
+          <div v-if="error" class="mb-4 flex items-center gap-3 px-4 py-3 border border-red-500/20 bg-red-500/10 rounded-xl w-full">
+            <span class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse shrink-0"></span>
+            <span class="text-red-400/90 text-[0.6875rem] font-secondary uppercase tracking-widest leading-tight">{{ error }}</span>
+          </div>
+        </Transition>
+
+        <div class="flex items-center w-full justify-between gap-3">
+          <!-- Левая кнопка: Назад (шаги 2-5) или Отправить (шаг 1) -->
+          <div class="w-1/2 h-[3.5rem] relative">
+            <Transition name="btn-swap">
+              <!-- Шаг 1: Кнопка Отправить (если заполнено) -->
+              <button 
+                v-if="step === 1 && canProceed(1)" 
+                @click="submitForm"
+                class="absolute inset-0 w-full h-full rounded-full bg-white text-black font-secondary text-[0.75rem] tracking-widest uppercase font-bold flex items-center justify-center transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+              >
+                <span v-if="!isLoading">ОТПРАВИТЬ</span>
+                <span v-else>...</span>
+              </button>
+
+              <!-- Шаг 2-5: Кнопка Назад -->
+              <button 
+                v-else-if="step > 1 && step <= steps.length" 
+                @click="prevStep"
+                class="absolute inset-0 w-full h-full rounded-full border border-white/10 bg-black/40 text-white font-secondary text-[0.75rem] tracking-widest uppercase font-bold flex items-center justify-center transition-all duration-300 active:bg-white/10"
+              >
+                НАЗАД
+              </button>
+            </Transition>
+          </div>
+
+          <!-- Правая кнопка: Далее / Пропустить -->
+          <div class="w-1/2 h-[3.5rem] relative">
+            <Transition name="btn-swap">
+              <button 
+                v-if="step <= steps.length"
+                @click="step === steps.length ? submitForm() : nextStep()"
+                class="absolute inset-0 w-full h-full rounded-full font-secondary text-[0.75rem] tracking-widest uppercase font-bold flex items-center justify-center transition-all duration-300"
+                :class="[
+                  (!canProceed(step) || isLoading) ? 'opacity-30 pointer-events-none' : (step === steps.length ? 'active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)]' : 'active:bg-white/10'),
+                  step === steps.length ? 'bg-white text-black' : 'border border-white/10 bg-black/40 text-white'
+                ]"
+              >
+                <span v-if="isLoading">...</span>
+                <span v-else-if="step === steps.length">ОТПРАВИТЬ</span>
+                <span v-else>
+                  <Transition name="text-fade" mode="out-in">
+                    <span :key="(isStepEmpty(step) && step !== 1) ? 'skip' : 'next'">{{ (isStepEmpty(step) && step !== 1) ? 'ПРОПУСТИТЬ' : 'ДАЛЕЕ' }}</span>
+                  </Transition>
+                </span>
+              </button>
+            </Transition>
+          </div>
+        </div>
+      </div>
+
+      <!-- Контакты (внизу, если успех) -->
+      <div class="absolute bottom-8 w-full left-0 px-6 shrink-0 transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]"
+           :class="step > steps.length ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'">
+        <div class="flex flex-col gap-3 font-secondary text-base text-white/70 items-center text-center">
+          <a href="mailto:hello@studio-black.com" class="active:text-white transition-colors block border-b border-white/20 pb-1 touch-manipulation min-h-[2.75rem] flex items-center justify-center">
+            hello@studio-black.com
+          </a>
+          <a href="https://t.me/studio_black" target="_blank" class="active:text-white transition-colors block border-b border-white/20 pb-1 touch-manipulation min-h-[2.75rem] flex items-center justify-center">
+            @studio_black
+          </a>
+        </div>
+      </div>
+      
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useEventBus } from '~/composables/useEventBus'
+import { useContactForm } from '~/composables/useContactForm'
+import { useMenuVisibility } from '~/composables/useMenuVisibility'
+import MobileContactStepInput from './MobileContactStepInput.vue'
+import MobileContactStepPlaques from './MobileContactStepPlaques.vue'
+import ContactStepSuccess from '~/components/sections/contact/ContactStepSuccess.vue'
+
+defineOptions({ inheritAttrs: false })
+
+const contactRef = ref<HTMLElement | null>(null)
+const isVisible = ref(false)
+
+const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
+const { emit, on } = useEventBus()
+
+const updateOrganicState = (tempStep?: number) => {
+  emit('contact-state', { 
+    active: true, 
+    step: tempStep !== undefined ? tempStep : step.value, 
+    typing: isTyping.value 
+  })
+}
+
+const {
+  step,
+  isTyping,
+  isLoading,
+  isSuccess,
+  error,
+  answers,
+  steps,
+  canProceed,
+  isStepEmpty,
+  isOptionSelected,
+  toggleOption,
+  onFocus,
+  onBlur,
+  nextStep,
+  prevStep,
+  submitForm
+} = useContactForm(emit, updateOrganicState)
+
+const currentStepData = computed(() => steps[step.value - 1]!)
+
+let observer: IntersectionObserver | null = null
+let animationFrameId: number | null = null
+const keyboardOffset = ref(0)
+let closedHeight = 0
+
+const updateKeyboardOffset = () => {
+  if (animationFrameId) cancelAnimationFrame(animationFrameId)
+  animationFrameId = requestAnimationFrame(() => {
+    if (window.visualViewport) {
+      const layoutHeight = window.innerHeight
+      const vvHeight = window.visualViewport.height
+      const vvTop = window.visualViewport.offsetTop
+      // На iOS offset даст высоту клавиатуры, на Android это будет ~0
+      let offset = layoutHeight - (vvHeight + vvTop)
+      if (offset < 0) offset = 0
+      keyboardOffset.value = offset
+
+      // Отслеживание закрытия клавиатуры для сброса фокуса (возврат заголовков)
+      if (!isTyping.value) {
+        closedHeight = vvHeight
+      } else {
+        // Если высота вернулась почти к исходной (клавиатура закрылась)
+        if (closedHeight > 0 && vvHeight >= closedHeight - 100) {
+          if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+            (document.activeElement as HTMLElement).blur()
+          }
+        }
+      }
+    }
+  })
+}
+
+onMounted(() => {
+  if (window.visualViewport) {
+    closedHeight = window.visualViewport.height
+    window.visualViewport.addEventListener('resize', updateKeyboardOffset)
+    window.visualViewport.addEventListener('scroll', updateKeyboardOffset)
+    updateKeyboardOffset()
+  }
+
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        isVisible.value = true
+        observer?.unobserve(entry.target)
+      }
+    })
+  }, { threshold: 0.1 })
+
+  if (contactRef.value) {
+    observer.observe(contactRef.value)
+  }
+
+  on('section-change', (label: string) => {
+    if (label === '[ Контакты ]') {
+      updateOrganicState()
+    } else {
+      emit('contact-state', { active: false, step: 1, typing: false })
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  if (window.visualViewport) {
+    window.visualViewport.removeEventListener('resize', updateKeyboardOffset)
+    window.visualViewport.removeEventListener('scroll', updateKeyboardOffset)
+  }
+  if (animationFrameId) cancelAnimationFrame(animationFrameId)
+
+  if (observer) {
+    observer.disconnect()
+    observer = null
+  }
+})
+</script>
+
+<style scoped>
+.collapsible {
+  display: grid;
+}
+.collapsible.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+}
+.collapsible.is-closed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+}
+.collapsible-inner {
+  min-height: 0;
+}
+
+.touch-manipulation {
+  touch-action: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Анимация ошибки */
+.error-fade-enter-active,
+.error-fade-leave-active {
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out, max-height 0.4s ease-in-out, margin-bottom 0.4s ease-in-out;
+  max-height: 5rem;
+  overflow: hidden;
+}
+.error-fade-enter-from,
+.error-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+  max-height: 0;
+  margin-bottom: 0 !important;
+}
+
+/* Анимация переключения шагов анкеты - плавная */
+.form-step-enter-active {
+  transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transition-delay: 0.1s;
+}
+.form-step-leave-active {
+  transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1), transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.form-step-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.form-step-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* Плавная смена заголовка */
+.title-fade-enter-active,
+.title-fade-leave-active {
+  transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1), transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.title-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.title-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Плавная смена кнопок */
+.btn-swap-enter-active,
+.btn-swap-leave-active {
+  transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1), transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.btn-swap-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.btn-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Плавная смена текста внутри кнопок */
+.text-fade-enter-active,
+.text-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.text-fade-enter-from {
+  opacity: 0;
+  transform: translateY(5px);
+}
+.text-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+</style>

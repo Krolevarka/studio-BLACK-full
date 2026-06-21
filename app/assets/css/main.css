@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Wix Madefor Text", sans-serif;
+  --font-primary: "Wix Madefor Display", sans-serif;
+  --font-secondary: "Wix Madefor Text", sans-serif;
+}
+
+/* Global Styles */
+@property --gsap-blur {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+html, body {
+  touch-action: none;
+  overscroll-behavior: none;
+  background-color: #000000 !important;
+}
+
+/* Fluid Desktop Typography (Пропорциональное масштабирование rem) */
+@media (min-width: 1024px) {
+  html {
+    /* Макет рассчитан так: 16px при ширине 1920px = 0.8333vw */
+    font-size: clamp(10px, 0.8333vw, 24px) !important;
+  }
+}
+
+body {
+  @apply bg-black text-white antialiased overflow-x-hidden select-none;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+input, textarea {
+  @apply select-text;
+  touch-action: auto; /* Разрешаем скролл внутри текстареи */
+}
+
+/* Fix browser autofill styling for dark theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: white !important;
+  caret-color: white !important;
+}
+
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Custom Utilities for Canvas / Glassmorphism */
+@utility glass {
+  @apply bg-white/10 backdrop-blur-md border border-white/20;
+}
