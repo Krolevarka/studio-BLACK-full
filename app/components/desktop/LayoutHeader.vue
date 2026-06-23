@@ -1,6 +1,6 @@
 <template>
   <header 
-    class="fixed top-0 left-0 w-full p-6 md:p-10 z-[60] flex justify-between items-center pointer-events-none mix-blend-difference text-white transition-opacity duration-1000 transform-gpu"
+    class="fixed top-0 left-0 w-full p-6 md:p-10 z-[60] flex justify-between items-center pointer-events-none mix-blend-difference transform-gpu text-white transition-opacity duration-1000 transform-gpu"
     style="will-change: transform;"
     :class="isPreloading ? 'opacity-0' : 'opacity-100'"
   >
@@ -12,7 +12,7 @@
          :class="isTechStackOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'">
       <!-- Индикатор текущей секции -->
       <div 
-        class="relative h-6 flex items-center pointer-events-none min-w-[100px] md:min-w-[140px] justify-end transition-all duration-[600ms] ease-[cubic-bezier(0.25,1,0.5,1)] price-collision-obstacle"
+        class="relative h-6 flex items-center pointer-events-none min-w-[6rem] md:min-w-[9rem] justify-end transition-all duration-[600ms] ease-[cubic-bezier(0.25,1,0.5,1)] price-collision-obstacle"
         :class="isMenuOpen ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'"
       >
         <Transition name="revolver">

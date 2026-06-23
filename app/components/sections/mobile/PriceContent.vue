@@ -1,7 +1,7 @@
 <template>
   <section ref="priceRef" v-bind="$attrs" class="relative h-svh w-full flex flex-col items-center justify-center bg-transparent z-10 touch-none overflow-hidden">
     
-    <div class="w-full max-w-sm mx-auto flex flex-col h-full justify-between pointer-events-none transition-all duration-1000 ease-out pt-20 pb-16 px-6"
+    <div class="w-full max-w-sm mx-auto flex flex-col h-full justify-between pointer-events-none transition-[opacity,transform] duration-1000 ease-out pt-20 pb-16 px-6"
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[500ms] delay-[100ms]' : (isMenuTransitioning ? 'duration-[500ms] delay-[200ms]' : '')

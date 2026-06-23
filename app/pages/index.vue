@@ -100,11 +100,19 @@ onMounted(() => {
   emit('section-change', sectionLabels[currentIndex])
 
   // Каскадная гидратация под прикрытием прелоадера
-  setTimeout(() => { loadAbout.value = true }, 500)
-  setTimeout(() => { loadApproach.value = true }, 1200)
-  setTimeout(() => { loadPortfolio.value = true }, 1900)
-  setTimeout(() => { loadPrice.value = true }, 2600)
-  setTimeout(() => { loadContact.value = true }, 3300)
+  const rIC = (cb: () => void, delay: number) => {
+    if (typeof requestIdleCallback === 'function') {
+      setTimeout(() => requestIdleCallback(cb, { timeout: 2000 }), delay)
+    } else {
+      setTimeout(cb, delay)
+    }
+  }
+
+  rIC(() => { loadAbout.value = true }, 500)
+  rIC(() => { loadApproach.value = true }, 1200)
+  rIC(() => { loadPortfolio.value = true }, 1900)
+  rIC(() => { loadPrice.value = true }, 2600)
+  rIC(() => { loadContact.value = true }, 3300)
 
   on('menu-state', (isOpen: boolean) => {
     isMenuOpen = isOpen

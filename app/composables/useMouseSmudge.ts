@@ -115,6 +115,8 @@ export function useMouseSmudge() {
   if (import.meta.server) return
 
   onMounted(() => {
+    if (window.matchMedia('(hover: none)').matches || ('ontouchstart' in window)) return
+
     initLogic()
     activeInstances++
     if (activeInstances === 1) {
@@ -130,6 +132,8 @@ export function useMouseSmudge() {
   })
 
   onBeforeUnmount(() => {
+    if (window.matchMedia('(hover: none)').matches || ('ontouchstart' in window)) return
+
     activeInstances--
     if (activeInstances <= 0) {
       activeInstances = 0

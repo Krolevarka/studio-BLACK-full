@@ -1,9 +1,8 @@
 <template>
-  <div ref="wrapperRef" class="organic-core-wrapper absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden pointer-events-none z-0">
+  <div ref="wrapperRef" class="organic-core-wrapper absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden pointer-events-none">
     <canvas ref="canvasRef" 
             class="absolute inset-0 w-full h-full pointer-events-none" 
-            :class="disableHeavyFilters ? '' : 'mix-blend-screen'"
-            style="z-index: 0; transform: translateZ(0); will-change: transform;"></canvas>
+            style="transform: translateZ(0); will-change: transform;"></canvas>
   </div>
 </template>
 
@@ -27,7 +26,7 @@ const { shapes, stateConfig, isPreloading, expandForMenu: expand, collapseFromMe
 const { isMobileOrTablet } = useDeviceSwitch()
 const { isSafari, isIos } = useDevice()
 const disableHeavyFilters = isSafari || isIos
-const currentDpr = ref(1)
+let currentDpr = 1
 
 let time = 0
 let pulseTime = 0
@@ -56,8 +55,8 @@ const render = () => {
     }
     
     targetCtx.save()
-    const w = canvasRef.value.width / currentDpr.value
-    const h = canvasRef.value.height / currentDpr.value
+    const w = canvasRef.value.width / currentDpr
+    const h = canvasRef.value.height / currentDpr
     targetCtx.translate(w / 2, h / 2)
     
     shapes.forEach(shape => {
@@ -192,7 +191,8 @@ const render = () => {
         }
       }
       
-      drawCatmullRom(targetCtx, noisyPointsBuffer, shape.points.length, true, tension)
+      const shapePath = new Path2D()
+      drawCatmullRom(shapePath, noisyPointsBuffer, shape.points.length, true, tension)
 
       const cx = shape.xOffset + (shape.pulseOffsetX || 0) + xOffset;
       const cy = shape.yOffset + (shape.pulseOffsetY || 0);
@@ -209,12 +209,10 @@ const render = () => {
           targetCtx.closePath()
           targetCtx.clip()
 
-          drawCatmullRom(targetCtx, noisyPointsBuffer, shape.points.length, true, tension)
-          targetCtx.fill()
+          targetCtx.fill(shapePath)
           targetCtx.restore()
         } else {
-          drawCatmullRom(targetCtx, noisyPointsBuffer, shape.points.length, true, tension)
-          targetCtx.fill()
+          targetCtx.fill(shapePath)
         }
 
         if (typeof fillProgress === 'number' && fillProgress > 0) {
@@ -227,14 +225,13 @@ const render = () => {
           targetCtx.translate(cx, cy)
           targetCtx.scale(fillProgress, fillProgress)
           targetCtx.translate(-cx, -cy)
-          drawCatmullRom(targetCtx, noisyPointsBuffer, shape.points.length, true, tension)
-          targetCtx.fill()
+          targetCtx.fill(shapePath)
           targetCtx.restore()
         }
 
         targetCtx.restore()
       } else {
-        targetCtx.fill()
+        targetCtx.fill(shapePath)
       }
     })
     
@@ -245,6 +242,7 @@ const render = () => {
 
     if (!disableHeavyFilters && offCtx && offscreenCanvas) {
       currentCtx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+      currentCtx.globalCompositeOperation = 'screen';
       currentCtx.filter = `blur(${gooBlur}px) contrast(${alphaMult || 30})`;
       
       currentCtx.save();
@@ -253,6 +251,7 @@ const render = () => {
       currentCtx.restore();
       
       currentCtx.filter = 'none';
+      currentCtx.globalCompositeOperation = 'source-over';
     }
   }
 }
@@ -261,13 +260,13 @@ const resizeCanvas = () => {
   if (canvasRef.value) {
     cachedWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
     const baseDpr = window.devicePixelRatio || 1;
-    currentDpr.value = isMobileOrTablet.value ? Math.min(baseDpr, 1.0) : Math.min(baseDpr, 1.25);
+    currentDpr = isMobileOrTablet.value ? Math.min(baseDpr, 1.0) : Math.min(baseDpr, 1.25);
     const rect = canvasRef.value.parentElement?.getBoundingClientRect() || canvasRef.value.getBoundingClientRect();
-    canvasRef.value.width = rect.width * currentDpr.value;
-    canvasRef.value.height = rect.height * currentDpr.value;
+    canvasRef.value.width = rect.width * currentDpr;
+    canvasRef.value.height = rect.height * currentDpr;
     if (ctx) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.scale(currentDpr.value, currentDpr.value);
+      ctx.scale(currentDpr, currentDpr);
     }
     
     if (!disableHeavyFilters) {
@@ -284,7 +283,7 @@ const resizeCanvas = () => {
       offscreenCanvas.height = canvasRef.value.height;
       if (offCtx) {
         offCtx.setTransform(1, 0, 0, 1, 0, 0);
-        offCtx.scale(currentDpr.value, currentDpr.value);
+        offCtx.scale(currentDpr, currentDpr);
       }
     }
   }

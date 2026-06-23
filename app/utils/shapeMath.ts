@@ -341,11 +341,11 @@ export function getTangentNoise(angle: number, time: number, morphWeight: number
   return sphereTangent * (1 - morphWeight) + squareTangent * morphWeight;
 }
 
-export function drawCatmullRom(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, points: {x: number, y: number}[], length: number, close = true, tension = 1) {
+export function drawCatmullRom(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | Path2D, points: {x: number, y: number}[], length: number, close = true, tension = 1) {
   const n = length;
   if (n < 3) return;
   
-  ctx.beginPath();
+  if ('beginPath' in ctx) ctx.beginPath();
   ctx.moveTo(points[0]!.x, points[0]!.y);
   
   const getPoint = close
@@ -366,7 +366,9 @@ export function drawCatmullRom(ctx: CanvasRenderingContext2D | OffscreenCanvasRe
     ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
   }
   
-  if (close) ctx.closePath();
+  if (close) {
+    if ('closePath' in ctx) ctx.closePath();
+  }
 }
 
 const svgPathCache = new Map<string, Point[]>();

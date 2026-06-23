@@ -1,7 +1,7 @@
 <template>
   <section ref="portfolioRef" v-bind="$attrs" class="relative h-dvh w-full bg-transparent flex flex-col justify-center items-center">
     <!-- Контейнер -->
-    <div class="w-full max-w-7xl mx-auto z-10 relative flex flex-col items-center justify-center text-center px-6 h-full pointer-events-none mix-blend-difference"
+    <div class="w-full max-w-7xl mx-auto z-10 relative flex flex-col items-center justify-center text-center px-6 h-full pointer-events-none mix-blend-difference transform-gpu"
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[500ms] delay-[100ms]' : (isMenuTransitioning ? 'duration-[500ms] delay-[200ms]' : '')

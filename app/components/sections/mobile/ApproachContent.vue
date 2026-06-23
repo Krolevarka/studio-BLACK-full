@@ -16,7 +16,7 @@
       
       <!-- ВЕРХНЯЯ ЧАСТЬ (45%): Заголовок и описание (на черном/прозрачном фоне) -->
       <div ref="contentTopRef" class="approach-content-top w-full h-[45%] flex flex-col justify-end pb-6 px-6 relative" 
-           :class="isVisible ? 'opacity-100 translate-y-0 transition-all duration-1000 ease-out' : 'opacity-0 -translate-y-4'">
+           :class="isVisible ? 'opacity-100 translate-y-0 transition-[opacity,transform] duration-1000 ease-out' : 'opacity-0 -translate-y-4'">
         <Transition name="fade-slide" mode="out-in">
           <div :key="activeStep" class="flex flex-col relative w-full">
             <!-- Фоновая цифра (уменьшена) -->
@@ -36,7 +36,7 @@
 
       <!-- НИЖНЯЯ ЧАСТЬ (55%): Навигация в белой панели -->
       <div ref="navBottomRef" class="approach-nav-bottom w-full h-[55%] flex flex-col justify-start pt-6 px-6 z-20" 
-           :class="isVisible ? 'opacity-100 translate-y-0 transition-all duration-1000 delay-200 ease-out' : 'opacity-0 translate-y-8'">
+           :class="isVisible ? 'opacity-100 translate-y-0 transition-[opacity,transform] duration-1000 delay-200 ease-out' : 'opacity-0 translate-y-8'">
         <div class="flex flex-col space-y-4 w-full">
           <button 
             v-for="(step, index) in steps" 

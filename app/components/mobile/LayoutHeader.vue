@@ -1,6 +1,6 @@
 <template>
   <header 
-    class="fixed top-0 left-0 w-full p-4 sm:p-6 z-[60] flex justify-between items-center pointer-events-none text-white transition-opacity duration-1000 mix-blend-difference"
+    class="fixed top-0 left-0 w-full p-4 sm:p-6 z-[60] flex justify-between items-center pointer-events-none text-white transition-opacity duration-1000 mix-blend-difference transform-gpu"
     :class="isPreloading || isContactTyping ? 'opacity-0' : 'opacity-100'"
   >
     <a href="#hero" @click.prevent="$emit('logo-click')" class="w-20 sm:w-24 flex items-center pointer-events-auto cursor-pointer min-h-[2.75rem] min-w-[2.75rem]"

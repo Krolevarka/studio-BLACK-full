@@ -1,5 +1,5 @@
 <template>
-  <nav aria-label="Мобильное меню" class="fixed inset-0 w-full h-full z-50 pointer-events-none mix-blend-difference">
+  <nav aria-label="Мобильное меню" class="fixed inset-0 w-full h-full z-50 pointer-events-none mix-blend-difference transform-gpu">
     <div class="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-6 sm:gap-8 overflow-hidden transition-opacity duration-500"
          :class="isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0'">
       <nuxt-link

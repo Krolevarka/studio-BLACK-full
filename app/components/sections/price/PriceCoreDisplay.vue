@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="cursor-pointer flex flex-col items-center justify-center rounded-full w-[250px] h-[250px] md:w-[350px] md:h-[350px]"
+    class="cursor-pointer flex flex-col items-center justify-center rounded-full w-[16rem] h-[16rem] md:w-[22rem] md:h-[22rem]"
     :class="isActive ? 'pointer-events-auto' : 'pointer-events-none'"
     role="button"
     tabindex="0"

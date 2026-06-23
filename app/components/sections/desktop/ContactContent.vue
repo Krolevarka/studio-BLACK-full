@@ -8,13 +8,13 @@
     <div class="relative w-full max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center text-white pointer-events-none md:translate-y-0 2xl:-translate-y-20">
       
       <!-- Левая половина: Всё выстроено в одну линию -->
-      <div class="w-full md:w-1/2 flex flex-col justify-center pointer-events-none relative z-20 py-12 md:py-0 mix-blend-difference">
+      <div class="w-full md:w-1/2 flex flex-col justify-center pointer-events-none relative z-20 py-12 md:py-0 mix-blend-difference transform-gpu">
         
         <!-- Заголовок -->
         <div class="shrink-0 pointer-events-auto transition-all duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center"
              :class="step < 6 ? 'overflow-visible' : 'overflow-hidden'"
              :style="{ 
-               maxHeight: step < 6 ? '200px' : '0px', 
+               maxHeight: step < 6 ? '15rem' : '0rem', 
                opacity: step < 6 ? 1 : 0
              }">
           <h2 class="font-primary text-6xl md:text-8xl lg:text-[clamp(4rem,6vw,9rem)] font-black uppercase tracking-tighter leading-[0.8] relative w-full h-[1em]">
@@ -115,7 +115,7 @@
 
               <UiButton 
                 key="next"
-                class="magnetic-btn font-secondary !bg-transparent transition-all duration-500 !py-3 shrink-0 min-w-[160px]" 
+                class="magnetic-btn font-secondary !bg-transparent transition-all duration-500 !py-3 shrink-0 min-w-[10rem]" 
                 :class="[
                   canProceed(step) ? '!text-white !border !border-white/20 hover:!border-transparent' : '!text-white/20 !border !border-transparent pointer-events-none',
                   isLoading ? 'pointer-events-none opacity-50' : ''

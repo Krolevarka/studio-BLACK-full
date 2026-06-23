@@ -68,19 +68,15 @@ function onMouseOver(e: MouseEvent) {
   
   gsap.fromTo(target, 
     {
-      willChange: 'transform, text-shadow',
+      willChange: 'transform, filter',
       x: spreadX * 0.4,
       y: spreadY * 0.4,
-      textShadow: `
-        ${spreadX * 0.4}px ${spreadY * 0.4}px 2px rgba(255,255,255,0.7),
-        ${spreadX * 0.8}px ${spreadY * 0.8}px 5px rgba(255,255,255,0.4),
-        ${spreadX * 1.2}px ${spreadY * 1.2}px 8px rgba(255,255,255,0.1)
-      `
+      filter: `drop-shadow(${spreadX * 0.4}px ${spreadY * 0.4}px 2px rgba(255,255,255,0.7)) drop-shadow(${spreadX * 0.8}px ${spreadY * 0.8}px 5px rgba(255,255,255,0.4)) drop-shadow(${spreadX * 1.2}px ${spreadY * 1.2}px 8px rgba(255,255,255,0.1))`
     },
     {
       x: 0,
       y: 0,
-      textShadow: '0px 0px 0px rgba(255,255,255,0), 0px 0px 0px rgba(255,255,255,0), 0px 0px 0px rgba(255,255,255,0)',
+      filter: 'drop-shadow(0px 0px 0px rgba(255,255,255,0)) drop-shadow(0px 0px 0px rgba(255,255,255,0)) drop-shadow(0px 0px 0px rgba(255,255,255,0))',
       duration: 1.2,
       ease: 'elastic.out(1, 0.4)',
       overwrite: 'auto',

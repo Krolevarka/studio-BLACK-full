@@ -2,7 +2,7 @@
   <section ref="heroRef" v-bind="$attrs" class="snap-section relative h-dvh w-full overflow-hidden bg-transparent flex flex-col justify-center items-center">
     
     <!-- Текстовый контент -->
-    <div ref="contentRef" class="w-full max-w-7xl mx-auto z-10 relative flex flex-col items-center justify-center text-center px-6 mix-blend-difference pointer-events-none" 
+    <div ref="contentRef" class="w-full max-w-7xl mx-auto z-10 relative flex flex-col items-center justify-center text-center px-6 mix-blend-difference transform-gpu pointer-events-none" 
          style="will-change: filter, transform; transform: translateZ(0);"
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
@@ -36,7 +36,7 @@
     </div>
 
     <!-- Подсказка скролла -->
-    <div class="hero-scroll-hint-wrapper absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 mix-blend-difference z-20 pointer-events-none"
+    <div class="hero-scroll-hint-wrapper absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 mix-blend-difference transform-gpu z-20 pointer-events-none"
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')

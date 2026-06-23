@@ -17,7 +17,7 @@
 
     <!-- ГЛОБАЛЬНАЯ СФЕРА (Organic Core) -->
     <div 
-      class="fixed inset-0 flex items-center justify-center overflow-hidden pointer-events-none z-0"
+      class="fixed inset-0 flex items-center justify-center overflow-hidden pointer-events-none mix-blend-difference z-[40]"
     >
       <OrganicCore ref="globalCoreRef" />
     </div>

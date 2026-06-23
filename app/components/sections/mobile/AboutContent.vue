@@ -8,7 +8,7 @@
          ]">
       
       <!-- Верхняя половина для логотипа -->
-      <div class="flex items-center justify-center w-full flex-1 logo-container transition-all duration-1000 ease-out pointer-events-none px-6 pt-12"
+      <div class="flex items-center justify-center w-full flex-1 logo-container transition-[opacity,transform] duration-1000 ease-out pointer-events-none px-6 pt-12"
            :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'">
         <LogoKvazar class="w-[85%] md:w-[75%]" />
       </div>

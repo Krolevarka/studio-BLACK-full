@@ -62,3 +62,5 @@ textarea:-webkit-autofill:active {
 @utility glass {
   @apply bg-white/10 backdrop-blur-md border border-white/20;
 }
+
+

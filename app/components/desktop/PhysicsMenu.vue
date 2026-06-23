@@ -1,5 +1,5 @@
 <template>
-  <nav aria-label="Основное меню" class="fixed inset-0 w-full h-full z-50 pointer-events-none mix-blend-difference">
+  <nav aria-label="Основное меню" class="fixed inset-0 w-full h-full z-50 pointer-events-none mix-blend-difference transform-gpu">
     <div class="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-1 md:gap-4 overflow-hidden">
       <!-- Container for physics items -->
       <nuxt-link

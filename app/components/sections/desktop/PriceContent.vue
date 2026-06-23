@@ -6,7 +6,7 @@
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
          ]">
-      <h2 class="text-[12vw] font-primary font-black uppercase tracking-tighter text-white/5 opacity-30 select-none pointer-events-auto">
+      <h2 class="text-[clamp(5rem,15vw,15rem)] font-primary font-black uppercase tracking-tighter text-white/5 opacity-30 select-none pointer-events-auto">
         ИНВЕСТИЦИИ
       </h2>
     </div>
@@ -45,7 +45,7 @@
       ]"
     >
       <PriceCoreDisplay 
-        class="mix-blend-difference"
+        class="mix-blend-difference transform-gpu"
         :is-active="isPriceActive"
         :display-price="displayPrice"
         @unselect-last="unselectLast"
@@ -53,7 +53,7 @@
       
       <!-- Submit Button -->
       <div 
-        class="absolute mt-[35vh] md:mt-[240px] pointer-events-none transition-all duration-300 z-20 mix-blend-difference"
+        class="absolute mt-[35vh] md:mt-[15rem] pointer-events-none transition-all duration-300 z-20 mix-blend-difference transform-gpu"
         :class="totalPrice > 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'"
       >
         <UiButton 
@@ -67,7 +67,7 @@
     </div>
 
     <!-- Options Satellites -->
-    <!-- z-20 above everything, localized mix-blend-difference to invert color over the white canvas blobs -->
+    <!-- z-20 above everything, localized mix-blend-difference transform-gpu to invert color over the white canvas blobs -->
     <div v-show="isPriceVisible" class="price-heavy-target fixed inset-0 z-20 pointer-events-none" 
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
@@ -76,7 +76,7 @@
       <PriceSatellite
         v-for="opt in options"
         :key="opt.id"
-        class="mix-blend-difference"
+        class="mix-blend-difference transform-gpu"
         :option="opt"
         :is-active="isPriceActive"
         :ref="(el) => registerOptionRef(opt.id, (el as import('vue').ComponentPublicInstance)?.$el as HTMLElement)"
