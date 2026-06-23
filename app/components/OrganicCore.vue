@@ -1,18 +1,9 @@
 <template>
   <div ref="wrapperRef" class="organic-core-wrapper absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden pointer-events-none z-0">
-    <svg style="width: 0; height: 0; position: absolute; pointer-events: none;">
-      <defs>
-        <filter id="goo" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur ref="blurRef" in="SourceGraphic" stdDeviation="15" result="blur" />
-          <feColorMatrix ref="colorMatrixRef" in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -10" result="goo" />
-          <feBlend in="SourceGraphic" in2="goo" />
-        </filter>
-      </defs>
-    </svg>
     <canvas ref="canvasRef" 
             class="absolute inset-0 w-full h-full pointer-events-none" 
             :class="disableHeavyFilters ? '' : 'mix-blend-screen'"
-            :style="disableHeavyFilters ? 'z-index: 0; transform: translateZ(0); will-change: transform;' : 'filter: url(#goo); z-index: 0; transform: translateZ(0); will-change: filter;'"></canvas>
+            style="z-index: 0; transform: translateZ(0); will-change: transform;"></canvas>
   </div>
 </template>
 
@@ -26,9 +17,11 @@ import gsap from 'gsap'
 
 const wrapperRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const blurRef = ref<HTMLElement | null>(null)
-const colorMatrixRef = ref<HTMLElement | null>(null)
 let ctx: CanvasRenderingContext2D | null = null
+
+let offscreenCanvas: HTMLCanvasElement | OffscreenCanvas | null = null
+let offCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null = null
+const noisyPointsBuffer: {x: number, y: number}[] = []
 
 const { shapes, stateConfig, isPreloading, expandForMenu: expand, collapseFromMenu, initOrganicCore, startPreloaderAnimation } = useOrganicCore()
 const { isMobileOrTablet } = useDeviceSwitch()
@@ -36,29 +29,36 @@ const { isSafari, isIos } = useDevice()
 const disableHeavyFilters = isSafari || isIos
 const currentDpr = ref(1)
 
-
 let time = 0
 let pulseTime = 0
 let cachedWidth = 1024
 
 const render = () => {
-  const { noiseSpeed, noiseAmp, morphWeight, tension, pulseWeight, pulseType, xOffset, preloaderProgress, fillProgress, gooBlur, alphaMult, alphaAdd } = stateConfig;
-  
-  if (blurRef.value) blurRef.value.setAttribute('stdDeviation', gooBlur.toString())
-  if (colorMatrixRef.value) colorMatrixRef.value.setAttribute('values', `1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 ${alphaMult} ${alphaAdd}`)
+  if (shapes.length === 0) return
+
+  const { noiseSpeed, noiseAmp, morphWeight, tension, pulseWeight, pulseType, xOffset, preloaderProgress, fillProgress, gooBlur, alphaMult } = stateConfig;
 
   time += 0.01 * (noiseSpeed !== undefined ? noiseSpeed : 1)
   pulseTime += 0.01 * (stateConfig.pulseSpeed ?? 1)
   
   const currentCtx = ctx
   if (currentCtx && canvasRef.value) {
-    currentCtx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height)
-    currentCtx.fillStyle = 'white'
-    currentCtx.save()
-    // Центрируем систему координат для холста
+    const targetCtx = (!disableHeavyFilters && offCtx) ? offCtx : currentCtx;
+    
+    if (!disableHeavyFilters && offCtx && offscreenCanvas) {
+      offCtx.save();
+      offCtx.setTransform(1, 0, 0, 1, 0, 0);
+      offCtx.fillStyle = 'black';
+      offCtx.fillRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+      offCtx.restore();
+    } else {
+      currentCtx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+    }
+    
+    targetCtx.save()
     const w = canvasRef.value.width / currentDpr.value
     const h = canvasRef.value.height / currentDpr.value
-    currentCtx.translate(w / 2, h / 2)
+    targetCtx.translate(w / 2, h / 2)
     
     shapes.forEach(shape => {
       if (shape.physX === undefined) {
@@ -72,7 +72,6 @@ const render = () => {
          shape.defVy = 0;
       }
 
-      // Вычисляем динамическую ширину текущей формы (для идеального масштабирования пульса)
       let minX = Infinity;
       let maxX = -Infinity;
       for (const pt of shape.points) {
@@ -82,21 +81,16 @@ const render = () => {
       let currentWw = maxX - minX;
       if (currentWw < 1) currentWw = 1;
 
-      // 1. Вычисляем скорость движения центра
       const vx = shape.xOffset - shape.physX!;
       const vy = shape.yOffset - shape.physY!;
       shape.physX = shape.xOffset;
       shape.physY = shape.yOffset;
 
-      // Убираем слабое ускорение, используем саму скорость для сопротивления среды (вязкости)
-      // Чем быстрее тянем, тем сильнее сопротивление тянет форму назад
       const targetDefX = -vx * 1.5;
       const targetDefY = -vy * 1.5;
 
-      // 2. Инерционная деформация (Spring-Mass)
-      // Пружина плавно догоняет цель и создает упругое дрожание при остановке
-      const spring = 0.15;   // Золотая середина жесткости
-      const friction = 0.82; // Золотая середина упругости (jiggle)
+      const spring = 0.15;   
+      const friction = 0.82; 
       
       shape.defVx = (shape.defVx || 0) + (targetDefX - (shape.defX || 0)) * spring;
       shape.defVy = (shape.defVy || 0) + (targetDefY - (shape.defY || 0)) * spring;
@@ -107,9 +101,8 @@ const render = () => {
       shape.defX = (shape.defX || 0) + shape.defVx;
       shape.defY = (shape.defY || 0) + shape.defVy;
 
-      // Ограничитель деформации (чтобы было заметно, но не ломало текст)
       const defLen = Math.sqrt(shape.defX * shape.defX + shape.defY * shape.defY);
-      const maxDef = 40; // Ограничение: золотая середина
+      const maxDef = 40; 
       if (defLen > maxDef) {
          shape.defX = (shape.defX / defLen) * maxDef;
          shape.defY = (shape.defY / defLen) * maxDef;
@@ -117,18 +110,22 @@ const render = () => {
 
       const shapeTime = time + (shape.noisePhaseOffset || 0);
       const amp = noiseAmp * (shape.noiseMult ?? 1);
-      const noisyPoints = shape.points.map((p, j) => {
+      
+      if (noisyPointsBuffer.length < shape.points.length) {
+        for (let j = noisyPointsBuffer.length; j < shape.points.length; j++) {
+          noisyPointsBuffer.push({ x: 0, y: 0 })
+        }
+      }
+
+      shape.points.forEach((p, j) => {
         const noise = getNoise(p.angle, shapeTime, morphWeight) * amp
         const tNoise = getTangentNoise(p.angle, shapeTime, morphWeight) * amp * 0.3
         
         let x = p.x + p.normal.x * noise + (-p.normal.y) * tNoise
         let y = p.y + p.normal.y * noise + (p.normal.x) * tNoise
 
-        // Математика бегущего пульса
         let pulseDisplacementY = 0;
         if (pulseWeight > 0) {
-          // Динамический расчет nx, привязанный к габаритам формы.
-          // Это заставляет волну сжиматься и растягиваться вместе с формой во время морфинга.
           let nx = (x - minX) / currentWw;
           nx = Math.max(0, Math.min(1, nx));
           
@@ -141,116 +138,122 @@ const render = () => {
             pulseDisplacementY = (smoothEcg * (cachedWidth < 768 ? 60 : 100) + softVibration) * pulseWeight * edgeFade;
           } else {
             const pulsePos = (pulseTime * 1.5) % 1.2 - 0.1;
-            // Делаем импульс на мобильных чуть шире (множитель 10 вместо 12), чтобы он не казался слишком узким
             const distMultiplier = cachedWidth < 768 ? 10 : 12;
             const dist = (nx - pulsePos) * distMultiplier;
             const ecg = Math.cos(dist * Math.PI * 2) * Math.exp(-dist * dist * 2.5);
             const edgeFade = Math.sin(nx * Math.PI);
             const vibration = Math.sin(nx * 40 + pulseTime * 5) * (cachedWidth < 768 ? 1 : 2);
-            // Существенно уменьшаем высоту пульса для мобильных
             const pulseAmplitude = cachedWidth < 768 ? 55 : 100;
             pulseDisplacementY = (ecg * pulseAmplitude + vibration) * pulseWeight * edgeFade;
           }
         }
         y -= pulseDisplacementY;
 
-        // 3. Настоящая морфологическая деформация без вращения
         let nx_coord = x;
         let ny_coord = y;
         
         if (defLen > 0.1) {
-          // Вычисляем, насколько точка совпадает с вектором деформации
           const dot = p.normal.x * (shape.defX || 0) + p.normal.y * (shape.defY || 0);
           
-          // Вытягиваем точки (золотая середина)
           const stretchAmount = Math.abs(dot) * 0.55;
           nx_coord += p.normal.x * stretchAmount;
           ny_coord += p.normal.y * stretchAmount;
           
-          // Очень легкое сплющивание (чтобы текст 100% влезал)
           const perp = 1 - (Math.abs(dot) / defLen);
-          const squashAmount = perp * defLen * 0.15; // всего 15%
+          const squashAmount = perp * defLen * 0.15; 
           nx_coord -= p.normal.x * squashAmount;
           ny_coord -= p.normal.y * squashAmount;
         }
 
-        // Применяем глобальный shape.scale
         if (shape.scale !== 1) {
           nx_coord *= shape.scale;
           ny_coord *= shape.scale;
         }
         
-        // 4. Смещение самого центра массы
-        // Удалено смещение через defX/defY, чтобы центр сферы был намертво приклеен к xOffset/yOffset (где находится текст!)
-        // Желейность (stretch) все еще применяется к контуру выше.
         nx_coord += shape.xOffset + (shape.pulseOffsetX || 0) + xOffset;
         ny_coord += shape.yOffset + (shape.pulseOffsetY || 0);
         
-        return { x: nx_coord, y: ny_coord }
+        noisyPointsBuffer[j]!.x = nx_coord
+        noisyPointsBuffer[j]!.y = ny_coord
       })
       
-      if (shape.isHole) {
-        currentCtx.globalCompositeOperation = 'destination-out'
+      if (!disableHeavyFilters) {
+        if (shape.isHole) {
+          targetCtx.fillStyle = 'black'
+        } else {
+          targetCtx.fillStyle = 'white'
+        }
       } else {
-        currentCtx.globalCompositeOperation = 'source-over'
+        if (shape.isHole) {
+          targetCtx.globalCompositeOperation = 'destination-out'
+        } else {
+          targetCtx.globalCompositeOperation = 'source-over'
+          targetCtx.fillStyle = 'white'
+        }
       }
       
-      drawCatmullRom(currentCtx, noisyPoints, true, tension)
+      drawCatmullRom(targetCtx, noisyPointsBuffer, shape.points.length, true, tension)
 
       const cx = shape.xOffset + (shape.pulseOffsetX || 0) + xOffset;
       const cy = shape.yOffset + (shape.pulseOffsetY || 0);
 
       if (isPreloading.value) {
-        currentCtx.save()
+        targetCtx.save()
 
-        // 1. Анимация кругового появления линии (Pie Clip)
         if (typeof preloaderProgress === 'number' && preloaderProgress < 1) {
-          currentCtx.save()
-          currentCtx.beginPath()
-          currentCtx.moveTo(cx, cy)
-          // getCirclePoints начинается с угла 0 (на 3 часа)
+          targetCtx.save()
+          targetCtx.beginPath()
+          targetCtx.moveTo(cx, cy)
           const angle = preloaderProgress * Math.PI * 2
-          currentCtx.arc(cx, cy, 3000, 0, angle, false)
-          currentCtx.closePath()
-          currentCtx.clip()
+          targetCtx.arc(cx, cy, 3000, 0, angle, false)
+          targetCtx.closePath()
+          targetCtx.clip()
 
-          drawCatmullRom(currentCtx, noisyPoints, true, tension)
-          currentCtx.fillStyle = 'white'
-          currentCtx.fill()
-          currentCtx.restore()
+          drawCatmullRom(targetCtx, noisyPointsBuffer, shape.points.length, true, tension)
+          targetCtx.fill()
+          targetCtx.restore()
         } else {
-          // Если контур полностью отрисован
-          drawCatmullRom(currentCtx, noisyPoints, true, tension)
-          currentCtx.fillStyle = 'white'
-          currentCtx.fill()
+          drawCatmullRom(targetCtx, noisyPointsBuffer, shape.points.length, true, tension)
+          targetCtx.fill()
         }
 
-        // 3. Вырезаем внутреннюю дырку, чтобы сфера выглядела как кольцо
         if (typeof fillProgress === 'number' && fillProgress > 0) {
-          currentCtx.globalCompositeOperation = 'destination-out'
-          currentCtx.save()
-          // Смещаем центр трансформации к реальному центру фигуры
-          currentCtx.translate(cx, cy)
-          // Масштабируем дырку от 0.9 (тонкое кольцо) до 0.0 (сплошной шар)
-          currentCtx.scale(fillProgress, fillProgress)
-          currentCtx.translate(-cx, -cy)
-          drawCatmullRom(currentCtx, noisyPoints, true, tension)
-          currentCtx.fillStyle = 'white'
-          currentCtx.fill()
-          currentCtx.restore()
+          if (!disableHeavyFilters) {
+            targetCtx.fillStyle = 'black'
+          } else {
+            targetCtx.globalCompositeOperation = 'destination-out'
+          }
+          targetCtx.save()
+          targetCtx.translate(cx, cy)
+          targetCtx.scale(fillProgress, fillProgress)
+          targetCtx.translate(-cx, -cy)
+          drawCatmullRom(targetCtx, noisyPointsBuffer, shape.points.length, true, tension)
+          targetCtx.fill()
+          targetCtx.restore()
         }
 
-        currentCtx.restore()
+        targetCtx.restore()
       } else {
-        currentCtx.fillStyle = 'white'
-        currentCtx.fill()
+        targetCtx.fill()
       }
     })
     
-    // Reset blend mode just in case
-    currentCtx.globalCompositeOperation = 'source-over'
-    
-    currentCtx.restore()
+    if (disableHeavyFilters) {
+      targetCtx.globalCompositeOperation = 'source-over'
+    }
+    targetCtx.restore()
+
+    if (!disableHeavyFilters && offCtx && offscreenCanvas) {
+      currentCtx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+      currentCtx.filter = `blur(${gooBlur}px) contrast(${alphaMult || 30})`;
+      
+      currentCtx.save();
+      currentCtx.setTransform(1, 0, 0, 1, 0, 0);
+      currentCtx.drawImage(offscreenCanvas, 0, 0);
+      currentCtx.restore();
+      
+      currentCtx.filter = 'none';
+    }
   }
 }
 
@@ -258,16 +261,31 @@ const resizeCanvas = () => {
   if (canvasRef.value) {
     cachedWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
     const baseDpr = window.devicePixelRatio || 1;
-    // Ограничиваем DPR до 1.25 на десктопе, чтобы тяжелый фильтр goo не перегружал GPU 4K-разрешением
-    currentDpr.value = isMobileOrTablet.value ? Math.min(baseDpr, 1.5) : Math.min(baseDpr, 1.25);
-    // ОШИБКА БЫЛА ЗДЕСЬ: window.innerHeight может не совпадать с реальным CSS-размером fixed-контейнера.
-    // Из-за этого браузер растягивал/сжимал Canvas по вертикали, и сфера двигалась медленнее курсора!
+    currentDpr.value = isMobileOrTablet.value ? Math.min(baseDpr, 1.0) : Math.min(baseDpr, 1.25);
     const rect = canvasRef.value.parentElement?.getBoundingClientRect() || canvasRef.value.getBoundingClientRect();
     canvasRef.value.width = rect.width * currentDpr.value;
     canvasRef.value.height = rect.height * currentDpr.value;
     if (ctx) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(currentDpr.value, currentDpr.value);
+    }
+    
+    if (!disableHeavyFilters) {
+      if (!offscreenCanvas) {
+        if (typeof OffscreenCanvas !== 'undefined') {
+          offscreenCanvas = new OffscreenCanvas(canvasRef.value.width, canvasRef.value.height);
+          offCtx = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+        } else {
+          offscreenCanvas = document.createElement('canvas');
+          offCtx = offscreenCanvas.getContext('2d');
+        }
+      }
+      offscreenCanvas.width = canvasRef.value.width;
+      offscreenCanvas.height = canvasRef.value.height;
+      if (offCtx) {
+        offCtx.setTransform(1, 0, 0, 1, 0, 0);
+        offCtx.scale(currentDpr.value, currentDpr.value);
+      }
     }
   }
 }
@@ -291,14 +309,12 @@ onBeforeUnmount(() => {
   gsap.ticker.remove(render)
   window.removeEventListener('resize', resizeCanvas)
   if (preloaderTl) preloaderTl.kill()
-  // Убиваем все GSAP-таймлайны pulse внутри shapes
   shapes.forEach(shape => {
     if (shape.pulseTl) {
       shape.pulseTl.kill()
       shape.pulseTl = undefined
     }
   })
-  // Убиваем все текущие gsap tweens на shapes и их points
   gsap.killTweensOf(stateConfig)
   shapes.forEach(shape => {
     gsap.killTweensOf(shape)
@@ -313,4 +329,3 @@ const expandForMenu = () => expand(wrapperRef.value)
 
 defineExpose({ expandForMenu, collapseFromMenu })
 </script>
-

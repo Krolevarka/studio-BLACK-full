@@ -1,5 +1,5 @@
 <template>
-  <section ref="contactRef" v-bind="$attrs" class="relative h-dvh w-full flex items-center justify-center overflow-hidden bg-transparent z-10 mix-blend-difference pointer-events-none"
+  <section ref="contactRef" v-bind="$attrs" class="relative h-dvh w-full flex items-center justify-center overflow-hidden bg-transparent z-10 pointer-events-none"
            :class="[
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
@@ -8,7 +8,7 @@
     <div class="relative w-full max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center text-white pointer-events-none md:translate-y-0 2xl:-translate-y-20">
       
       <!-- Левая половина: Всё выстроено в одну линию -->
-      <div class="w-full md:w-1/2 flex flex-col justify-center pointer-events-none relative z-20 py-12 md:py-0">
+      <div class="w-full md:w-1/2 flex flex-col justify-center pointer-events-none relative z-20 py-12 md:py-0 mix-blend-difference">
         
         <!-- Заголовок -->
         <div class="shrink-0 pointer-events-auto transition-all duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center"

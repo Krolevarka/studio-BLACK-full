@@ -3,7 +3,7 @@
     <TechStack :is-open="showTechStack" @close="showTechStack = false" />
     
     <!-- Z-index 10: The Inversion Bar -->
-    <div ref="inversionBarRef" class="absolute bottom-0 left-0 w-full h-[50%] backdrop-invert pointer-events-none z-10 transform-gpu [clip-path:inset(0_0_1px_0)] border-b border-transparent" 
+    <div ref="inversionBarRef" class="absolute bottom-0 left-0 w-full h-[50%] bg-white pointer-events-none z-10 transform-gpu [clip-path:inset(0_0_1px_0)] border-b border-transparent" 
          :class="[
            isSectionActive ? 'will-change-transform' : '', 
            isMenuTransitioning ? 'transition-opacity' : '',

@@ -38,13 +38,14 @@
 
     <div 
       v-show="isPriceVisible"
-      class="price-heavy-target fixed inset-0 flex flex-col items-center justify-center z-10 pointer-events-none mix-blend-difference text-white"
+      class="price-heavy-target fixed inset-0 flex flex-col items-center justify-center z-10 pointer-events-none text-white"
       :class="[
         isMenuTransitioning ? 'transition-opacity' : '',
         isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
       ]"
     >
       <PriceCoreDisplay 
+        class="mix-blend-difference"
         :is-active="isPriceActive"
         :display-price="displayPrice"
         @unselect-last="unselectLast"
@@ -52,7 +53,7 @@
       
       <!-- Submit Button -->
       <div 
-        class="absolute mt-[35vh] md:mt-[240px] pointer-events-none transition-all duration-300 z-20"
+        class="absolute mt-[35vh] md:mt-[240px] pointer-events-none transition-all duration-300 z-20 mix-blend-difference"
         :class="totalPrice > 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'"
       >
         <UiButton 
@@ -66,8 +67,8 @@
     </div>
 
     <!-- Options Satellites -->
-    <!-- z-20 above everything, mix-blend-difference to invert color over the white canvas blobs -->
-    <div v-show="isPriceVisible" class="price-heavy-target fixed inset-0 z-20 pointer-events-none mix-blend-difference" 
+    <!-- z-20 above everything, localized mix-blend-difference to invert color over the white canvas blobs -->
+    <div v-show="isPriceVisible" class="price-heavy-target fixed inset-0 z-20 pointer-events-none" 
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
@@ -75,6 +76,7 @@
       <PriceSatellite
         v-for="opt in options"
         :key="opt.id"
+        class="mix-blend-difference"
         :option="opt"
         :is-active="isPriceActive"
         :ref="(el) => registerOptionRef(opt.id, (el as import('vue').ComponentPublicInstance)?.$el as HTMLElement)"

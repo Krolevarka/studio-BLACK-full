@@ -341,27 +341,22 @@ export function getTangentNoise(angle: number, time: number, morphWeight: number
   return sphereTangent * (1 - morphWeight) + squareTangent * morphWeight;
 }
 
-export function drawCatmullRom(ctx: CanvasRenderingContext2D, points: {x: number, y: number}[], close = true, tension = 1) {
-  if (points.length < 3) return;
+export function drawCatmullRom(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, points: {x: number, y: number}[], length: number, close = true, tension = 1) {
+  const n = length;
+  if (n < 3) return;
   
   ctx.beginPath();
   ctx.moveTo(points[0]!.x, points[0]!.y);
   
-  const p = [...points];
-  if (close) {
-    p.unshift(points[points.length - 1]!);
-    p.push(points[0]!);
-    p.push(points[1]!);
-  } else {
-    p.unshift(points[0]!);
-    p.push(points[points.length - 1]!);
-  }
+  const getPoint = close
+    ? (i: number) => points[((i % n) + n) % n]!
+    : (i: number) => points[Math.max(0, Math.min(n - 1, i))]!;
   
-  for (let i = 1; i < p.length - 2; i++) {
-    const p0 = p[i - 1]!;
-    const p1 = p[i]!;
-    const p2 = p[i + 1]!;
-    const p3 = p[i + 2]!;
+  for (let i = 0; i < n; i++) {
+    const p0 = getPoint(i - 1);
+    const p1 = getPoint(i);
+    const p2 = getPoint(i + 1);
+    const p3 = getPoint(i + 2);
     
     const cp1x = p1.x + ((p2.x - p0.x) / 6) * tension;
     const cp1y = p1.y + ((p2.y - p0.y) / 6) * tension;
@@ -371,9 +366,7 @@ export function drawCatmullRom(ctx: CanvasRenderingContext2D, points: {x: number
     ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
   }
   
-  if (close) {
-    ctx.closePath();
-  }
+  if (close) ctx.closePath();
 }
 
 const svgPathCache = new Map<string, Point[]>();

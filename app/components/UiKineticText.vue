@@ -1,6 +1,7 @@
 <template>
   <component :is="tag" class="kinetic-text inline-block" @mouseover="onMouseOver">
-    <span v-once>
+    <span v-if="isMobileOrTablet" v-once>{{ text }}</span>
+    <span v-else v-once>
       <span 
         v-for="(word, wIndex) in words" 
         :key="wIndex" 
@@ -23,6 +24,7 @@
 import { onMounted, onBeforeUnmount, computed } from 'vue'
 import gsap from 'gsap'
 import { useMouseVelocity } from '~/composables/useMouseVelocity'
+import { useDeviceSwitch } from '~/composables/useDeviceSwitch'
 
 interface Props {
   text: string
@@ -37,6 +39,7 @@ const props = withDefaults(defineProps<Props>(), {
 const words = computed(() => props.text.split(' ').map(word => word.split('')))
 
 const { startListening, stopListening, getVelocity } = useMouseVelocity()
+const { isMobileOrTablet } = useDeviceSwitch()
 
 onMounted(() => {
   startListening()

@@ -52,5 +52,9 @@ export function useEventBus() {
     }
   }
 
-  return { emit, on }
+  const off = <K extends keyof EventMap>(event: K, handler: (payload: EventMap[K]) => void) => {
+    listeners.get(event)?.delete(handler as (...args: unknown[]) => void)
+  }
+
+  return { emit, on, off }
 }

@@ -19,11 +19,11 @@ html, body {
   background-color: #000000 !important;
 }
 
-/* Fluid Desktop Typography (Пропорциональное масштабирование rem) */
+/* Fluid Desktop Typography (Двумерное пропорциональное масштабирование rem) */
 @media (min-width: 1024px) {
   html {
-    /* Макет рассчитан так: 16px при ширине 1920px = 0.8333vw */
-    font-size: clamp(10px, 0.8333vw, 24px) !important;
+    /* 16px при 1920x1080. Ограничиваем максимум 16px, чтобы на 2K/4K элементы не становились огромными */
+    font-size: clamp(10px, min(0.833333vw, 1.481481vh), 16px) !important;
   }
 }
 

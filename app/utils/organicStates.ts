@@ -2,7 +2,7 @@ import { getCirclePoints, getRectanglePoints, getDiamondPoints, getDividedDropPo
 import type { TargetStateConfig, TargetShape, PriceOption } from '~/types/organic'
 
 export function getCurrencyShapes(index: number, isMobile: boolean): TargetShape[] {
-  const pts = isMobile ? 180 : 240;
+  const pts = isMobile ? 90 : 240;
   const s = isMobile ? 0.6 : 1.2; // scale factor
   const targetShapes: TargetShape[] = [];
   
@@ -49,7 +49,7 @@ export interface TargetStateOptions {
 }
 
 function getPriceState({ w, h, isMobile, priceOptions = [], totalPrice = 0, isContactActive }: TargetStateOptions): TargetStateConfig {
-  const pts = isMobile ? 180 : 240;
+  const pts = isMobile ? 90 : 240;
 
   if (isMobile) {
     return {
@@ -104,7 +104,7 @@ function getPriceState({ w, h, isMobile, priceOptions = [], totalPrice = 0, isCo
 }
 
 function getApproachState({ w, h, isMobile, approachStep, isContactActive }: TargetStateOptions): TargetStateConfig {
-  const pts = isMobile ? 180 : 240;
+  const pts = isMobile ? 90 : 240;
 
   if (isMobile) {
     return {
@@ -191,7 +191,7 @@ function getApproachState({ w, h, isMobile, approachStep, isContactActive }: Tar
 }
 
 function getPortfolioState({ w, h, isMobile, isContactActive }: TargetStateOptions): TargetStateConfig {
-  const pts = isMobile ? 180 : 240;
+  const pts = isMobile ? 90 : 240;
   const rectW = isMobile ? w * 0.9 : w * 0.6
   const rectH = isMobile ? 10 : 14
   return {
@@ -203,7 +203,7 @@ function getPortfolioState({ w, h, isMobile, isContactActive }: TargetStateOptio
 }
 
 function getAboutState({ w, h, isMobile, isContactActive }: TargetStateOptions): TargetStateConfig {
-  const pts = isMobile ? 180 : 240;
+  const pts = isMobile ? 90 : 240;
   const rectW = isMobile ? w * 1.1 : w / 2;
   const rectH = isMobile ? h * 0.5 : h * 1.1;
   const shapeYOffset = isMobile ? -h * 0.25 : 0;
@@ -218,7 +218,7 @@ function getAboutState({ w, h, isMobile, isContactActive }: TargetStateOptions):
 }
 
 function getContactState({ w, h, isMobile, contactStep = 1, isContactTyping = false, isContactActive }: TargetStateOptions): TargetStateConfig {
-  const pts = isMobile ? 180 : 240;
+  const pts = isMobile ? 90 : 240;
   if (isMobile) {
     return {
       shapes: [],
@@ -279,7 +279,7 @@ function getContactState({ w, h, isMobile, contactStep = 1, isContactTyping = fa
 }
 
 function getDefaultState({ w, h, isMobile, isContactActive }: TargetStateOptions): TargetStateConfig {
-  const pts = isMobile ? 180 : 240;
+  const pts = isMobile ? 90 : 240;
   const radius = isMobile ? 120 : 180
   return {
     shapes: [
@@ -297,7 +297,7 @@ function getTechStackState({ w, h, isMobile, hoveredTechIndex = -1 }: TargetStat
     }
   }
 
-  const pts = isMobile ? 180 : 240;
+  const pts = isMobile ? 90 : 240;
   const targetShapes: TargetShape[] = [];
   
   const xOff = isMobile ? 0 : -w / 4; 
@@ -440,8 +440,12 @@ export function getTargetState(options: TargetStateOptions): TargetStateConfig {
   else target = getDefaultState(options);
 
   if (!options.isMobile) {
-    // Синхронизируем размер Canvas-сферы с Fluid Typography (16px @ 1920px)
-    const remScale = Math.max(10 / 16, Math.min(24 / 16, options.w / 1920));
+    // Синхронизируем размер Canvas-сферы с двумерной Fluid Typography (16px @ 1920x1080)
+    const scaleW = options.w / 1920;
+    const scaleH = options.h / 1080;
+    const baseScale = Math.min(scaleW, scaleH);
+    // Максимальный масштаб 1.0 (соответствует 16px), чтобы на 2K/4K сфера не становилась огромной
+    const remScale = Math.max(10 / 16, Math.min(1.0, baseScale));
     
     // Исключаем About-состояние из масштабирования, так как оно жестко привязано к w/2
     if (!options.isAboutActive) {

@@ -19,7 +19,10 @@ export function usePricePhysics(
 
   const getOptionOrbitPos = (opt: PriceOption) => {
     const minDim = Math.min(window.innerWidth, window.innerHeight);
-    const remScale = Math.max(10 / 16, Math.min(24 / 16, window.innerWidth / 1920));
+    const scaleW = window.innerWidth / 1920;
+    const scaleH = window.innerHeight / 1080;
+    const baseScale = Math.min(scaleW, scaleH);
+    const remScale = Math.max(10 / 16, Math.min(1.0, baseScale));
     
     const orbitDistance = isMobile.value 
       ? Math.min(200, minDim * 0.28) + opt.radiusOffset * 0.5

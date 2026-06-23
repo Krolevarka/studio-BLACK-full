@@ -43,16 +43,34 @@ export function usePriceDrag(
     _startDrag(opt, e, hoveredOptId)
   }
 
+  const { on, off } = useEventBus()
+  let isTickerActive = false
+
+  const handleSectionChange = (label: string) => {
+    if (label === '[ Прайс ]') {
+      if (!isTickerActive) {
+        gsap.ticker.add(tick)
+        isTickerActive = true
+      }
+    } else {
+      if (isTickerActive) {
+        gsap.ticker.remove(tick)
+        isTickerActive = false
+      }
+    }
+  }
+
   onMounted(() => {
     updateObstaclesCache()
     window.addEventListener('resize', updateObstaclesCache)
-    gsap.ticker.add(tick)
+    on('section-change', handleSectionChange)
   })
 
   onBeforeUnmount(() => {
     cleanupGestures()
     window.removeEventListener('resize', updateObstaclesCache)
-    gsap.ticker.remove(tick)
+    if (isTickerActive) gsap.ticker.remove(tick)
+    off('section-change', handleSectionChange)
     physicsMap.forEach(p => gsap.killTweensOf(p))
   })
 

@@ -5,6 +5,25 @@ import { getTargetState } from '~/utils/organicStates'
 import type { TargetStateConfig, PriceOption } from '~/types/organic'
 import { useOrganicState } from './useOrganicState'
 
+let optimalShiftWorker: Worker | null = null;
+let msgId = 0;
+const workerCallbacks = new Map<number, (offset: number) => void>();
+
+const getWorker = () => {
+  if (import.meta.server) return null;
+  if (!optimalShiftWorker) {
+    optimalShiftWorker = new Worker(new URL('../../utils/optimalShift.worker.ts', import.meta.url), { type: 'module' });
+    optimalShiftWorker.onmessage = (e) => {
+      const { id, bestOffset } = e.data;
+      if (workerCallbacks.has(id)) {
+        workerCallbacks.get(id)!(bestOffset);
+        workerCallbacks.delete(id);
+      }
+    };
+  }
+  return optimalShiftWorker;
+};
+
 export function useOrganicSync() {
   const s = useOrganicState()
   const { on } = useEventBus()
@@ -145,59 +164,55 @@ export function useOrganicSync() {
       const referencePoints = shape.targetPoints || startPoints;
       
       const n = startPoints.length;
-      let bestOffset = 0;
-      let minTotalDist = Infinity;
       
-      // АЛГОРИТМ ОПТИМАЛЬНОГО СДВИГА (Optimal Shift)
-      for (let offset = 0; offset < n; offset++) {
-        let totalDist = 0;
+      const getBestOffsetAsync = async (): Promise<number> => {
+        const worker = getWorker();
+        if (!worker) return 0; // Fallback
+        return new Promise(resolve => {
+          const id = ++msgId;
+          workerCallbacks.set(id, resolve);
+          const refPts = referencePoints.map(p => ({ x: p.x, y: p.y }));
+          const tgtPts = targetShape.points.map(p => ({ x: p.x, y: p.y }));
+          worker.postMessage({ id, referencePoints: refPts, targetPoints: tgtPts });
+        });
+      };
+
+      getBestOffsetAsync().then((bestOffset) => {
+        // Сохраняем неискаженные целевые точки для будущих прерываний
+        shape.targetPoints = targetShape.points;
+
+        const alignedTargetPoints = new Array(n);
         for (let i = 0; i < n; i++) {
-          const sp = referencePoints[i]!;
-          const tp = targetShape.points[(i + offset) % n]!;
-          const dx = tp.x - sp.x;
-          const dy = tp.y - sp.y;
-          totalDist += dx * dx + dy * dy;
+          alignedTargetPoints[i] = targetShape.points[(i + bestOffset) % n]!;
         }
-        if (totalDist < minTotalDist) {
-          minTotalDist = totalDist;
-          bestOffset = offset;
-        }
-      }
 
-      // Сохраняем неискаженные целевые точки для будущих прерываний
-      shape.targetPoints = targetShape.points;
-
-      const alignedTargetPoints = new Array(n);
-      for (let i = 0; i < n; i++) {
-        alignedTargetPoints[i] = targetShape.points[(i + bestOffset) % n]!;
-      }
-
-      const progressObj = { val: 0 };
-      
-      shape.pointsTween = gsap.to(progressObj, {
-        val: 1,
-        duration,
-        ease: currentEase,
-        onUpdate: () => {
-          shape!.points.forEach((p, j) => {
-            const sp = startPoints[j]
-            const tp = alignedTargetPoints[j]
-            if (!tp || !sp) return
-            const t = progressObj.val
-            
-            // ЧИСТАЯ ЛИНЕЙНАЯ ИНТЕРПОЛЯЦИЯ с уже оптимизированным (ближайшим) маппингом
-            p.x = sp.x + (tp.x - sp.x) * t;
-            p.y = sp.y + (tp.y - sp.y) * t;
-            
-            let dAngle = tp.angle - sp.angle
-            if (dAngle > Math.PI) dAngle -= 2 * Math.PI
-            if (dAngle < -Math.PI) dAngle += 2 * Math.PI
-            p.angle = sp.angle + dAngle * t
-            
-            p.normal.x = sp.normal.x + (tp.normal.x - sp.normal.x) * t
-            p.normal.y = sp.normal.y + (tp.normal.y - sp.normal.y) * t
-          })
-        }
+        const progressObj = { val: 0 };
+        
+        shape.pointsTween = gsap.to(progressObj, {
+          val: 1,
+          duration,
+          ease: currentEase,
+          onUpdate: () => {
+            shape!.points.forEach((p, j) => {
+              const sp = startPoints[j]
+              const tp = alignedTargetPoints[j]
+              if (!tp || !sp) return
+              const t = progressObj.val
+              
+              // ЧИСТАЯ ЛИНЕЙНАЯ ИНТЕРПОЛЯЦИЯ с уже оптимизированным (ближайшим) маппингом
+              p.x = sp.x + (tp.x - sp.x) * t;
+              p.y = sp.y + (tp.y - sp.y) * t;
+              
+              let dAngle = tp.angle - sp.angle
+              if (dAngle > Math.PI) dAngle -= 2 * Math.PI
+              if (dAngle < -Math.PI) dAngle += 2 * Math.PI
+              p.angle = sp.angle + dAngle * t
+              
+              p.normal.x = sp.normal.x + (tp.normal.x - sp.normal.x) * t
+              p.normal.y = sp.normal.y + (tp.normal.y - sp.normal.y) * t
+            })
+          }
+        })
       })
     })
 
