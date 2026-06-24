@@ -193,7 +193,6 @@ const {
   steps,
   canProceed,
   isStepEmpty,
-  isOptionSelected,
   toggleOption,
   onFocus,
   onBlur,

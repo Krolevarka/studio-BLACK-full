@@ -18,12 +18,8 @@ export function usePriceDragGesture(
   let activeDragOpt: PriceOption | null = null
   let startPointer = { x: 0, y: 0 }
   
-  let lenisInstance: import('#app').NuxtApp['$lenis'] = undefined
-  try {
-    const { $lenis } = useNuxtApp()
-    lenisInstance = $lenis
-  } catch (e) {
-  }
+  const { $lenis } = useNuxtApp()
+  let lenisInstance = $lenis
 
   const startDrag = (opt: PriceOption, e: PointerEvent, hoveredOptId: Ref<string | null>) => {
     hoveredOptId.value = null

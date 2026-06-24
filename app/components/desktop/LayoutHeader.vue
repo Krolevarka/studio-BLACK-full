@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
   isPreloading: boolean
   isMenuOpen: boolean
   isMenuAnimating: boolean

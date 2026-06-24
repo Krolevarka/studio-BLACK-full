@@ -1,4 +1,4 @@
-import { onBeforeUnmount } from 'vue'
+import { onBeforeUnmount, getCurrentInstance } from 'vue'
 import type { PriceOption } from '~/types/organic'
 
 type EventMap = {
@@ -43,12 +43,10 @@ export function useEventBus() {
     listeners.get(event)!.add(handler as (...args: unknown[]) => void)
     
     // Auto-cleanup when used inside a component's setup function
-    try {
+    if (getCurrentInstance()) {
       onBeforeUnmount(() => {
         listeners.get(event)?.delete(handler as (...args: unknown[]) => void)
       })
-    } catch (e) {
-      // If used outside of setup, no auto-cleanup (must be done manually if needed)
     }
   }
 

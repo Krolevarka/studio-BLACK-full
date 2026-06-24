@@ -63,22 +63,7 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
     return false
   }
 
-  const isOptionSelected = (key: string, opt: string) => {
-    switch (key) {
-      case 'services':
-        return answers.services.includes(opt)
-      case 'name':
-        return answers.name === opt
-      case 'project':
-        return answers.project === opt
-      case 'budget':
-        return answers.budget === opt
-      case 'contact':
-        return answers.contact === opt
-      default:
-        return false
-    }
-  }
+
 
   const toggleOption = (key: string, opt: string, multi: boolean) => {
     switch (key) {
@@ -192,7 +177,6 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
     steps,
     canProceed,
     isStepEmpty,
-    isOptionSelected,
     toggleOption,
     onFocus,
     onBlur,

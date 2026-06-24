@@ -86,7 +86,7 @@ const { emit, on } = useEventBus()
 
 // Следим за состоянием меню, чтобы инвертировать курсор
 watch(isMenuOpen, (newVal) => {
-  if (typeof document !== 'undefined') {
+  if (import.meta.client) {
     if (newVal) {
       document.body.classList.add('menu-is-open')
     } else {
@@ -97,13 +97,12 @@ watch(isMenuOpen, (newVal) => {
 
 // Блокируем скролл во время загрузки (прелоадер) или открытия TechStack
 watch([isPreloading, isTechStackOpen], ([preloading, techStackOpen]) => {
-  if (typeof document !== 'undefined') {
-    const lenis = useNuxtApp().$lenis
+  if (import.meta.client) {
     if (preloading || techStackOpen) {
-      if (lenis) lenis.stop()
+      if ($lenis) $lenis.stop()
       document.body.style.overflow = 'hidden'
     } else {
-      if (lenis) lenis.start()
+      if ($lenis) $lenis.start()
       document.body.style.overflow = ''
     }
   }
@@ -157,12 +156,14 @@ const closeMenu = () => {
   }, 1200)
 }
 
+const NAV_GOTO_DELAY = 1250
+
 const handleMenuClick = (href: string) => {
   if (isMenuAnimating.value) return
   closeMenu()
   setTimeout(() => {
     emit('nav-goto', href)
-  }, 1250) // Ждем завершения схлопывания сферы и запуска lenis
+  }, NAV_GOTO_DELAY) // Ждем завершения схлопывания сферы и запуска lenis
 }
 
 const handleLogoClick = () => {

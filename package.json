@@ -23,6 +23,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@nuxtjs/google-fonts": "^3.2.0"
+    "@nuxtjs/google-fonts": "^3.2.0",
+    "@types/node": "^26.0.0"
   }
 }

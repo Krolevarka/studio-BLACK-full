@@ -50,8 +50,9 @@ let globalFocusOutAlign: ((e: FocusEvent) => void) | null = null
 const { on, emit } = useEventBus()
 const { isPreloading } = useOrganicCore()
 const { isMobileOrTablet } = useDeviceSwitch()
-// Единый источник правды для унифицированного появления/исчезновения контента секций
 const { activeLabel, arrivedLabel } = useSectionTransition()
+
+const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 
 const gotoSection = (index: number, direction: number) => {
   if (isAnimating.value || isMenuOpen || isPreloading.value || isTechStackOpen) return
@@ -89,7 +90,7 @@ const gotoSection = (index: number, direction: number) => {
 
     $lenis.scrollTo(target, {
       duration: 2.0,
-      easing: (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, // Плавный easeInOutCubic без рывка в конце
+      easing: easeInOutCubic, // Плавный easeInOutCubic без рывка в конце
       lock: true, // Блокируем другие попытки скролла на время анимации
       onComplete: () => {
         clearTimeout(failsafeTimer)
@@ -177,7 +178,7 @@ onMounted(() => {
       if ($lenis) {
         $lenis.scrollTo(targetHref, { 
           duration: 2.0, 
-          easing: (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2 
+          easing: easeInOutCubic 
         })
       }
     }

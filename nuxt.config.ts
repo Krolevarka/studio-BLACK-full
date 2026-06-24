@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
@@ -21,9 +22,7 @@ export default defineNuxtConfig({
     ],
   },
   security: {
-    // @ts-expect-error process is available in node but types might be missing
     nonce: process.env.NODE_ENV === 'production',
-    // @ts-expect-error process is available in node but types might be missing
     headers: process.env.NODE_ENV === 'development' ? false : {
       contentSecurityPolicy: {
         'script-src': ["'self'", "'nonce-{{nonce}}'", "'strict-dynamic'"],
