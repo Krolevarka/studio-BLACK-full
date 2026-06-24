@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container bg-[#050505]">
+  <div class="app-container">
     <Preloader />
     <NuxtLayout>
       <NuxtPage />

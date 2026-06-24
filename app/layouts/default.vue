@@ -196,6 +196,3 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped>
-/* text-shadow удален для меню "Абсолютный Аккордеон" (чистый mix-blend-difference) */
-</style>

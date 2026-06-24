@@ -119,7 +119,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { usePriceDrag } from '~/composables/usePriceDrag'
@@ -151,7 +150,6 @@ const options = ref<PriceOption[]>([
 ])
 
 const windowW = ref(1024)
-const windowH = ref(768)
 const isMobile = computed(() => windowW.value < 768)
 
 const basePrice = 0
@@ -191,14 +189,12 @@ watch(totalPrice, (newVal) => {
 
 const resize = () => {
   windowW.value = window.innerWidth;
-  windowH.value = window.innerHeight;
 }
 
 let enterDelay: gsap.core.Tween | null = null
 let enterRaf: number | null = null
 
 onMounted(() => {
-  gsap.registerPlugin(ScrollTrigger)
   resize()
   window.addEventListener('resize', resize)
 
@@ -310,9 +306,6 @@ onBeforeUnmount(() => {
   const targets = priceRef.value?.querySelectorAll('.price-anim-target')
   if (targets) gsap.killTweensOf(targets)
   window.removeEventListener('resize', resize)
-  ScrollTrigger.getAll().forEach(st => {
-    if (st.trigger === priceRef.value) st.kill()
-  })
 })
 </script>
 

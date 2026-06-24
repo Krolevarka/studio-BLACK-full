@@ -1,6 +1,6 @@
 <template>
   <header 
-    class="fixed top-0 left-0 w-full p-6 md:p-10 z-[60] flex justify-between items-center pointer-events-none mix-blend-difference transform-gpu text-white transition-opacity duration-1000 transform-gpu"
+    class="fixed top-0 left-0 w-full p-6 md:p-10 z-[60] flex justify-between items-center pointer-events-none mix-blend-difference transform-gpu text-white transition-opacity duration-1000"
     style="will-change: transform;"
     :class="isPreloading ? 'opacity-0' : 'opacity-100'"
   >

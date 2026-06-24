@@ -340,7 +340,7 @@ export function useOrganicSync() {
       if (wasActive && payload.active) {
         // Локальное переключение (hover)
         const duration = s.hoveredTechIndex === -1 ? 0.4 : 0.6;
-        const ease = s.hoveredTechIndex === -1 ? 'power2.out' : 'power2.out';
+        const ease = 'power2.out';
         scheduleSync(duration, ease)
       } else {
         // Переход между вкладками

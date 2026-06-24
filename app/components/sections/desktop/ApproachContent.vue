@@ -156,17 +156,6 @@ const steps = [
   }
 ]
 
-const triggerDistortion = (index: number) => {
-  if (showTechStack.value) return
-  if (activeStep.value === index) return
-  emit('techstack-state', { active: false, hoveredIndex: index })
-}
-
-const clearDistortion = () => {
-  if (showTechStack.value) return
-  emit('techstack-state', { active: false, hoveredIndex: -1 })
-}
-
 const emitState = () => {
   emit('approach-state', { active: isSectionActive.value, step: activeStep.value })
 }
