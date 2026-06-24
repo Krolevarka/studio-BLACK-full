@@ -7,7 +7,7 @@ import { useOrganicState } from './useOrganicState'
 
 let optimalShiftWorker: Worker | null = null;
 let msgId = 0;
-const workerCallbacks = new Map<number, (offset: number) => void>();
+const workerCallbacks = new Map<number, { resolve: (offset: number) => void, timeoutId: ReturnType<typeof setTimeout> }>();
 
 const getWorker = () => {
   if (import.meta.server) return null;
@@ -16,10 +16,19 @@ const getWorker = () => {
     optimalShiftWorker.onmessage = (e) => {
       const { id, bestOffset } = e.data;
       if (workerCallbacks.has(id)) {
-        workerCallbacks.get(id)!(bestOffset);
+        const { resolve, timeoutId } = workerCallbacks.get(id)!;
+        clearTimeout(timeoutId);
+        resolve(bestOffset);
         workerCallbacks.delete(id);
       }
     };
+    
+    if (import.meta.hot) {
+      import.meta.hot.dispose(() => {
+        optimalShiftWorker?.terminate();
+        optimalShiftWorker = null;
+      });
+    }
   }
   return optimalShiftWorker;
 };
@@ -170,7 +179,13 @@ export function useOrganicSync() {
         if (!worker) return 0; // Fallback
         return new Promise(resolve => {
           const id = ++msgId;
-          workerCallbacks.set(id, resolve);
+          const timeoutId = setTimeout(() => {
+            if (workerCallbacks.has(id)) {
+              workerCallbacks.delete(id);
+              resolve(0); // Fallback to 0 if worker times out
+            }
+          }, 5000);
+          workerCallbacks.set(id, { resolve, timeoutId });
           const refPts = referencePoints.map(p => ({ x: p.x, y: p.y }));
           const tgtPts = targetShape.points.map(p => ({ x: p.x, y: p.y }));
           worker.postMessage({ id, referencePoints: refPts, targetPoints: tgtPts });

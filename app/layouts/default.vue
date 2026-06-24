@@ -194,6 +194,11 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (menuTimer) clearTimeout(menuTimer)
+  
+  if (import.meta.client) {
+    document.body.classList.remove('menu-is-open')
+    document.body.style.overflow = ''
+  }
 })
 </script>
 

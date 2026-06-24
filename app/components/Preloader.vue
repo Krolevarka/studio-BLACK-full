@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onBeforeUnmount, ref } from 'vue'
 import gsap from 'gsap'
 import { useEventBus } from '~/composables/useEventBus'
 
@@ -12,6 +12,8 @@ const preloaderRef = ref<HTMLElement | null>(null)
 const isVisible = ref(true)
 
 const { on, emit } = useEventBus()
+
+let timeoutId: ReturnType<typeof setTimeout> | null = null
 
 onMounted(() => {
   if (!preloaderRef.value) return
@@ -24,10 +26,19 @@ onMounted(() => {
       pointerEvents: 'none',
       onComplete: () => {
         emit('preloader-done')
-        setTimeout(() => { isVisible.value = false }, 100)
+        timeoutId = setTimeout(() => { isVisible.value = false }, 100)
       }
     })
   })
+})
+
+onBeforeUnmount(() => {
+  if (preloaderRef.value) {
+    gsap.killTweensOf(preloaderRef.value)
+  }
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+  }
 })
 </script>
 

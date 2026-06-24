@@ -39,6 +39,7 @@
 
 <script setup lang="ts">
 import type { PriceOption } from '~/types/organic'
+import { formatPrice } from '~/utils/format'
 
 defineProps<{
   isOpen: boolean
@@ -46,8 +47,4 @@ defineProps<{
 }>()
 
 defineEmits(['close'])
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('ru-RU').format(Math.round(price))
-}
 </script>

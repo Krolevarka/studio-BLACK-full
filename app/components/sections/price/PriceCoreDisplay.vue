@@ -16,6 +16,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatPrice } from '~/utils/format'
+
 defineProps<{
   isActive: boolean
   displayPrice: number
@@ -23,7 +25,4 @@ defineProps<{
 
 defineEmits(['unselectLast'])
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('ru-RU').format(Math.round(price))
-}
 </script>

@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import type { PriceOption } from '~/types/organic'
+import { formatPrice } from '~/utils/format'
 
 defineProps<{
   option: PriceOption
@@ -33,8 +34,4 @@ defineProps<{
 }>()
 
 defineEmits(['startDrag', 'select', 'hover'])
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('ru-RU').format(Math.round(price))
-}
 </script>
