@@ -1,20 +1,27 @@
 <template>
   <section ref="approachRef" v-bind="$attrs" class="relative h-dvh w-full flex flex-col overflow-hidden bg-transparent">
     <TechStack :is-open="showTechStack" @close="showTechStack = false" />
-    
-    <!-- Z-index 10: The Inversion Bar -->
-    <div ref="inversionBarRef" class="absolute bottom-0 left-0 w-full h-[50%] bg-white pointer-events-none z-10 transform-gpu [clip-path:inset(0_0_1px_0)] border-b border-transparent" 
+
+    <!-- Белая плашка (дизайн-элемент): fixed к вьюпорту, чтобы уезжать за реальный край экрана
+         независимо от скролла. Внешняя обёртка — меню-затухание (opacity), внутренняя — слайд (transform). -->
+    <div class="fixed bottom-0 left-0 w-full h-[50%] z-10 pointer-events-none"
          :class="[
-           isSectionActive ? 'will-change-transform' : '', 
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[1000ms] delay-0' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
-         ]"></div>
+         ]">
+      <div ref="inversionBarRef" class="white-panel w-full h-full bg-white [clip-path:inset(0_0_1px_0)] border-b border-transparent"
+           :class="{ 'is-revealed': revealed }"></div>
+    </div>
 
-    <!-- Z-index 20: UI Контейнер -->
-    <div class="absolute inset-0 w-full h-full z-20 flex flex-col pointer-events-auto" :class="showTechStack ? 'pointer-events-none' : ''">
-      
+    <!-- Унифицированный reveal-обёртка вокруг текстового контента (TechStack — отдельный оверлей, сюда не входит).
+         GSAP-watcher TechStack продолжает управлять дочерними элементами независимо. -->
+    <div class="reveal-item absolute inset-0 w-full h-full z-20" :class="{ 'is-revealed': revealed }">
+
+    <!-- UI Контейнер -->
+    <div class="absolute inset-0 w-full h-full flex flex-col pointer-events-auto" :class="showTechStack ? 'pointer-events-none' : ''">
+
       <!-- ВЕРХНЯЯ ЧАСТЬ (50%): Контент (Заголовок + Описание) в черной зоне -->
-      <div class="w-full h-[50%] flex flex-col justify-end pb-8 md:pb-12 px-6 sm:px-12 md:px-16 lg:px-24 approach-content opacity-0 relative" 
+      <div class="w-full h-[50%] flex flex-col justify-end pb-8 md:pb-12 px-6 sm:px-12 md:px-16 lg:px-24 approach-content relative"
            :class="[
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
@@ -37,30 +44,30 @@
       </div>
 
       <!-- НИЖНЯЯ ЧАСТЬ (50%): Навигация (слева) в белой зоне -->
-      <div class="w-full h-[50%] flex flex-col justify-center px-6 sm:px-12 md:px-16 lg:px-24 approach-nav opacity-0" 
+      <div class="w-full h-[50%] flex flex-col justify-center px-6 sm:px-12 md:px-16 lg:px-24 approach-nav"
            :class="[
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
            ]">
-        <div class="flex flex-col justify-center space-y-3 md:space-y-6 w-full max-w-none">
+        <div class="flex flex-col justify-between h-full py-6 md:py-10 w-full max-w-none">
           <button 
             v-for="(step, index) in steps" 
             :key="index"
             @click="handleStepClick(index)"
             class="nav-btn relative flex items-center text-left group transition-all duration-700 w-max"
           >
-            <span class="font-secondary text-[clamp(1rem,3vw,3rem)] mr-4 md:mr-8 transition-all duration-700 font-bold pointer-events-auto"
+            <span class="font-secondary text-[clamp(1rem,2dvh,3rem)] mr-4 md:mr-8 transition-all duration-700 font-bold pointer-events-auto"
                   :class="activeStep === index ? 'text-black' : 'text-black/20 group-hover:text-black/50'">
               {{ '0' + (index + 1) }}
             </span>
-            <span class="font-primary text-[clamp(2.5rem,8.5vw,12rem)] font-black uppercase tracking-normal leading-[0.85] transition-all duration-700 ease-out pointer-events-auto flex items-center"
+            <span class="font-primary text-[clamp(2rem,7dvh,9rem)] font-black uppercase tracking-normal leading-[0.85] transition-all duration-700 ease-out pointer-events-auto flex items-center"
                   :class="activeStep === index ? 'text-black translate-x-4 md:translate-x-8' : 'text-black/10 group-hover:text-black/30'">
               {{ step.shortTitle || step.title }}
               
               <!-- Arrow for 'Разработка' step -->
               <span v-if="index === 3" 
                     class="overflow-hidden inline-flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
-                    :class="activeStep === 3 ? 'ml-4 md:ml-6 w-10 md:w-16 opacity-100' : 'w-0 opacity-0 ml-0 group-hover:w-10 group-hover:md:w-16 group-hover:ml-4 group-hover:md:ml-6 group-hover:opacity-40'">
+                    :class="activeStep === 3 ? 'ml-4 md:ml-6 w-10 md:w-14 opacity-100' : 'w-0 opacity-0 ml-0 group-hover:w-10 group-hover:md:w-14 group-hover:ml-4 group-hover:md:ml-6 group-hover:opacity-40'">
                 <svg class="w-8 h-8 md:w-12 md:h-12 text-black transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shrink-0" 
                      :class="activeStep === 3 ? 'translate-x-0 group-hover:translate-x-2' : '-translate-x-full group-hover:translate-x-0'"
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,26 +80,30 @@
       </div>
 
     </div>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref, onBeforeUnmount } from 'vue'
 import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
+import { useSectionReveal } from '~/composables/useSectionReveal'
 import TechStack from './TechStack.vue'
 
 defineOptions({ inheritAttrs: false })
 
 const approachRef = ref<HTMLElement | null>(null)
 const inversionBarRef = ref<HTMLElement | null>(null)
-let animTimeline: gsap.core.Timeline | null = null
 
 const activeStep = ref(0)
 const isSectionActive = ref(false)
 const showTechStack = ref(false)
+// Унифицированное появление/исчезновение контента секции.
+// Исключение: показываем РАНО — от старта перехода (fromActive), ещё во время скролла (~1.2s),
+// задолго до формирования сферы (~2.6–3.0s). Контент появляется первым, сфера дособирается следом.
+const { revealed } = useSectionReveal('[ Наш Подход ]', { fromActive: true, enterDelay: 1200 })
 
 import { watch } from 'vue'
 
@@ -101,13 +112,16 @@ watch(showTechStack, (val) => {
   const nav = approachRef.value?.querySelector('.approach-nav')
   
   if (val) {
+    // Отключаем CSS-слайд плашки на время GSAP, чтобы переходы не конфликтовали
+    if (inversionBarRef.value) inversionBarRef.value.style.transition = 'none'
     if (content) gsap.to(content, { y: -60, opacity: 0, duration: 0.6, ease: 'power3.inOut' })
     if (nav) gsap.to(nav, { yPercent: 105, opacity: 0, duration: 0.8, ease: 'power4.inOut' })
     if (inversionBarRef.value) gsap.to(inversionBarRef.value, { yPercent: 105, duration: 0.8, ease: 'power4.inOut' })
   } else {
     if (content) gsap.to(content, { y: 0, opacity: 1, duration: 0.8, ease: 'power4.out', delay: 0.2 })
     if (nav) gsap.to(nav, { yPercent: 0, opacity: 1, duration: 0.8, ease: 'power4.out', delay: 0.2 })
-    if (inversionBarRef.value) gsap.to(inversionBarRef.value, { yPercent: 0, duration: 0.8, ease: 'power4.out', delay: 0.2 })
+    // Очищаем transform/transition, чтобы CSS-слайд плашки (reveal) снова перехватил управление
+    if (inversionBarRef.value) gsap.to(inversionBarRef.value, { yPercent: 0, duration: 0.8, ease: 'power4.out', delay: 0.2, clearProps: 'transition,transform' })
   }
 })
 
@@ -173,42 +187,6 @@ const handleStepClick = (index: number) => {
 }
 
 onMounted(() => {
-  // Инициализируем анимации только после завершения прелоадера для разгрузки Main Thread
-  let isInitialized = false
-  
-  const initGSAP = () => {
-    if (isInitialized) return
-    isInitialized = true
-    
-    animTimeline = gsap.timeline({
-      scrollTrigger: {
-        trigger: approachRef.value,
-        start: 'top center',
-        end: 'top 20%',
-        toggleActions: 'play none none reverse'
-      }
-    })
-
-    const approachNav = approachRef.value?.querySelector('.approach-nav') || '.approach-nav'
-    const approachContent = approachRef.value?.querySelector('.approach-content') || '.approach-content'
-
-    animTimeline?.to(approachNav, {
-      opacity: 1,
-      duration: 1,
-      ease: 'power3.out'
-    }, '-=0.5')
-    .to(approachContent, {
-      opacity: 1,
-      duration: 1,
-      ease: 'power3.out'
-    }, '-=0.8')
-  }
-
-  on('preloader-done', initGSAP)
-  
-  // Фолбэк
-  setTimeout(initGSAP, 4500)
-
   on('section-change', (label: string) => {
     if (label === '[ Наш Подход ]') {
       isSectionActive.value = true
@@ -221,14 +199,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  if (animTimeline) {
-    animTimeline.scrollTrigger?.kill()
-    animTimeline.kill()
-  }
-  ScrollTrigger.getAll().forEach(st => {
-    if (st.trigger === approachRef.value) st.kill()
-  })
-
   // Strict-Cleanup: Убиваем GSAP-анимации из watcher
   gsap.killTweensOf('.approach-content')
   gsap.killTweensOf('.approach-nav')
@@ -237,6 +207,25 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Белая плашка: уезжает полностью за кадр (110%) БЫСТРО (~420ms) и с ускорением — успевает уйти,
+   пока скролл ещё практически не сдвинулся (easeInOutCubic, медленный старт), поэтому пользователь
+   не видит её «трансформацию» на фоне уезжающей секции. Вход (выезд снизу) — плавный с замедлением. */
+.white-panel {
+  transform: translateY(110%);
+  transition: transform 420ms cubic-bezier(0.4, 0, 1, 1);
+  will-change: transform;
+}
+.white-panel.is-revealed {
+  transform: translateY(0);
+  transition: transform var(--reveal-dur-in) var(--reveal-ease-in);
+}
+@media (prefers-reduced-motion: reduce) {
+  .white-panel,
+  .white-panel.is-revealed {
+    transition-duration: 1ms;
+  }
+}
+
 /* Плавные переходы для типографики в белой панели */
 .fade-slide-enter-active,
 .fade-slide-leave-active {

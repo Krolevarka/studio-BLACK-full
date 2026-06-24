@@ -1,5 +1,5 @@
 <template>
-  <section ref="priceRef" v-bind="$attrs" class="relative h-svh w-full flex flex-col items-center justify-center bg-transparent z-10 touch-none overflow-hidden">
+  <section ref="priceRef" v-bind="$attrs" class="reveal-scope-mobile relative h-svh w-full flex flex-col items-center justify-center bg-transparent z-10 touch-none overflow-hidden">
     
     <div class="w-full max-w-sm mx-auto flex flex-col h-full justify-between pointer-events-none transition-[opacity,transform] duration-1000 ease-out pt-20 pb-16 px-6"
          :class="[
@@ -8,8 +8,8 @@
          ]">
       
       <!-- Навигация: Чипы -->
-      <div class="w-full flex flex-wrap gap-2 justify-center pointer-events-auto transition-all duration-700 delay-100 ease-out"
-           :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'">
+      <div class="reveal-item w-full flex flex-wrap gap-2 justify-center pointer-events-auto"
+           :class="{ 'is-revealed': revealed }">
         <button 
           v-for="opt in options" :key="opt.id"
           @click="activeTabId = opt.id"
@@ -24,27 +24,24 @@
         </button>
       </div>
 
-      <!-- Центральный Контент -->
-      <div class="flex-1 flex flex-col justify-center items-center w-full relative pointer-events-none my-6">
+      <!-- Центральный Контент (reveal — на стабильной обёртке, внутри свой fade для смены вкладок) -->
+      <div class="reveal-item flex-1 flex flex-col justify-center items-center w-full relative pointer-events-none my-6"
+           :class="{ 'is-revealed': revealed }" style="--reveal-delay: 150ms">
         <transition name="fade" mode="out-in">
           <div :key="activeOption.id" class="flex flex-col items-center text-center w-full">
-            <h3 class="font-primary text-[1.75rem] leading-tight font-bold uppercase tracking-tight text-white mb-2 transition-all duration-700 delay-200 ease-out"
-                :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+            <h3 class="font-primary text-[1.75rem] leading-tight font-bold uppercase tracking-tight text-white mb-2">
               {{ activeOption.name }}
             </h3>
-            
-            <div class="font-secondary text-lg font-medium text-white mb-4 transition-all duration-700 delay-300 ease-out"
-                 :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+
+            <div class="font-secondary text-lg font-medium text-white mb-4">
               {{ activeOption.price.toLocaleString('ru-RU') }} ₽
             </div>
-            
-            <p class="font-secondary text-sm text-white/50 leading-relaxed max-w-[17.5rem] mb-8 transition-all duration-700 delay-400 ease-out"
-               :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+
+            <p class="font-secondary text-sm text-white/50 leading-relaxed max-w-[17.5rem] mb-8">
               {{ activeOption.description }}
             </p>
-            
-            <div class="transition-all duration-700 delay-500 ease-out pointer-events-auto"
-                 :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+
+            <div class="pointer-events-auto">
               <button 
                 @click="toggleOption(activeOption.id)"
                 class="px-8 py-3 rounded-full font-secondary text-xs uppercase tracking-widest font-bold transition-all duration-300 border active:scale-[0.97] min-h-[2.75rem] min-w-[2.75rem]"
@@ -60,8 +57,8 @@
       </div>
 
       <!-- Итог -->
-      <div class="w-full pointer-events-auto transition-all duration-700 delay-500 ease-out"
-           :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'">
+      <div class="reveal-item w-full pointer-events-auto"
+           :class="{ 'is-revealed': revealed }" style="--reveal-delay: 300ms">
         <div class="border-t border-white/10 pt-6">
           <div class="flex justify-between items-end mb-6">
             <div class="font-secondary text-xs uppercase tracking-widest text-white/50 mb-1">Итого:</div>
@@ -89,16 +86,19 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import gsap from 'gsap'
 import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
+import { useSectionReveal } from '~/composables/useSectionReveal'
 import type { PriceOption } from '~/types/organic'
 
 defineOptions({ inheritAttrs: false })
 
 const priceRef = ref<HTMLElement | null>(null)
-const isVisible = ref(false)
-let observer: IntersectionObserver | null = null
 
 const { emit, on } = useEventBus()
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
+// Унифицированное появление/исчезновение контента секции.
+// enterDelay: ждём, пока органическая сфера разложится в формы прайса (морф ~2.4s от старта скролла,
+// прибытие ~2.0s) — элементы выходят уже после трансформации.
+const { revealed } = useSectionReveal('[ Прайс ]', { enterDelay: 500 })
 
 const options = ref<PriceOption[]>([
   { id: 'opt1', name: 'Брендинг', price: 150000, selected: false, angle: 0, radiusOffset: 0, description: 'Разработка логотипа, фирменного стиля, гайдлайнов и коммуникационной стратегии.' },
@@ -142,19 +142,6 @@ const stopWatch = watch(totalPrice, (newVal) => {
 })
 
 onMounted(() => {
-  observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        isVisible.value = true
-        observer?.unobserve(entry.target)
-      }
-    })
-  }, { threshold: 0.2 })
-
-  if (priceRef.value) {
-    observer.observe(priceRef.value)
-  }
-
   on('section-change', (label: string) => {
     if (label === '[ Прайс ]') {
       emit('price-state', true)
@@ -171,10 +158,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopWatch()
-  if (observer) {
-    observer.disconnect()
-    observer = null
-  }
   gsap.killTweensOf(displayPrice)
 })
 </script>

@@ -17,6 +17,7 @@ import gsap from 'gsap'
 import { Observer } from 'gsap/Observer'
 import { useEventBus } from '~/composables/useEventBus'
 import { useDeviceSwitch } from '~/composables/useDeviceSwitch'
+import { useSectionTransition, HERO_LABEL } from '~/composables/useSectionTransition'
 
 useHead({
   title: 'studio-BLACK',
@@ -43,11 +44,14 @@ let isTechStackOpen = false
 let observerInstance: Observer | null = null
 let scrollTimer: ReturnType<typeof setTimeout> | null = null
 let menuObserverTimer: ReturnType<typeof setTimeout> | null = null
+let preloaderFallbackTimer: ReturnType<typeof setTimeout> | null = null
 let globalFocusOutAlign: ((e: FocusEvent) => void) | null = null
 
 const { on, emit } = useEventBus()
 const { isPreloading } = useOrganicCore()
 const { isMobileOrTablet } = useDeviceSwitch()
+// Единый источник правды для унифицированного появления/исчезновения контента секций
+const { activeLabel, arrivedLabel } = useSectionTransition()
 
 const gotoSection = (index: number, direction: number) => {
   if (isAnimating.value || isMenuOpen || isPreloading.value || isTechStackOpen) return
@@ -65,6 +69,10 @@ const gotoSection = (index: number, direction: number) => {
 
   emit('section-change', sectionLabels[currentIndex])
 
+  // ПОСЛЕДОВАТЕЛЬНЫЙ ТАЙМИНГ, фаза 1: на старте скролла помечаем новую секцию активной.
+  // Старая секция (activeLabel != её метки) сразу начинает плавно исчезать.
+  activeLabel.value = sectionLabels[currentIndex]!
+
   // Запускаем плавный скролл через Lenis
   if ($lenis) {
     const target = sections[currentIndex]!
@@ -74,6 +82,8 @@ const gotoSection = (index: number, direction: number) => {
     if (scrollTimer) clearTimeout(scrollTimer)
     const failsafeTimer = setTimeout(() => {
       isAnimating.value = false
+      // Даже если Lenis прервался — раскрываем прибывшую секцию, чтобы контент не остался скрытым
+      arrivedLabel.value = sectionLabels[currentIndex]!
       if ($lenis && typeof $lenis.start === 'function') $lenis.start()
     }, 2500)
 
@@ -83,6 +93,8 @@ const gotoSection = (index: number, direction: number) => {
       lock: true, // Блокируем другие попытки скролла на время анимации
       onComplete: () => {
         clearTimeout(failsafeTimer)
+        // ПОСЛЕДОВАТЕЛЬНЫЙ ТАЙМИНГ, фаза 2: по прибытии раскрываем новую секцию (каскад появления)
+        arrivedLabel.value = sectionLabels[currentIndex]!
         if (scrollTimer) clearTimeout(scrollTimer)
         scrollTimer = setTimeout(() => {
           isAnimating.value = false
@@ -90,6 +102,7 @@ const gotoSection = (index: number, direction: number) => {
       }
     })
   } else {
+    arrivedLabel.value = sectionLabels[currentIndex]!
     isAnimating.value = false
   }
 }
@@ -98,6 +111,14 @@ onMounted(() => {
   gsap.registerPlugin(Observer)
 
   emit('section-change', sectionLabels[currentIndex])
+
+  // Первый показ Hero завязан на прелоадер: arrivedLabel пуст до его завершения,
+  // поэтому контент Hero проявляется только после preloader-done (с фолбэком на случай сбоя).
+  const revealHero = () => {
+    if (arrivedLabel.value === '') arrivedLabel.value = HERO_LABEL
+  }
+  on('preloader-done', revealHero)
+  preloaderFallbackTimer = setTimeout(revealHero, 4500)
 
   // Каскадная гидратация под прикрытием прелоадера
   const rIC = (cb: () => void, delay: number) => {
@@ -185,6 +206,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (scrollTimer) clearTimeout(scrollTimer)
   if (menuObserverTimer) clearTimeout(menuObserverTimer)
+  if (preloaderFallbackTimer) clearTimeout(preloaderFallbackTimer)
   if (observerInstance) observerInstance.kill()
   if (typeof window !== 'undefined' && globalFocusOutAlign) {
     window.removeEventListener('focusout', globalFocusOutAlign)

@@ -1,8 +1,8 @@
 <template>
   <div ref="wrapperRef" class="organic-core-wrapper absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden pointer-events-none">
     <canvas ref="canvasRef" 
-            class="absolute inset-0 w-full h-full pointer-events-none" 
-            style="transform: translateZ(0); will-change: transform;"></canvas>
+            class="absolute pointer-events-none max-w-none" 
+            style="width: calc(100% + 160px); height: calc(100% + 160px); top: -80px; left: -80px; transform: translateZ(0); will-change: transform;"></canvas>
   </div>
 </template>
 
@@ -261,7 +261,7 @@ const resizeCanvas = () => {
     cachedWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
     const baseDpr = window.devicePixelRatio || 1;
     currentDpr = isMobileOrTablet.value ? Math.min(baseDpr, 1.0) : Math.min(baseDpr, 1.25);
-    const rect = canvasRef.value.parentElement?.getBoundingClientRect() || canvasRef.value.getBoundingClientRect();
+    const rect = canvasRef.value.getBoundingClientRect();
     canvasRef.value.width = rect.width * currentDpr;
     canvasRef.value.height = rect.height * currentDpr;
     if (ctx) {

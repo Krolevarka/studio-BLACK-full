@@ -8,7 +8,8 @@
     <div class="relative w-full max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center text-white pointer-events-none md:translate-y-0 2xl:-translate-y-20">
       
       <!-- Левая половина: Всё выстроено в одну линию -->
-      <div class="w-full md:w-1/2 flex flex-col justify-center pointer-events-none relative z-20 py-12 md:py-0 mix-blend-difference transform-gpu">
+      <div class="reveal-item w-full md:w-1/2 flex flex-col justify-center pointer-events-none relative z-20 py-12 md:py-0 mix-blend-difference transform-gpu"
+           :class="{ 'is-revealed': revealed }">
         
         <!-- Заголовок -->
         <div class="shrink-0 pointer-events-auto transition-all duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center"
@@ -158,12 +159,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { useEventBus } from '~/composables/useEventBus'
 import { useContactForm } from '~/composables/useContactForm'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
+import { useSectionReveal } from '~/composables/useSectionReveal'
 import ContactStepInput from '~/components/sections/contact/ContactStepInput.vue'
 import ContactStepPlaques from '~/components/sections/contact/ContactStepPlaques.vue'
 import ContactStepSuccess from '~/components/sections/contact/ContactStepSuccess.vue'
@@ -176,6 +176,8 @@ const wrapperHeight = ref('auto')
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
 const { emit, on } = useEventBus()
+// Унифицированное появление/исчезновение контента секции
+const { revealed } = useSectionReveal('[ Контакты ]')
 
 const updateOrganicState = (tempStep?: number) => {
   emit('contact-state', { 
@@ -221,48 +223,15 @@ watch(step, () => {
   updateHeight()
 })
 
-let animTimeline: gsap.core.Timeline | null = null
-
 onMounted(() => {
   updateHeight()
-  gsap.registerPlugin(ScrollTrigger)
-  
+
   on('section-change', (label: string) => {
     if (label === '[ Контакты ]') {
       updateOrganicState()
     } else {
       emit('contact-state', { active: false, step: 1, typing: false })
     }
-  })
-
-  // Анимация появления контента секции (с задержкой для OrganicCore)
-  animTimeline = gsap.timeline({
-    scrollTrigger: {
-      trigger: contactRef.value,
-      start: 'top center',
-      toggleActions: 'play none none reverse'
-    }
-  })
-
-  const wrapperToAnimate = contactRef.value?.firstElementChild
-  if (wrapperToAnimate) {
-    animTimeline.from(wrapperToAnimate, {
-      opacity: 0,
-      y: 30,
-      duration: 1,
-      delay: 0.6,
-      ease: 'power3.out'
-    })
-  }
-})
-
-onBeforeUnmount(() => {
-  if (animTimeline) {
-    animTimeline.scrollTrigger?.kill()
-    animTimeline.kill()
-  }
-  ScrollTrigger.getAll().forEach(st => {
-    if (st.trigger === contactRef.value) st.kill()
   })
 })
 </script>

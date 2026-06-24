@@ -1,22 +1,26 @@
 <template>
-  <section ref="approachRef" v-bind="$attrs" class="relative h-dvh w-full flex flex-col overflow-hidden bg-transparent"
+  <section ref="approachRef" v-bind="$attrs" class="reveal-scope-mobile relative h-dvh w-full flex flex-col overflow-hidden bg-transparent"
            :class="[
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[500ms] delay-[100ms]' : (isMenuTransitioning ? 'duration-[500ms] delay-[200ms]' : '')
            ]">
-    
-    <TechStack :is-open="showTechStack" @close="showTechStack = false" />
-    
-    <!-- Z-index 10: White Panel instead of backdrop-invert -->
-    <div ref="whitePanelRef" class="white-panel absolute bottom-0 left-0 w-full h-[55%] bg-white pointer-events-none z-10" 
-         :class="isVisible ? 'translate-y-0 transition-transform duration-1000 ease-out' : 'translate-y-full'"></div>
 
-    <!-- Z-index 20: UI Контейнер -->
-    <div class="absolute inset-0 w-full h-full z-20 flex flex-col pointer-events-auto" :class="showTechStack ? 'pointer-events-none' : ''">
-      
+    <TechStack :is-open="showTechStack" @close="showTechStack = false" />
+
+    <!-- Белая плашка (дизайн-элемент): fixed к вьюпорту, чтобы уезжать за реальный край экрана
+         независимо от скролла (иначе при скролле видно её «у шва» секции). Скользит вниз при уходе. -->
+    <div ref="whitePanelRef" class="white-panel fixed bottom-0 left-0 w-full h-[55%] bg-white pointer-events-none z-10"
+         :class="{ 'is-revealed': revealed }"></div>
+
+    <!-- Унифицированный reveal-обёртка вокруг текстового контента (TechStack — отдельный оверлей, сюда не входит).
+         GSAP-watcher TechStack продолжает управлять дочерними элементами независимо. -->
+    <div class="reveal-item absolute inset-0 w-full h-full z-20" :class="{ 'is-revealed': revealed }">
+
+    <!-- UI Контейнер -->
+    <div class="absolute inset-0 w-full h-full flex flex-col pointer-events-auto" :class="showTechStack ? 'pointer-events-none' : ''">
+
       <!-- ВЕРХНЯЯ ЧАСТЬ (45%): Заголовок и описание (на черном/прозрачном фоне) -->
-      <div ref="contentTopRef" class="approach-content-top w-full h-[45%] flex flex-col justify-end pb-6 px-6 relative" 
-           :class="isVisible ? 'opacity-100 translate-y-0 transition-[opacity,transform] duration-1000 ease-out' : 'opacity-0 -translate-y-4'">
+      <div ref="contentTopRef" class="approach-content-top w-full h-[45%] flex flex-col justify-end pb-6 px-6 relative">
         <Transition name="fade-slide" mode="out-in">
           <div :key="activeStep" class="flex flex-col relative w-full">
             <!-- Фоновая цифра (уменьшена) -->
@@ -35,8 +39,7 @@
       </div>
 
       <!-- НИЖНЯЯ ЧАСТЬ (55%): Навигация в белой панели -->
-      <div ref="navBottomRef" class="approach-nav-bottom w-full h-[55%] flex flex-col justify-start pt-6 px-6 z-20" 
-           :class="isVisible ? 'opacity-100 translate-y-0 transition-[opacity,transform] duration-1000 delay-200 ease-out' : 'opacity-0 translate-y-8'">
+      <div ref="navBottomRef" class="approach-nav-bottom w-full h-[55%] flex flex-col justify-start pt-6 px-6 z-20">
         <div class="flex flex-col space-y-4 w-full">
           <button 
             v-for="(step, index) in steps" 
@@ -68,6 +71,7 @@
       </div>
 
     </div>
+    </div>
   </section>
 </template>
 
@@ -76,6 +80,7 @@ import { onMounted, ref, onBeforeUnmount } from 'vue'
 import gsap from 'gsap'
 import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
+import { useSectionReveal } from '~/composables/useSectionReveal'
 import TechStack from './TechStack.vue'
 
 defineOptions({ inheritAttrs: false })
@@ -84,10 +89,13 @@ const approachRef = ref<HTMLElement | null>(null)
 const whitePanelRef = ref<HTMLElement | null>(null)
 const contentTopRef = ref<HTMLElement | null>(null)
 const navBottomRef = ref<HTMLElement | null>(null)
-const isVisible = ref(false)
 const activeStep = ref(0)
 const isSectionActive = ref(false)
 const showTechStack = ref(false)
+// Унифицированное появление/исчезновение контента секции.
+// Исключение: показываем РАНО — от старта перехода (fromActive), ещё во время скролла (~1.2s),
+// задолго до формирования сферы (~2.6–3.0s). Контент появляется первым, сфера дособирается следом.
+const { revealed } = useSectionReveal('[ Наш Подход ]', { fromActive: true, enterDelay: 1200 })
 
 import { watch } from 'vue'
 
@@ -108,7 +116,8 @@ watch(showTechStack, (val) => {
   } else {
     if (content) gsap.to(content, { y: 0, opacity: 1, duration: 0.6, ease: 'power4.out', delay: 0.1, clearProps: 'transition' })
     if (nav) gsap.to(nav, { yPercent: 0, opacity: 1, duration: 0.6, ease: 'power4.out', delay: 0.1, clearProps: 'transition' })
-    if (panel) gsap.to(panel, { yPercent: 0, duration: 0.6, ease: 'power4.out', delay: 0.1, clearProps: 'transition' })
+    // Очищаем и transform, чтобы CSS-слайд плашки (reveal) снова перехватил управление после закрытия
+    if (panel) gsap.to(panel, { yPercent: 0, duration: 0.6, ease: 'power4.out', delay: 0.1, clearProps: 'transition,transform' })
   }
 })
 
@@ -173,22 +182,7 @@ const handleStepClick = (index: number) => {
   }
 }
 
-let observer: IntersectionObserver | null = null
-
 onMounted(() => {
-  observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        isVisible.value = true
-        observer?.unobserve(entry.target)
-      }
-    })
-  }, { threshold: 0.2 })
-
-  if (approachRef.value) {
-    observer.observe(approachRef.value)
-  }
-
   on('section-change', (label: string) => {
     if (label === '[ Наш Подход ]') {
       isSectionActive.value = true
@@ -201,11 +195,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  if (observer) {
-    observer.disconnect()
-    observer = null
-  }
-
   // Strict-Cleanup: Убиваем GSAP-анимации из watcher
   gsap.killTweensOf(contentTopRef.value)
   gsap.killTweensOf(navBottomRef.value)
@@ -214,6 +203,25 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Белая плашка: уезжает полностью за кадр (110%) БЫСТРО (~420ms) и с ускорением — успевает уйти,
+   пока скролл ещё практически не сдвинулся (easeInOutCubic, медленный старт), поэтому пользователь
+   не видит её «трансформацию» на фоне уезжающей секции. Вход (выезд снизу) — плавный с замедлением. */
+.white-panel {
+  transform: translateY(110%);
+  transition: transform 420ms cubic-bezier(0.4, 0, 1, 1);
+  will-change: transform;
+}
+.white-panel.is-revealed {
+  transform: translateY(0);
+  transition: transform var(--reveal-dur-in) var(--reveal-ease-in);
+}
+@media (prefers-reduced-motion: reduce) {
+  .white-panel,
+  .white-panel.is-revealed {
+    transition-duration: 1ms;
+  }
+}
+
 .touch-manipulation {
   touch-action: none;
 }

@@ -1,16 +1,5 @@
 <template>
   <section ref="priceRef" v-bind="$attrs" class="relative h-dvh w-full overflow-hidden pt-20 md:pt-0 bg-transparent">
-    <!-- Background Typography -->
-    <div class="price-anim-target absolute inset-0 z-0 pointer-events-none flex items-center justify-center" 
-         :class="[
-           isMenuTransitioning ? 'transition-opacity' : '',
-           isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
-         ]">
-      <h2 class="text-[clamp(5rem,15vw,15rem)] font-primary font-black uppercase tracking-tighter text-white/5 opacity-30 select-none pointer-events-auto">
-        ИНВЕСТИЦИИ
-      </h2>
-    </div>
-
     <!-- Instruction Helper -->
     <div 
       class="price-anim-target absolute top-24 md:top-12 left-0 w-full flex justify-center z-10 pointer-events-none"
@@ -76,7 +65,7 @@
       <PriceSatellite
         v-for="opt in options"
         :key="opt.id"
-        class="mix-blend-difference transform-gpu"
+        class="price-satellite mix-blend-difference transform-gpu"
         :option="opt"
         :is-active="isPriceActive"
         :ref="(el) => registerOptionRef(opt.id, (el as import('vue').ComponentPublicInstance)?.$el as HTMLElement)"
@@ -212,6 +201,12 @@ onMounted(() => {
   gsap.registerPlugin(ScrollTrigger)
   resize()
   window.addEventListener('resize', resize)
+
+  // Сразу прячем элементы анимации при монтировании, чтобы они не мелькали до скролла
+  const initialBgTargets = priceRef.value?.querySelectorAll('.price-anim-target')
+  if (initialBgTargets && initialBgTargets.length) {
+    gsap.set(initialBgTargets, { opacity: 0 })
+  }
   
   on('section-change', (label: string) => {
     if (enterDelay) enterDelay.kill()
@@ -225,36 +220,52 @@ onMounted(() => {
       const bgTargets = priceRef.value?.querySelectorAll('.price-anim-target')
       if (bgTargets && bgTargets.length) {
         gsap.killTweensOf(bgTargets)
-        gsap.to(bgTargets, {
-          opacity: 1,
-          duration: 1,
-          delay: 0.1,
-          ease: 'power3.out',
-          clearProps: 'opacity'
-        })
+        gsap.fromTo(bgTargets, 
+          { opacity: 0 },
+          {
+            opacity: 1,
+            duration: 1,
+            // Ждём, пока сфера разложится в формы прайса (морф ~2.4s от старта перехода)
+            delay: 1.6,
+            ease: 'power3.out',
+            clearProps: 'opacity'
+          }
+        )
       }
-      
-      enterDelay = gsap.delayedCall(0.5, () => {
+
+      // Тяжёлые элементы (ядро + сателлиты-формы) показываем уже после разложения сферы
+      enterDelay = gsap.delayedCall(1.8, () => {
         if (!isPriceActive.value) return;
-        
+
         const heavyTargets = priceRef.value?.querySelectorAll('.price-heavy-target')
+        const coreContainer = heavyTargets?.[0]   // слой ядра + кнопки
+        const satContainer = heavyTargets?.[1]    // слой сателлитов
+        const satellites = priceRef.value?.querySelectorAll('.price-satellite')
         if (heavyTargets && heavyTargets.length) {
           gsap.killTweensOf(heavyTargets)
           gsap.set(heavyTargets, { opacity: 0 })
         }
-        
+        if (satellites && satellites.length) gsap.killTweensOf(satellites)
+
         isPriceVisible.value = true
-        
+
         if (enterRaf !== null) cancelAnimationFrame(enterRaf)
         enterRaf = requestAnimationFrame(() => {
-          if (heavyTargets && heavyTargets.length && !isMenuOpenLocal.value) {
-            gsap.to(heavyTargets, {
-              opacity: 1,
-              duration: 1,
-              stagger: 0.1,
-              ease: 'power3.out',
-              clearProps: 'opacity'
-            })
+          if (isMenuOpenLocal.value) return
+          // Ядро (центр сферы) проявляем плавно
+          if (coreContainer) gsap.fromTo(coreContainer, { opacity: 0 }, { opacity: 1, duration: 0.7, ease: 'power3.out', clearProps: 'opacity' })
+          // Слой-контейнер сателлитов делаем видимым сразу, а сами сателлиты на сфере — по очереди (красивее)
+          if (satContainer) gsap.set(satContainer, { opacity: 1 })
+          if (satellites && satellites.length) {
+            // Глушим собственный transition-opacity сателлитов на время GSAP (иначе вспышка и смазанный stagger)
+            satellites.forEach((el) => { (el as HTMLElement).style.transition = 'none' })
+            gsap.fromTo(satellites,
+              { opacity: 0 },
+              {
+                opacity: 1, duration: 0.6, stagger: 0.12, ease: 'power3.out', clearProps: 'opacity',
+                onComplete: () => satellites.forEach((el) => { (el as HTMLElement).style.transition = '' })
+              }
+            )
           }
         })
       })
@@ -266,9 +277,15 @@ onMounted(() => {
         
         const bgTargets = priceRef.value?.querySelectorAll('.price-anim-target')
         const heavyTargets = priceRef.value?.querySelectorAll('.price-heavy-target')
-        
+        const satellites = priceRef.value?.querySelectorAll('.price-satellite')
+
         if (bgTargets) gsap.to(bgTargets, { opacity: 0, duration: 0.3, ease: 'power2.out' })
-        
+        // Прерываем поштучное появление сателлитов и возвращаем им собственный transition
+        if (satellites && satellites.length) {
+          gsap.killTweensOf(satellites)
+          satellites.forEach((el) => { (el as HTMLElement).style.transition = '' })
+        }
+
         if (heavyTargets && heavyTargets.length && isPriceVisible.value) {
           gsap.killTweensOf(heavyTargets)
           gsap.to(heavyTargets, { 

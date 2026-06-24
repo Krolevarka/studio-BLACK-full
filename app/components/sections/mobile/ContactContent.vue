@@ -1,12 +1,12 @@
 <template>
-  <section ref="contactRef" v-bind="$attrs" class="fixed inset-0 w-full h-dvh flex flex-col overflow-hidden bg-[#050505] z-10"
+  <section ref="contactRef" v-bind="$attrs" class="reveal-scope-mobile fixed inset-0 w-full h-dvh flex flex-col overflow-hidden bg-[#050505] z-10"
            :class="[
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[500ms] delay-[100ms]' : (isMenuTransitioning ? 'duration-[500ms] delay-[200ms]' : '')
            ]">
-    
-    <div class="relative w-full h-full px-6 pt-[2rem] flex flex-col transition duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]"
-         :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
+
+    <div class="reveal-item relative w-full h-full px-6 pt-[2rem] flex flex-col"
+         :class="{ 'is-revealed': revealed }"
          :style="{ paddingBottom: `calc(2rem + ${keyboardOffset}px)` }">
          
       <!-- Top Section: Header & Progress (Fixed) -->
@@ -161,6 +161,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useEventBus } from '~/composables/useEventBus'
 import { useContactForm } from '~/composables/useContactForm'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
+import { useSectionReveal } from '~/composables/useSectionReveal'
 import MobileContactStepInput from './MobileContactStepInput.vue'
 import MobileContactStepPlaques from './MobileContactStepPlaques.vue'
 import ContactStepSuccess from '~/components/sections/contact/ContactStepSuccess.vue'
@@ -168,10 +169,11 @@ import ContactStepSuccess from '~/components/sections/contact/ContactStepSuccess
 defineOptions({ inheritAttrs: false })
 
 const contactRef = ref<HTMLElement | null>(null)
-const isVisible = ref(false)
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
 const { emit, on } = useEventBus()
+// Унифицированное появление/исчезновение контента секции
+const { revealed } = useSectionReveal('[ Контакты ]')
 
 const updateOrganicState = (tempStep?: number) => {
   emit('contact-state', { 
@@ -202,7 +204,6 @@ const {
 
 const currentStepData = computed(() => steps[step.value - 1]!)
 
-let observer: IntersectionObserver | null = null
 let animationFrameId: number | null = null
 const keyboardOffset = ref(0)
 let closedHeight = 0
@@ -242,19 +243,6 @@ onMounted(() => {
     updateKeyboardOffset()
   }
 
-  observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        isVisible.value = true
-        observer?.unobserve(entry.target)
-      }
-    })
-  }, { threshold: 0.1 })
-
-  if (contactRef.value) {
-    observer.observe(contactRef.value)
-  }
-
   on('section-change', (label: string) => {
     if (label === '[ Контакты ]') {
       updateOrganicState()
@@ -270,11 +258,6 @@ onBeforeUnmount(() => {
     window.visualViewport.removeEventListener('scroll', updateKeyboardOffset)
   }
   if (animationFrameId) cancelAnimationFrame(animationFrameId)
-
-  if (observer) {
-    observer.disconnect()
-    observer = null
-  }
 })
 </script>
 
