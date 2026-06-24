@@ -94,25 +94,6 @@
       </Transition>
     </div>
 
-    <!-- Mobile/Global "More Info" Button -->
-    <div class="absolute bottom-8 left-0 w-full flex justify-center z-30 md:hidden price-anim-target" 
-         :class="[
-           isMenuTransitioning ? 'transition-opacity' : '',
-           isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
-         ]">
-      <UiButton 
-        @click="isModalOpen = true"
-        class="magnetic-btn !border-white/30 hover:!border-transparent !bg-transparent !text-white/70 hover:!text-white transition-all duration-300 text-[clamp(10px,1vw,12px)] price-collision-obstacle"
-      >
-        Что входит в услуги?
-      </UiButton>
-    </div>
-
-    <PriceModal 
-      :is-open="isModalOpen" 
-      :options="options"
-      @close="isModalOpen = false" 
-    />
   </section>
 </template>
 
@@ -123,7 +104,6 @@ import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { usePriceDrag } from '~/composables/usePriceDrag'
 import type { PriceOption } from '~/types/organic'
-import PriceModal from '~/components/sections/price/PriceModal.vue'
 import PriceCoreDisplay from '~/components/sections/price/PriceCoreDisplay.vue'
 import PriceSatellite from '~/components/sections/price/PriceSatellite.vue'
 
@@ -135,7 +115,6 @@ const { emit, on } = useEventBus()
 type HintState = 'initial' | 'remove' | 'hidden'
 const hintState = ref<HintState>('initial')
 
-const isModalOpen = ref(false)
 const isPriceActive = ref(false)
 const isPriceVisible = ref(false)
 

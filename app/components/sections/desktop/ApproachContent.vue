@@ -90,6 +90,7 @@ import gsap from 'gsap'
 import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useSectionReveal } from '~/composables/useSectionReveal'
+import { ANIMATION_TIMINGS } from '~/utils/animation.config'
 import TechStack from './TechStack.vue'
 
 defineOptions({ inheritAttrs: false })
@@ -103,7 +104,7 @@ const showTechStack = ref(false)
 // Унифицированное появление/исчезновение контента секции.
 // Исключение: показываем РАНО — от старта перехода (fromActive), ещё во время скролла (~1.2s),
 // задолго до формирования сферы (~2.6–3.0s). Контент появляется первым, сфера дособирается следом.
-const { revealed } = useSectionReveal('[ Наш Подход ]', { fromActive: true, enterDelay: 1200 })
+const { revealed } = useSectionReveal('[ Наш Подход ]', { fromActive: true, enterDelay: ANIMATION_TIMINGS.ui.sectionRevealDelay })
 
 import { watch } from 'vue'
 

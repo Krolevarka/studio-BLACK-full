@@ -1,5 +1,4 @@
 <template>
-  <Teleport to="body">
     <div 
       v-if="isOpen" 
       class="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-6"
@@ -34,7 +33,6 @@
         </div>
       </div>
     </div>
-  </Teleport>
 </template>
 
 <script setup lang="ts">

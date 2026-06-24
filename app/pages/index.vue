@@ -17,6 +17,7 @@ import gsap from 'gsap'
 import { Observer } from 'gsap/Observer'
 import { useEventBus } from '~/composables/useEventBus'
 import { useDeviceSwitch } from '~/composables/useDeviceSwitch'
+import { ANIMATION_TIMINGS } from '~/utils/animation.config'
 import { useSectionTransition, HERO_LABEL } from '~/composables/useSectionTransition'
 
 useHead({
@@ -86,7 +87,7 @@ const gotoSection = (index: number, direction: number) => {
       // Даже если Lenis прервался — раскрываем прибывшую секцию, чтобы контент не остался скрытым
       arrivedLabel.value = sectionLabels[currentIndex]!
       if ($lenis && typeof $lenis.start === 'function') $lenis.start()
-    }, 2500)
+    }, ANIMATION_TIMINGS.ui.pageIntroDelay)
 
     $lenis.scrollTo(target, {
       duration: 2.0,
@@ -147,7 +148,7 @@ onMounted(() => {
       if (menuObserverTimer) clearTimeout(menuObserverTimer)
       menuObserverTimer = setTimeout(() => {
         if (!isMenuOpen && observerInstance) observerInstance.enable()
-      }, 1200)
+      }, ANIMATION_TIMINGS.ui.menuTransition)
     }
   })
 

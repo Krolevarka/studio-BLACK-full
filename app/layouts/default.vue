@@ -54,10 +54,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, type ComponentPublicInstance, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, type ComponentPublicInstance, watch, computed } from 'vue'
 import gsap from 'gsap'
-import { useNuxtApp } from '#imports'
+import { useNuxtApp, useHead } from '#imports'
 import { useEventBus } from '~/composables/useEventBus'
+import { ANIMATION_TIMINGS } from '~/utils/animation.config'
 import { useOrganicCore } from '~/composables/useOrganicCore'
 import { useDeviceSwitch } from '~/composables/useDeviceSwitch'
 import DeviceSwitch from '~/components/DeviceSwitch.vue'
@@ -84,14 +85,10 @@ let menuTimer: ReturnType<typeof setTimeout> | null = null
 
 const { emit, on } = useEventBus()
 
-// Следим за состоянием меню, чтобы инвертировать курсор
-watch(isMenuOpen, (newVal) => {
-  if (import.meta.client) {
-    if (newVal) {
-      document.body.classList.add('menu-is-open')
-    } else {
-      document.body.classList.remove('menu-is-open')
-    }
+useHead({
+  bodyAttrs: {
+    class: computed(() => isMenuOpen.value ? 'menu-is-open' : ''),
+    style: computed(() => (isPreloading.value || isTechStackOpen.value) ? 'overflow: hidden;' : '')
   }
 })
 
@@ -100,10 +97,8 @@ watch([isPreloading, isTechStackOpen], ([preloading, techStackOpen]) => {
   if (import.meta.client) {
     if (preloading || techStackOpen) {
       if ($lenis) $lenis.stop()
-      document.body.style.overflow = 'hidden'
     } else {
       if ($lenis) $lenis.start()
-      document.body.style.overflow = ''
     }
   }
 }, { immediate: true })
@@ -133,7 +128,7 @@ const openMenu = () => {
   if (menuTimer) clearTimeout(menuTimer)
   menuTimer = setTimeout(() => {
     isMenuAnimating.value = false
-  }, 1200)
+  }, ANIMATION_TIMINGS.ui.menuTransition)
 }
 
 const closeMenu = () => {
@@ -153,17 +148,15 @@ const closeMenu = () => {
   if (menuTimer) clearTimeout(menuTimer)
   menuTimer = setTimeout(() => {
     isMenuAnimating.value = false
-  }, 1200)
+  }, ANIMATION_TIMINGS.ui.menuTransition)
 }
-
-const NAV_GOTO_DELAY = 1250
 
 const handleMenuClick = (href: string) => {
   if (isMenuAnimating.value) return
   closeMenu()
   setTimeout(() => {
     emit('nav-goto', href)
-  }, NAV_GOTO_DELAY) // Ждем завершения схлопывания сферы и запуска lenis
+  }, ANIMATION_TIMINGS.ui.navGotoDelay) // Ждем завершения схлопывания сферы и запуска lenis
 }
 
 const handleLogoClick = () => {
@@ -194,11 +187,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (menuTimer) clearTimeout(menuTimer)
-  
-  if (import.meta.client) {
-    document.body.classList.remove('menu-is-open')
-    document.body.style.overflow = ''
-  }
 })
 </script>
 

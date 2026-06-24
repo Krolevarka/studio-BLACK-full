@@ -1,19 +1,45 @@
 import { onBeforeUnmount, getCurrentInstance } from 'vue'
 import type { PriceOption } from '~/types/organic'
 
+/**
+ * Карта событий EventBus (12 основных типов).
+ * 
+ * Потоки событий (Mermaid):
+ * ```mermaid
+ * flowchart TD
+ *     Component[UI Компонент] -->|emit('event', payload)| EventBus
+ *     EventBus -->|on('event')| OrganicSync[useOrganicSync / GSAP Animations]
+ *     EventBus -->|on('event')| LocalListeners[Другие Компоненты]
+ *     
+ *     style EventBus fill:#f9f,stroke:#333,stroke-width:2px
+ * ```
+ */
 type EventMap = {
+  /** Уведомляет, что прелоадер завершил свою анимацию (сфера может раскрыться) */
   'preloader-done': void
+  /** Состояние глобального меню (открыто/закрыто) */
   'menu-state': boolean
+  /** Команда на переход к секции (вызывается из меню с задержкой) */
   'nav-goto': string
+  /** Состояние секции About */
   'about-state': boolean
+  /** Состояние секции Portfolio */
   'portfolio-state': boolean
+  /** Состояние секции Approach и текущий активный шаг (0-5) */
   'approach-state': { active: boolean; step: number }
+  /** Состояние секции Price (выключена или включена) */
   'price-state': boolean
+  /** Обновление конфигурации цены, когда опции меняются */
   'price-update': { active: boolean; options: PriceOption[]; totalPrice: number }
+  /** Перетаскивание сферы в Price-секции (меняет xOffset, yOffset) */
   'price-drag': { id: string; x: number; y: number }
+  /** Состояние контактной формы (шаг и факт набора текста - typing) */
   'contact-state': { active: boolean; step: number; typing: boolean }
+  /** Состояние TechStack (при ховере или открытии) */
   'techstack-state': { active: boolean; hoveredIndex?: number }
+  /** Сигнал самому прелоадеру на завершение/скрытие */
   'finish-preloader': void
+  /** Сообщает о смене текущей секции при скролле */
   'section-change': string
 }
 

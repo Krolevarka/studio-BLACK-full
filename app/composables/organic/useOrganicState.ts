@@ -24,7 +24,7 @@ export interface OrganicCoreState {
   isContactTyping: boolean
   isTechStackActive: boolean
   hoveredTechIndex: number
-  isMenuOpenState: Ref<boolean>
+  isMenuOpenState: boolean
   currentCurrencyIndex: number
   isFirstLoad: boolean
   priceOptions: PriceOption[]
@@ -63,7 +63,7 @@ export function useOrganicState() {
       isContactTyping: false,
       isTechStackActive: false,
       hoveredTechIndex: -1,
-      isMenuOpenState: ref(false),
+      isMenuOpenState: false,
       currentCurrencyIndex: 0,
       isFirstLoad: true,
       priceOptions: [],

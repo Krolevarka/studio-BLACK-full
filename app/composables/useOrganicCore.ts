@@ -5,7 +5,7 @@ import { usePreloader } from './organic/usePreloader'
 
 export function useOrganicCore() {
   const state = useOrganicState()
-  const { initOrganicCore, updateShapeOffset } = useOrganicSync()
+  const { initOrganicCore, updateShapeOffset, destroyOrganicCore } = useOrganicSync()
   const { expandForMenu, collapseFromMenu } = useOrganicMenu()
   const { startPreloaderAnimation } = usePreloader()
 
@@ -17,7 +17,8 @@ export function useOrganicCore() {
     collapseFromMenu,
     initOrganicCore,
     updateShapeOffset,
-    startPreloaderAnimation
+    startPreloaderAnimation,
+    destroyOrganicCore
   }
 }
 

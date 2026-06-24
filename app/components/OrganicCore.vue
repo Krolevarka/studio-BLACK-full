@@ -22,7 +22,7 @@ let offscreenCanvas: HTMLCanvasElement | OffscreenCanvas | null = null
 let offCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null = null
 const noisyPointsBuffer: {x: number, y: number}[] = []
 
-const { shapes, stateConfig, isPreloading, expandForMenu: expand, collapseFromMenu, initOrganicCore, startPreloaderAnimation } = useOrganicCore()
+const { shapes, stateConfig, isPreloading, expandForMenu: expand, collapseFromMenu, initOrganicCore, startPreloaderAnimation, destroyOrganicCore } = useOrganicCore()
 const { isMobileOrTablet } = useDeviceSwitch()
 const { isSafari, isIos } = useDevice()
 const disableHeavyFilters = isSafari || isIos
@@ -322,6 +322,7 @@ onBeforeUnmount(() => {
       gsap.killTweensOf(p.normal)
     })
   })
+  destroyOrganicCore()
 })
 
 const expandForMenu = () => expand(wrapperRef.value)

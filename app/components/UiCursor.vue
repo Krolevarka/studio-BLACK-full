@@ -8,8 +8,7 @@ const disableHeavyFilters = isSafari || isIos
 </script>
 
 <template>
-  <Teleport to="body">
-    <!-- Невидимый SVG для фильтра Gooey -->
+  <!-- Невидимый SVG для фильтра Gooey -->
     <svg style="width: 0; height: 0; position: absolute; pointer-events: none;">
       <defs>
         <filter id="cursor-goo">
@@ -29,7 +28,6 @@ const disableHeavyFilters = isSafari || isIos
       <!-- Отдельный контур для ссылок (без gooey фильтра) -->
       <div ref="ringRef" class="cursor-ring"></div>
     </div>
-  </Teleport>
 </template>
 
 <style>

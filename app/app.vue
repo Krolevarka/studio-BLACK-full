@@ -26,23 +26,17 @@ useHead({
     { rel: 'canonical', href: 'https://kvazar.studio' }
   ]
 })
-
-const preventTab = (e: KeyboardEvent): void => {
-  if (e.key === 'Tab') {
-    e.preventDefault()
-  }
-}
-
-onMounted(() => {
-  window.addEventListener('keydown', preventTab)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', preventTab)
-})
 </script>
 
 <style>
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
+}
+
 /*
  * ============================================================
  * УНИФИЦИРОВАННОЕ ПОЯВЛЕНИЕ/ИСЧЕЗНОВЕНИЕ КОНТЕНТА СЕКЦИЙ

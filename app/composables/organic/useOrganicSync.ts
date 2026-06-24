@@ -4,6 +4,7 @@ import { useEventBus } from '~/composables/useEventBus'
 import { getTargetState } from '~/utils/organicStates'
 import type { TargetStateConfig, PriceOption } from '~/types/organic'
 import { useOrganicState } from './useOrganicState'
+import { ANIMATION_TIMINGS } from '~/utils/animation.config'
 
 let optimalShiftWorker: Worker | null = null;
 let msgId = 0;
@@ -290,34 +291,34 @@ export function useOrganicSync() {
 
     on('about-state', (isActive: boolean) => {
       s.isAboutActive = isActive
-      if (s.isMenuOpenState.value) {
+      if (s.isMenuOpenState) {
         s.isFirstLoad = false
         return
       }
-      const duration = s.isFirstLoad ? 0 : 0.4
+      const duration = s.isFirstLoad ? ANIMATION_TIMINGS.sync.aboutActiveFirstLoad : ANIMATION_TIMINGS.sync.aboutActive
       s.isFirstLoad = false
       scheduleSync(duration)
     })
 
     on('portfolio-state', (isActive: boolean) => {
       s.isPortfolioActive = isActive
-      if (s.isMenuOpenState.value) return
-      scheduleSync(0.4)
+      if (s.isMenuOpenState) return
+      scheduleSync(ANIMATION_TIMINGS.sync.portfolioActive)
     })
 
     on('approach-state', (payload: { active: boolean; step: number }) => {
       s.isApproachActive = payload.active
       s.approachStep = payload.step || 0
-      if (s.isMenuOpenState.value) return
-      scheduleSync(3.4)
+      if (s.isMenuOpenState) return
+      scheduleSync(ANIMATION_TIMINGS.sync.approachActive)
     })
 
     on('price-state', (isActive: boolean) => {
       s.isPriceActive = isActive
-      if (s.isMenuOpenState.value) return
+      if (s.isMenuOpenState) return
       
       if (!isActive) {
-        scheduleSync(2.8)
+        scheduleSync(ANIMATION_TIMINGS.sync.priceInactive)
       }
     })
 
@@ -326,16 +327,16 @@ export function useOrganicSync() {
       s.priceOptions = payload.options
       s.totalPrice = payload.totalPrice
       
-      if (s.isMenuOpenState.value) return
-      scheduleSync(2.4)
+      if (s.isMenuOpenState) return
+      scheduleSync(ANIMATION_TIMINGS.sync.priceUpdate)
     })
 
     on('contact-state', (payload: { active: boolean; step: number; typing: boolean }) => {
       s.isContactActive = payload.active
       s.contactStep = payload.step || 1
       s.isContactTyping = payload.typing || false
-      if (s.isMenuOpenState.value) return
-      scheduleSync(2.4)
+      if (s.isMenuOpenState) return
+      scheduleSync(ANIMATION_TIMINGS.sync.contactActive)
     })
 
     on('techstack-state', (payload: { active: boolean; hoveredIndex?: number }) => {
@@ -350,16 +351,16 @@ export function useOrganicSync() {
       s.isTechStackActive = payload.active;
       s.hoveredTechIndex = newHoveredIndex;
       
-      if (s.isMenuOpenState.value) return;
+      if (s.isMenuOpenState) return;
       
       if (wasActive && payload.active) {
         // Локальное переключение (hover)
-        const duration = s.hoveredTechIndex === -1 ? 0.4 : 0.6;
+        const duration = s.hoveredTechIndex === -1 ? ANIMATION_TIMINGS.sync.techStackClick : ANIMATION_TIMINGS.sync.techStackHover;
         const ease = 'power2.out';
         scheduleSync(duration, ease)
       } else {
         // Переход между вкладками
-        scheduleSync(1.5, 'power3.inOut')
+        scheduleSync(ANIMATION_TIMINGS.sync.techStackTab, 'power3.inOut')
       }
     })
 
@@ -368,12 +369,18 @@ export function useOrganicSync() {
     })
   }
 
+  const destroyOrganicCore = () => {
+    optimalShiftWorker?.terminate();
+    optimalShiftWorker = null;
+  }
+
   return {
     getCurrentTargetState,
     scheduleSync,
     clearSync,
     syncShapes,
     updateShapeOffset,
-    initOrganicCore
+    initOrganicCore,
+    destroyOrganicCore
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <component :is="activeComponent" v-bind="props" v-bind:="$attrs" />
+  <component :is="activeComponent" v-bind="filteredProps" v-bind:="$attrs" />
 </template>
 
 <script setup lang="ts">
@@ -29,5 +29,10 @@ const activeComponent = computed<Component>(() => {
     default:
       return props.desktop
   }
+})
+
+const filteredProps = computed(() => {
+  const { desktop, mobile, tablet, ...rest } = props
+  return rest
 })
 </script>

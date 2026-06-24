@@ -7,7 +7,7 @@ export function useOrganicMenu() {
   const { syncShapes, getCurrentTargetState, clearSync } = useOrganicSync()
 
   const expandForMenu = (wrapperRef: HTMLElement | null, menuBlobRef?: HTMLElement | null) => {
-    s.isMenuOpenState.value = true
+    s.isMenuOpenState = true
 
     clearSync()
     gsap.killTweensOf(s.stateConfig)
@@ -55,7 +55,7 @@ export function useOrganicMenu() {
   }
 
   const collapseFromMenu = (menuBlobRef?: HTMLElement | null) => {
-    s.isMenuOpenState.value = false
+    s.isMenuOpenState = false
     if (menuBlobRef) gsap.to(menuBlobRef, { scale: 0, duration: 1.2, ease: 'expo.inOut' })
     
     const targetState = getCurrentTargetState()
