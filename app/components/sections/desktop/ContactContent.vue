@@ -46,7 +46,7 @@
                   </div>
                 </div>
 
-                <h3 class="font-primary text-3xl md:text-5xl font-bold uppercase tracking-tight mb-8 leading-tight text-balance">
+                <h3 class="font-primary text-[clamp(1.75rem,2.8vw,3rem)] font-bold uppercase tracking-tight mb-8 leading-tight text-balance">
                   {{ stepData.question }}
                 </h3>
 

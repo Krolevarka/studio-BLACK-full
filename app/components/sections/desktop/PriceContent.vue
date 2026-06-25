@@ -93,10 +93,10 @@
             v-if="activeHoverOption" 
             :key="activeHoverOption.id"
             class="absolute top-1/2 -translate-y-1/2 text-white flex flex-col"
-            :class="Math.cos(activeHoverOption.angle) > 0 ? 'right-12 md:right-16 lg:right-24 items-end text-right' : 'left-12 md:left-16 lg:left-24 items-start text-left'"
+            :class="Math.cos(activeHoverOption.angle) > 0 ? 'right-6 md:right-10 xl:right-24 items-end text-right' : 'left-6 md:left-10 xl:left-24 items-start text-left'"
           >
-            <h3 class="text-[clamp(1.875rem,3.5vw,3rem)] font-primary font-black uppercase tracking-tighter mb-4 pointer-events-auto"><UiKineticText :text="activeHoverOption?.name || ''" /></h3>
-            <p class="text-[clamp(12px,1vw,16px)] font-secondary text-white/70 leading-relaxed max-w-[20ch] md:max-w-[25ch] lg:max-w-[30ch] text-balance pointer-events-auto"><UiKineticText :text="activeHoverOption?.description || ''" /></p>
+            <h3 class="text-[clamp(1.5rem,2.8vw,3rem)] font-primary font-black uppercase tracking-tighter mb-4 pointer-events-auto"><UiKineticText :text="activeHoverOption?.name || ''" /></h3>
+            <p class="text-[clamp(12px,1vw,16px)] font-secondary text-white/70 leading-relaxed max-w-[20ch] md:max-w-[26ch] xl:max-w-[30ch] text-balance pointer-events-auto"><UiKineticText :text="activeHoverOption?.description || ''" /></p>
           </div>
         </Transition>
       </div>

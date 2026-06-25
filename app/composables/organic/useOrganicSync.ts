@@ -40,6 +40,7 @@ export function useOrganicSync() {
 
   let syncTimeout: ReturnType<typeof setTimeout> | null = null
   let pulseTypeDelayedCall: gsap.core.Tween | null = null
+  let resizeDebounceTimeout: ReturnType<typeof setTimeout> | null = null
 
   const getCurrentTargetState = () => {
     return getTargetState({
@@ -77,6 +78,10 @@ export function useOrganicSync() {
     if (pulseTypeDelayedCall) {
       pulseTypeDelayedCall.kill()
       pulseTypeDelayedCall = null
+    }
+    if (resizeDebounceTimeout) {
+      clearTimeout(resizeDebounceTimeout)
+      resizeDebounceTimeout = null
     }
   }
 
@@ -311,10 +316,25 @@ export function useOrganicSync() {
     Object.assign(s.stateConfig, initialTarget.config)
 
     const firstLoadTimeout = setTimeout(() => { s.isFirstLoad = false }, 100)
+
+    const handleWindowResize = () => {
+      if (resizeDebounceTimeout) clearTimeout(resizeDebounceTimeout)
+      resizeDebounceTimeout = setTimeout(() => {
+        scheduleSync(0.35, 'power2.out')
+      }, 100)
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleWindowResize)
+    }
     
     onBeforeUnmount(() => {
       clearTimeout(firstLoadTimeout)
       if (syncTimeout) clearTimeout(syncTimeout)
+      if (resizeDebounceTimeout) clearTimeout(resizeDebounceTimeout)
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleWindowResize)
+      }
     })
 
     on('about-state', (isActive: boolean) => {

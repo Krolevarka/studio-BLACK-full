@@ -144,8 +144,8 @@ const render = () => {
             const dist = (nx - pulsePos) * distMultiplier;
             const ecg = Math.cos(dist * Math.PI * 2) * Math.exp(-dist * dist * 2.5);
             const edgeFade = Math.sin(nx * Math.PI);
-            const vibration = Math.sin(nx * 40 + pulseTime * 5) * (cachedWidth < 768 ? 1 : 2);
-            const pulseAmplitude = cachedWidth < 768 ? 55 : 100;
+            const vibration = Math.sin(nx * 20 + pulseTime * 4) * (cachedWidth < 768 ? 0.5 : 1);
+            const pulseAmplitude = cachedWidth < 768 ? 25 : (cachedWidth < 1440 ? 35 : 50);
             pulseDisplacementY = (ecg * pulseAmplitude + vibration) * pulseWeight * edgeFade;
           }
         }
