@@ -106,7 +106,9 @@ export function useOrganicSync() {
 
     target.shapes.forEach((targetShape, i) => {
       let shape = s.shapes.find(sh => sh.id === targetShape.id) || s.shapes[i]
+      let isNewShape = false;
       if (!shape) {
+        isNewShape = true;
         const parentShape = s.shapes.find(sh => sh.id === 'core') || s.shapes[0] || { xOffset: 0, yOffset: 0 }
         const initialPoints = targetShape.points.map((p) => ({ ...p }))
         shape = { 
@@ -154,7 +156,11 @@ export function useOrganicSync() {
         const inDur = 0.6 + Math.random() * 0.8;  
         const waitIn = 0.2 + Math.random() * 0.8; 
 
-        shape.pulseTl = gsap.timeline({ repeat: -1, delay: Math.random() * 1.5 })
+        const delay = (isNewShape || shape.scale < 0.1)
+          ? duration * 0.52 + Math.random() * 0.35
+          : Math.random() * 1.5;
+
+        shape.pulseTl = gsap.timeline({ repeat: -1, delay })
         shape.pulseTl
           .to(shape, { pulseOffsetX: targetShape.pulseX, pulseOffsetY: targetShape.pulseY, duration: outDur, ease: 'power2.out' })
           .to(shape, { duration: waitOut, pulseOffsetX: targetShape.pulseX, pulseOffsetY: targetShape.pulseY, ease: 'none' })
@@ -175,39 +181,23 @@ export function useOrganicSync() {
       
       const n = startPoints.length;
       
-      const getBestOffsetAsync = async (): Promise<number> => {
-        const worker = getWorker();
-        if (!worker) return 0; // Fallback
-        return new Promise(resolve => {
-          const id = ++msgId;
-          const timeoutId = setTimeout(() => {
-            if (workerCallbacks.has(id)) {
-              workerCallbacks.delete(id);
-              resolve(0); // Fallback to 0 if worker times out
-            }
-          }, 5000);
-          workerCallbacks.set(id, { resolve, timeoutId });
-          const refPts = referencePoints.map(p => ({ x: p.x, y: p.y }));
-          const tgtPts = targetShape.points.map(p => ({ x: p.x, y: p.y }));
-          worker.postMessage({ id, referencePoints: refPts, targetPoints: tgtPts });
-        });
-      };
-
-      getBestOffsetAsync().then((bestOffset) => {
+      const applyInterpolation = (bestOffset: number) => {
         // Сохраняем неискаженные целевые точки для будущих прерываний
         shape.targetPoints = targetShape.points;
 
         const alignedTargetPoints = new Array(n);
-        for (let i = 0; i < n; i++) {
-          alignedTargetPoints[i] = targetShape.points[(i + bestOffset) % n]!;
+        for (let j = 0; j < n; j++) {
+          alignedTargetPoints[j] = targetShape.points[(j + bestOffset) % n]!;
         }
 
         const progressObj = { val: 0 };
         
+        const morphEase = isInterrupted ? 'power2.out' : currentEase;
+
         shape.pointsTween = gsap.to(progressObj, {
           val: 1,
           duration,
-          ease: currentEase,
+          ease: morphEase,
           onUpdate: () => {
             shape!.points.forEach((p, j) => {
               const sp = startPoints[j]
@@ -229,18 +219,56 @@ export function useOrganicSync() {
             })
           }
         })
-      })
+      };
+
+      if (isNewShape || isInterrupted) {
+        applyInterpolation(0);
+      } else {
+        const getBestOffsetAsync = async (): Promise<number> => {
+          const worker = getWorker();
+          if (!worker) return 0; // Fallback
+          return new Promise(resolve => {
+            const id = ++msgId;
+            const timeoutId = setTimeout(() => {
+              if (workerCallbacks.has(id)) {
+                workerCallbacks.delete(id);
+                resolve(0); // Fallback to 0 if worker times out
+              }
+            }, 5000);
+            workerCallbacks.set(id, { resolve, timeoutId });
+            const refPts = referencePoints.map(p => ({ x: p.x, y: p.y }));
+            const tgtPts = targetShape.points.map(p => ({ x: p.x, y: p.y }));
+            worker.postMessage({ id, referencePoints: refPts, targetPoints: tgtPts });
+          });
+        };
+
+        getBestOffsetAsync().then(applyInterpolation);
+      }
     })
+
+    const mainTarget = target.shapes[0];
+    const targetX = mainTarget ? mainTarget.xOffset : 0;
+    const targetY = mainTarget ? mainTarget.yOffset : 0;
 
     for (let i = target.shapes.length; i < s.shapes.length; i++) {
       let shape = s.shapes[i]
       if (!shape) continue
       shape.active = false
-      const firstTarget = target.shapes[0]
+
+      if (shape.pulseTl) {
+        shape.pulseTl.kill()
+        shape.pulseTl = undefined
+      }
+      if (shape.pointsTween) {
+        shape.pointsTween.kill()
+      }
+
       gsap.to(shape, {
         scale: 0,
-        xOffset: firstTarget ? firstTarget.xOffset : 0,
-        yOffset: firstTarget ? firstTarget.yOffset : 0,
+        xOffset: targetX,
+        yOffset: targetY,
+        pulseOffsetX: 0,
+        pulseOffsetY: 0,
         duration,
         ease: 'power3.inOut',
         overwrite: 'auto',

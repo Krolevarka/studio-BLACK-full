@@ -60,9 +60,12 @@ const render = () => {
     targetCtx.translate(w / 2, h / 2)
     
     shapes.forEach(shape => {
+      const currentShapeX = shape.xOffset + (shape.pulseOffsetX || 0);
+      const currentShapeY = shape.yOffset + (shape.pulseOffsetY || 0);
+
       if (shape.physX === undefined) {
-         shape.physX = shape.xOffset;
-         shape.physY = shape.yOffset;
+         shape.physX = currentShapeX;
+         shape.physY = currentShapeY;
          shape.lastVx = 0;
          shape.lastVy = 0;
          shape.defX = 0;
@@ -80,10 +83,10 @@ const render = () => {
       let currentWw = maxX - minX;
       if (currentWw < 1) currentWw = 1;
 
-      const vx = shape.xOffset - shape.physX!;
-      const vy = shape.yOffset - shape.physY!;
-      shape.physX = shape.xOffset;
-      shape.physY = shape.yOffset;
+      const vx = currentShapeX - shape.physX!;
+      const vy = currentShapeY - shape.physY!;
+      shape.physX = currentShapeX;
+      shape.physY = currentShapeY;
 
       const targetDefX = -vx * 1.5;
       const targetDefY = -vy * 1.5;

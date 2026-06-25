@@ -12,7 +12,8 @@ export function usePricePhysics(
   emit: ReturnType<typeof useEventBus>['emit'],
   optionRefs: Map<string, HTMLElement>,
   physicsMap: Map<string, PhysicsState>,
-  startOffset: { x: number, y: number }
+  startOffset: { x: number, y: number },
+  isMenuOpenLocal?: Ref<boolean>
 ) {
   const cursorData = useState('cursorData', () => ({ x: 0, y: 0, smoothedX: 0, smoothedY: 0, weight: 1.0 }))
   const { checkCollision } = usePriceCollision(options, isMobile)
@@ -49,7 +50,7 @@ export function usePricePhysics(
   }
 
   const tick = () => {
-    if (!options.value.length) return
+    if (!options.value.length || isMenuOpenLocal?.value) return
 
     options.value.forEach(opt => {
       const el = optionRefs.get(opt.id)
