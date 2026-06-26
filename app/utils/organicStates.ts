@@ -51,13 +51,6 @@ export interface TargetStateOptions {
 function getPriceState({ w, h, isMobile, priceOptions = [], totalPrice = 0, isContactActive }: TargetStateOptions): TargetStateConfig {
   const pts = isMobile ? 90 : 240;
 
-  if (isMobile) {
-    return {
-      shapes: [],
-      config: { tension: 1, noiseAmp: 0, noiseSpeed: 1, morphWeight: 0, gooBlur: 15, alphaMult: 25, alphaAdd: -10, pulseType: 'sharp', pulseWeight: 0, xOffset: 0 }
-    }
-  }
-
   const baseCoreRadius = isMobile ? 80 : 120;
   const priceScale = Math.min(totalPrice / 1000000, 1); 
   const coreRadius = baseCoreRadius + priceScale * (isMobile ? 40 : 80);
@@ -105,13 +98,6 @@ function getPriceState({ w, h, isMobile, priceOptions = [], totalPrice = 0, isCo
 
 function getApproachState({ w, h, isMobile, approachStep, isContactActive }: TargetStateOptions): TargetStateConfig {
   const pts = isMobile ? 90 : 240;
-
-  if (isMobile) {
-    return {
-      shapes: [],
-      config: { tension: 1, noiseAmp: 0, noiseSpeed: 1, morphWeight: 0, gooBlur: 15, alphaMult: 25, alphaAdd: -10, pulseType: 'sharp', pulseWeight: 0, xOffset: 0 }
-    }
-  }
 
   const xOff = isMobile ? 0 : w / 4; 
   
@@ -219,12 +205,6 @@ function getAboutState({ w, h, isMobile, isContactActive }: TargetStateOptions):
 
 function getContactState({ w, h, isMobile, contactStep = 1, isContactTyping = false, isContactActive }: TargetStateOptions): TargetStateConfig {
   const pts = isMobile ? 90 : 240;
-  if (isMobile) {
-    return {
-      shapes: [],
-      config: { tension: 1, noiseAmp: 0, noiseSpeed: 1, morphWeight: 0, gooBlur: 15, alphaMult: 25, alphaAdd: -10, pulseType: 'sharp', pulseWeight: 0, xOffset: 0 }
-    }
-  }
   if (contactStep === -1) {
     const rectW = isMobile ? w * 0.8 : w * 0.5;
     const rectH = 10;
@@ -290,13 +270,6 @@ function getDefaultState({ w, h, isMobile, isContactActive }: TargetStateOptions
 }
 
 function getTechStackState({ w, h, isMobile, hoveredTechIndex = -1 }: TargetStateOptions): TargetStateConfig {
-  if (isMobile) {
-    return {
-      shapes: [],
-      config: { tension: 1, noiseAmp: 0, noiseSpeed: 1, morphWeight: 0, gooBlur: 15, alphaMult: 25, alphaAdd: -10, pulseType: 'sharp', pulseWeight: 0, xOffset: 0 }
-    }
-  }
-
   const pts = isMobile ? 90 : 240;
   const targetShapes: TargetShape[] = [];
   
@@ -445,7 +418,7 @@ export function getTargetState(options: TargetStateOptions): TargetStateConfig {
     const scaleH = options.h / 1080;
     const baseScale = Math.min(scaleW, scaleH);
     // Максимальный масштаб 1.0 (соответствует 16px), чтобы на 2K/4K сфера не становилась огромной
-    const remScale = Math.max(10 / 16, Math.min(1.0, baseScale));
+    const remScale = Math.max(0.45, Math.min(1.0, baseScale));
     
     // Исключаем About-состояние из масштабирования, так как оно жестко привязано к w/2
     if (!options.isAboutActive) {

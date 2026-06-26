@@ -190,3 +190,7 @@ onBeforeUnmount(() => {
 })
 </script>
 
+<style scoped>
+/* Пустой блок стилей для корректной работы генератора @tailwindcss/vite в Nuxt */
+</style>
+

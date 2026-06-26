@@ -25,7 +25,7 @@
       <div class="w-full md:w-1/2 h-full hidden md:block"></div>
 
       <!-- Правая половина с текстом (строго 50% экрана) -->
-      <div class="flex flex-col justify-center items-center text-center relative w-full md:w-1/2 h-full px-6 md:px-12 lg:px-20">
+      <div class="flex flex-col justify-center items-center text-center relative w-full md:w-1/2 h-full px-6 md:px-8 lg:px-12 xl:px-20">
         <!-- Заголовок-тег -->
         <div class="mb-10 md:mb-16">
           <div class="reveal-item font-secondary text-[clamp(12px,1vw,16px)] uppercase tracking-[0.3em] text-white/70 pointer-events-auto"
@@ -35,9 +35,9 @@
         </div>
 
         <!-- Текстовые блоки -->
-        <div class="flex flex-col space-y-10 md:space-y-14 items-center w-[90%] lg:w-[85%] xl:w-[75%] about-text-container">
+        <div class="flex flex-col space-y-10 md:space-y-14 items-center w-[95%] md:w-[92%] lg:w-[88%] xl:w-[75%] about-text-container">
           <div>
-            <p class="reveal-item font-secondary text-[clamp(18px,1.5vw,24px)] text-white leading-relaxed pointer-events-auto"
+            <p class="reveal-item font-secondary text-[clamp(16px,1.35vw,24px)] text-white leading-relaxed pointer-events-auto"
                :class="{ 'is-revealed': revealed }" style="--reveal-delay: 250ms">
               <UiKineticText text="Мы не просто пишем код и рисуем дизайн. Мы создаем цифровые экосистемы, в которых бренд оживает. Каждый наш проект — это живой организм, способный адаптироваться, дышать и взаимодействовать с пользователем на глубоком уровне." />
             </p>

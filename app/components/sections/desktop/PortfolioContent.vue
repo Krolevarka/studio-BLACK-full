@@ -7,8 +7,8 @@
            isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
          ]">
 
-      <!-- Заголовок поверх капли (анимация без маски, чтобы буква Й не обрезалась) -->
-      <div class="mb-12">
+      <!-- Верхняя половина для заголовка (строго 50% высоты экрана) -->
+      <div class="flex-1 flex flex-col justify-end items-center pb-8 md:pb-12 w-full">
         <h2 class="reveal-item font-primary text-[clamp(3rem,8vw,10rem)] font-black tracking-tighter text-white leading-[0.8] uppercase flex flex-col items-center"
             :class="{ 'is-revealed': revealed }">
           <div class="pointer-events-auto"><UiKineticText text="ПЕРВЫЙ" /></div>
@@ -16,20 +16,22 @@
         </h2>
       </div>
 
-      <!-- Текстовый блок и кнопка -->
-      <div class="flex flex-col items-center max-w-2xl mt-8">
-        <div class="overflow-hidden mb-12">
-          <p class="reveal-item font-secondary text-[clamp(18px,1.5vw,24px)] text-white leading-relaxed pointer-events-auto"
-             :class="{ 'is-revealed': revealed }" style="--reveal-delay: 180ms">
-            <UiKineticText text="Великие бренды не просто существуют — они живут. Наше портфолио ждёт проект, который задаст новый ритм всей индустрии. Готовы стать нашим первым ударом сердца?" />
-          </p>
-        </div>
+      <!-- Нижняя половина для текста и кнопки (строго 50% высоты экрана) -->
+      <div class="flex-1 flex flex-col justify-start items-center pt-8 md:pt-12 w-full">
+        <div class="flex flex-col items-center max-w-2xl">
+          <div class="overflow-hidden mb-10 md:mb-12">
+            <p class="reveal-item font-secondary text-[clamp(18px,1.5vw,24px)] text-white leading-relaxed pointer-events-auto"
+               :class="{ 'is-revealed': revealed }" style="--reveal-delay: 180ms">
+              <UiKineticText text="Великие бренды не просто существуют — они живут. Наше портфолио ждёт проект, который задаст новый ритм всей индустрии. Готовы стать нашим первым ударом сердца?" />
+            </p>
+          </div>
 
-        <div class="reveal-item pointer-events-auto mt-8"
-             :class="{ 'is-revealed': revealed }" style="--reveal-delay: 360ms">
-          <UiButton class="magnetic-btn font-secondary !bg-transparent !text-white !border !border-white/20 hover:!border-transparent transition-all duration-300" to="#contact">
-            ЗАДАТЬ РИТМ
-          </UiButton>
+          <div class="reveal-item pointer-events-auto"
+               :class="{ 'is-revealed': revealed }" style="--reveal-delay: 360ms">
+            <UiButton class="magnetic-btn font-secondary !bg-transparent !text-white !border !border-white/20 hover:!border-transparent transition-all duration-300" to="#contact">
+              ЗАДАТЬ РИТМ
+            </UiButton>
+          </div>
         </div>
       </div>
 

@@ -27,16 +27,16 @@
              isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
            ]">
         <Transition name="fade-slide" mode="out-in">
-          <div :key="activeStep" class="flex flex-col relative w-full max-w-4xl">
+          <div :key="activeStep" class="flex flex-col relative w-full max-w-[clamp(45rem,62vw,65rem)]">
             <!-- Фоновая цифра -->
             <div class="absolute -top-12 md:-top-24 -left-4 md:-left-8 text-[clamp(8rem,10vw,14rem)] leading-none font-primary font-black text-white/5 pointer-events-none select-none z-0">
               0{{ activeStep + 1 }}
             </div>
             
-            <h2 class="font-primary text-[clamp(2rem,5vw,4.5rem)] font-black uppercase tracking-normal leading-[0.9] text-white mb-4 relative z-10 pointer-events-auto">
+            <h2 class="font-primary text-[clamp(1.8rem,4.2vw,4.5rem)] font-black uppercase tracking-normal leading-[0.9] text-white mb-4 relative z-10 pointer-events-auto">
               <UiKineticText :text="steps[activeStep]?.title || ''" />
             </h2>
-            <p class="font-secondary text-[clamp(14px,1.2vw,18px)] text-white/80 leading-relaxed font-normal relative z-10 max-w-2xl pointer-events-auto">
+            <p class="font-secondary text-[clamp(14px,1.2vw,18px)] text-white/80 leading-relaxed font-normal relative z-10 max-w-[clamp(35rem,50vw,55rem)] pointer-events-auto">
               <UiKineticText :text="steps[activeStep]?.description || ''" />
             </p>
           </div>
@@ -56,11 +56,11 @@
             @click="handleStepClick(index)"
             class="nav-btn relative flex items-center text-left group transition-all duration-700 w-max"
           >
-            <span class="font-secondary text-[clamp(1rem,2dvh,3rem)] mr-4 md:mr-8 transition-all duration-700 font-bold pointer-events-auto"
+            <span class="font-secondary text-[clamp(1rem,min(1.8vw,2.5dvh),3rem)] mr-4 md:mr-8 transition-all duration-700 font-bold pointer-events-auto"
                   :class="activeStep === index ? 'text-black' : 'text-black/20 group-hover:text-black/50'">
               {{ '0' + (index + 1) }}
             </span>
-            <span class="font-primary text-[clamp(2rem,7dvh,9rem)] font-black uppercase tracking-normal leading-[0.85] transition-all duration-700 ease-out pointer-events-auto flex items-center"
+            <span class="font-primary text-[clamp(2rem,min(4.5vw,6.5dvh),9rem)] font-black uppercase tracking-normal leading-[0.85] transition-all duration-700 ease-out pointer-events-auto flex items-center"
                   :class="activeStep === index ? 'text-black translate-x-4 md:translate-x-8' : 'text-black/10 group-hover:text-black/30'">
               {{ step.shortTitle || step.title }}
               
