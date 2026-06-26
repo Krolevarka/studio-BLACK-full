@@ -8,7 +8,7 @@
     @click="$emit('unselectLast')"
     @keydown.enter="$emit('unselectLast')"
   >
-    <div class="text-xs font-secondary uppercase tracking-[0.3em] mb-2 pointer-events-none">ЦЕННОСТЬ ПРОЕКТА</div>
+    <div class="text-[clamp(12px,0.65vw,13px)] font-secondary uppercase tracking-[0.3em] mb-2 pointer-events-none">ЦЕННОСТЬ ПРОЕКТА</div>
     <div class="total-price text-5xl md:text-7xl lg:text-8xl font-black tabular-nums tracking-tighter pointer-events-none whitespace-nowrap">
       {{ formatPrice(displayPrice) }} ₽
     </div>

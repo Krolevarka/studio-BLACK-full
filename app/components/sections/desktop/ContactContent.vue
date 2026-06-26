@@ -39,7 +39,7 @@
                      class="absolute top-0 left-0 w-full flex flex-col items-start justify-center pointer-events-auto">
                    
                 <!-- Прогресс -->
-                <div class="text-xs font-secondary tracking-widest text-white/50 uppercase mb-6 flex items-center gap-4">
+                <div class="text-[clamp(12px,0.65vw,13px)] font-secondary tracking-widest text-white/50 uppercase mb-6 flex items-center gap-4">
                   <span>Шаг {{ idx + 1 }} / {{ steps.length }}</span>
                   <div class="w-12 h-[1px] bg-white/20">
                     <div class="h-full bg-white transition-all duration-500" :style="{ width: `${((idx + 1) / steps.length) * 100}%` }"></div>
@@ -90,7 +90,7 @@
 
             <TransitionGroup name="btn-group" tag="div" class="flex items-center relative w-full">
                 <div v-if="step > 1 && step <= steps.length" key="back" class="flex items-center">
-                  <button @click="prevStep" aria-label="Вернуться на предыдущий шаг" class="text-white/50 hover:text-white uppercase tracking-widest font-secondary text-xs pb-1 border-b border-transparent hover:border-white transition-all whitespace-nowrap min-w-[44px] min-h-[44px] flex items-center justify-center">
+                  <button @click="prevStep" aria-label="Вернуться на предыдущий шаг" class="text-white/50 hover:text-white uppercase tracking-widest font-secondary text-[clamp(12px,0.65vw,13px)] pb-1 border-b border-transparent hover:border-white transition-all whitespace-nowrap min-w-[44px] min-h-[44px] flex items-center justify-center">
                     Назад
                   </button>
                   <div class="w-6"></div> <!-- Имитация gap-6 (24px) -->

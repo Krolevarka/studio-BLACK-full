@@ -4,7 +4,7 @@
       v-for="opt in options" 
       :key="opt"
       @click="$emit('toggle', opt)"
-      class="magnetic-btn px-5 py-3 rounded-full border transition-all duration-300 font-secondary text-xs md:text-sm uppercase tracking-widest"
+      class="magnetic-btn px-5 py-3 rounded-full border transition-all duration-300 font-secondary text-xs md:text-[clamp(13px,0.73vw,15px)] uppercase tracking-widest"
       :class="isSelected(opt) ? 'bg-white text-black border-white' : 'bg-transparent text-white border-white/30 hover:border-transparent'"
     >
       {{ opt }}

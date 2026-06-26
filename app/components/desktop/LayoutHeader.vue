@@ -16,7 +16,7 @@
         :class="isMenuOpen ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'"
       >
         <Transition name="revolver">
-          <span :key="currentMenuLabel" class="absolute font-secondary uppercase text-[10px] md:text-sm tracking-[0.3em] whitespace-nowrap right-0 text-white/80">
+          <span :key="currentMenuLabel" class="absolute font-secondary uppercase text-[10px] md:text-[clamp(13px,0.73vw,15px)] tracking-[0.3em] whitespace-nowrap right-0 text-white/80">
             {{ currentMenuLabel }}
           </span>
         </Transition>
