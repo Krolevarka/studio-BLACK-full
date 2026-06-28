@@ -16,10 +16,12 @@
     />
 
     <!-- ГЛОБАЛЬНАЯ СФЕРА (Organic Core) -->
-    <div 
+    <!-- Десктоп: Canvas 2D (OrganicCore, НЕ трогаем). Мобайл: отдельный WebGL-движок. -->
+    <div
       class="fixed inset-0 flex items-center justify-center overflow-hidden pointer-events-none mix-blend-difference z-[40]"
     >
-      <OrganicCore ref="globalCoreRef" />
+      <OrganicCore v-if="isDesktopDevice" ref="globalCoreRef" />
+      <OrganicCoreMobile v-else ref="globalCoreRef" />
     </div>
 
     <!-- НОВОЕ ФИЗИЧЕСКОЕ МЕНЮ (Поверх всего) -->
@@ -50,6 +52,9 @@
       <!-- Скрытый футер для соблюдения семантики HTML5 -->
     </footer>
 
+    <!-- ОВЕРЛЕЙ «ПОВЕРНИТЕ УСТРОЙСТВО» (только телефоны в landscape, чисто CSS) -->
+    <MobileRotateNotice />
+
   </div>
 </template>
 
@@ -60,6 +65,7 @@ import { useNuxtApp, useHead } from '#imports'
 import { useEventBus } from '~/composables/useEventBus'
 import { ANIMATION_TIMINGS } from '~/utils/animation.config'
 import { useOrganicCore } from '~/composables/useOrganicCore'
+import { triggeriOSGyroPermission } from '~/composables/useMobileGyroMenu'
 import { useDeviceSwitch } from '~/composables/useDeviceSwitch'
 import DeviceSwitch from '~/components/DeviceSwitch.vue'
 import DesktopLayoutHeader from '~/components/desktop/LayoutHeader.vue'
@@ -67,10 +73,11 @@ import MobileLayoutHeader from '~/components/mobile/LayoutHeader.vue'
 import DesktopPhysicsMenu from '~/components/desktop/PhysicsMenu.vue'
 import MobileMenu from '~/components/mobile/MobileMenu.vue'
 import UiCursor from '~/components/UiCursor.vue'
+import MobileRotateNotice from '~/components/MobileRotateNotice.vue'
 
 const { $lenis } = useNuxtApp()
 const { isPreloading } = useOrganicCore()
-const { needsCursor } = useDeviceSwitch()
+const { needsCursor, isDesktopDevice } = useDeviceSwitch()
 
 const layoutRef = ref<HTMLElement | null>(null)
 const mainRef = ref<HTMLElement | null>(null)
@@ -113,6 +120,7 @@ const menuItems = [
 
 const openMenu = () => {
   if (!globalCoreRef.value || isMenuAnimating.value) return
+  triggeriOSGyroPermission()
   isMenuAnimating.value = true
   isMenuOpen.value = true
   

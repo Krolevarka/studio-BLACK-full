@@ -98,7 +98,7 @@ const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
 // Унифицированное появление/исчезновение контента секции.
 // enterDelay: ждём, пока органическая сфера разложится в формы прайса (морф ~2.4s от старта скролла,
 // прибытие ~2.0s) — элементы выходят уже после трансформации.
-const { revealed } = useSectionReveal('[ Прайс ]', { enterDelay: 500 })
+const { revealed } = useSectionReveal('[ Прайс ]')
 
 const options = ref<PriceOption[]>([
   { id: 'opt1', name: 'Брендинг', price: 150000, selected: false, angle: 0, radiusOffset: 0, description: 'Разработка логотипа, фирменного стиля, гайдлайнов и коммуникационной стратегии.' },

@@ -2,9 +2,9 @@ import type { Ref } from 'vue'
 import type { PriceOption } from '~/types/organic'
 import type { PhysicsState } from '~/types/price'
 
-export function usePriceCollision(options: Ref<PriceOption[]>, isMobile: Ref<boolean>) {
-  let cachedObstacles: { el: Element, rect: DOMRect }[] = []
+let cachedObstacles: { el: Element, rect: DOMRect }[] = []
 
+export function usePriceCollision(options: Ref<PriceOption[]>, isMobile: Ref<boolean>) {
   const updateObstaclesCache = () => {
     cachedObstacles = Array.from(document.querySelectorAll('.price-collision-obstacle')).map(el => ({
       el,
@@ -41,12 +41,14 @@ export function usePriceCollision(options: Ref<PriceOption[]>, isMobile: Ref<boo
     }
 
     if (!collision) {
-      const uiCollisionMargin = collisionRadius + 15; 
+      if (cachedObstacles.length === 0) updateObstaclesCache();
+      const satelliteRadius = isMobile.value ? 48 : 80;
+      const uiCollisionMargin = satelliteRadius + 15; 
       
       for (let i = 0; i < cachedObstacles.length; i++) {
         const obs = cachedObstacles[i];
-        if (!obs) continue;
-        const rect = obs.rect;
+        if (!obs || !obs.el) continue;
+        const rect = obs.el.getBoundingClientRect();
 
         const expandedLeft = rect.left - uiCollisionMargin;
         const expandedRight = rect.right + uiCollisionMargin;

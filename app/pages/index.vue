@@ -19,6 +19,7 @@ import { useEventBus } from '~/composables/useEventBus'
 import { useDeviceSwitch } from '~/composables/useDeviceSwitch'
 import { ANIMATION_TIMINGS } from '~/utils/animation.config'
 import { useSectionTransition, HERO_LABEL } from '~/composables/useSectionTransition'
+import { SECTION_LABELS } from '~/utils/sectionLabels'
 
 useHead({
   title: 'studio-BLACK',
@@ -32,7 +33,7 @@ const pageRef = ref<HTMLElement | null>(null)
 
 // Массив ID секций для навигации
 const sections = ['#section-hero', '#section-about', '#section-approach', '#section-portfolio', '#section-price', '#section-contact']
-const sectionLabels = ['[ Студия ]', '[ О нас ]', '[ Наш Подход ]', '[ Проекты ]', '[ Прайс ]', '[ Контакты ]']
+const sectionLabels = SECTION_LABELS
 let currentIndex = 0
 const isAnimating = useState('isAnimating', () => false)
 const loadAbout = ref(false)
@@ -42,7 +43,8 @@ const loadPrice = ref(false)
 const loadContact = ref(false)
 let isMenuOpen = false
 let isTechStackOpen = false
-let observerInstance: Observer | null = null
+let wheelObserverInstance: Observer | null = null
+let touchObserverInstance: Observer | null = null
 let scrollTimer: ReturnType<typeof setTimeout> | null = null
 let menuObserverTimer: ReturnType<typeof setTimeout> | null = null
 let preloaderFallbackTimer: ReturnType<typeof setTimeout> | null = null
@@ -54,6 +56,7 @@ const { isMobileOrTablet } = useDeviceSwitch()
 const { activeLabel, arrivedLabel } = useSectionTransition()
 
 const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+const easeInOutQuad = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
 
 const gotoSection = (index: number, direction: number) => {
   if (isAnimating.value || isMenuOpen || isPreloading.value || isTechStackOpen) return
@@ -90,8 +93,9 @@ const gotoSection = (index: number, direction: number) => {
     }, ANIMATION_TIMINGS.ui.pageIntroDelay)
 
     $lenis.scrollTo(target, {
-      duration: 2.0,
-      easing: easeInOutCubic, // Плавный easeInOutCubic без рывка в конце
+      // На телефоне плавный переход за 0.75с с мягким easeInOutQuad, чтобы скролл был шелковистым и без рывков
+      duration: isMobileOrTablet.value ? 0.75 : 2.0,
+      easing: isMobileOrTablet.value ? easeInOutQuad : easeInOutCubic,
       lock: true, // Блокируем другие попытки скролла на время анимации
       onComplete: () => {
         clearTimeout(failsafeTimer)
@@ -147,7 +151,10 @@ onMounted(() => {
     } else {
       if (menuObserverTimer) clearTimeout(menuObserverTimer)
       menuObserverTimer = setTimeout(() => {
-        if (!isMenuOpen && observerInstance) observerInstance.enable()
+        if (!isMenuOpen) {
+          if (wheelObserverInstance) wheelObserverInstance.enable()
+          if (touchObserverInstance) touchObserverInstance.enable()
+        }
       }, ANIMATION_TIMINGS.ui.menuTransition)
     }
   })
@@ -157,14 +164,24 @@ onMounted(() => {
   })
 
   // Останавливаем стандартную реакцию Lenis и нативный скролл, чтобы они не конфликтовали с Observer
-  observerInstance = Observer.create({
+  wheelObserverInstance = Observer.create({
     target: window,
-    type: 'wheel,touch', // отслеживаем только колесо мыши и тач-события на мобильных
-    tolerance: isMobileOrTablet.value ? 80 : 50, // Больший порог для свайпов на touch
-    preventDefault: true, // БЛОКИРУЕМ стандартный скролл
-    ignore: '.no-swipe, input, textarea, select, button, a, [data-lenis-prevent]', // Игнорируем элементы, которые должны обрабатывать тапы/свайпы сами
-    onUp: () => gotoSection(currentIndex - 1, -1),   // Скролл/свайп вверх -> ПРЕДЫДУЩИЙ экран
-    onDown: () => gotoSection(currentIndex + 1, 1), // Скролл/свайп вниз -> СЛЕДУЮЩИЙ экран
+    type: 'wheel',
+    tolerance: 50,
+    preventDefault: true,
+    ignore: '.no-swipe, input, textarea, select, [data-lenis-prevent]',
+    onUp: () => gotoSection(currentIndex - 1, -1),   // Колесо мыши вверх -> ПРЕДЫДУЩИЙ экран
+    onDown: () => gotoSection(currentIndex + 1, 1), // Колесо мыши вниз -> СЛЕДУЮЩИЙ экран
+  })
+
+  touchObserverInstance = Observer.create({
+    target: window,
+    type: 'touch',
+    tolerance: 80, // Больший порог для свайпов на touch
+    preventDefault: true,
+    ignore: '.no-swipe, input, textarea, select, [data-lenis-prevent]',
+    onUp: () => gotoSection(currentIndex + 1, 1),   // Свайп пальцем вверх -> СЛЕДУЮЩИЙ экран (естественный скролл вниз)
+    onDown: () => gotoSection(currentIndex - 1, -1), // Свайп пальцем вниз -> ПРЕДЫДУЩИЙ экран (естественный скролл вверх)
   })
 
   // Слушаем события из навигации (например, по клику в меню)
@@ -177,9 +194,13 @@ onMounted(() => {
     } else {
       // Фолбэк, если ID не в массиве (например #contact, если он где-то в футере)
       if ($lenis) {
+        isAnimating.value = true
         $lenis.scrollTo(targetHref, { 
-          duration: 2.0, 
-          easing: easeInOutCubic 
+          duration: isMobileOrTablet.value ? 0.75 : 2.0, 
+          easing: isMobileOrTablet.value ? easeInOutQuad : easeInOutCubic,
+          onComplete: () => {
+            isAnimating.value = false
+          }
         })
       }
     }
@@ -204,7 +225,8 @@ onBeforeUnmount(() => {
   if (scrollTimer) clearTimeout(scrollTimer)
   if (menuObserverTimer) clearTimeout(menuObserverTimer)
   if (preloaderFallbackTimer) clearTimeout(preloaderFallbackTimer)
-  if (observerInstance) observerInstance.kill()
+  if (wheelObserverInstance) wheelObserverInstance.kill()
+  if (touchObserverInstance) touchObserverInstance.kill()
   if (typeof window !== 'undefined' && globalFocusOutAlign) {
     window.removeEventListener('focusout', globalFocusOutAlign)
     globalFocusOutAlign = null

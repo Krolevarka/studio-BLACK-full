@@ -10,7 +10,6 @@
 import { onMounted, onBeforeUnmount, ref } from 'vue'
 import { drawCatmullRom, getNoise, getTangentNoise } from '~/utils/shapeMath'
 import { useOrganicCore } from '~/composables/useOrganicCore'
-import { useDeviceSwitch } from '~/composables/useDeviceSwitch'
 import { useDevice } from '#imports'
 import gsap from 'gsap'
 
@@ -23,9 +22,10 @@ let offCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null 
 const noisyPointsBuffer: {x: number, y: number}[] = []
 
 const { shapes, stateConfig, isPreloading, expandForMenu: expand, collapseFromMenu, initOrganicCore, startPreloaderAnimation, destroyOrganicCore } = useOrganicCore()
-const { isMobileOrTablet } = useDeviceSwitch()
-const { isSafari, isIos } = useDevice()
-const disableHeavyFilters = isSafari || isIos
+const { isSafari } = useDevice()
+// На macOS Safari per-frame ctx.filter(blur+contrast) по offscreen-канвасу
+// может работать медленно, поэтому для Safari используем оптимизированную destination-out ветку.
+const disableHeavyFilters = isSafari
 let currentDpr = 1
 
 let time = 0
@@ -263,7 +263,7 @@ const resizeCanvas = () => {
   if (canvasRef.value) {
     cachedWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
     const baseDpr = window.devicePixelRatio || 1;
-    currentDpr = isMobileOrTablet.value ? Math.min(baseDpr, 1.0) : Math.min(baseDpr, 1.25);
+    currentDpr = Math.min(baseDpr, 1.25);
     const rect = canvasRef.value.getBoundingClientRect();
     canvasRef.value.width = rect.width * currentDpr;
     canvasRef.value.height = rect.height * currentDpr;
@@ -294,6 +294,21 @@ const resizeCanvas = () => {
 
 let preloaderTl: gsap.core.Timeline | null = null
 
+let tickerRunning = false
+const startTicker = () => {
+  if (!tickerRunning) { gsap.ticker.add(render); tickerRunning = true }
+}
+const stopTicker = () => {
+  if (tickerRunning) { gsap.ticker.remove(render); tickerRunning = false }
+}
+
+// Page Visibility: в фоне вкладки полностью останавливаем рендер для экономии батареи/CPU ноутбука.
+const onVisibilityChange = () => {
+  if (typeof document === 'undefined') return
+  if (document.hidden) stopTicker()
+  else startTicker()
+}
+
 onMounted(() => {
   if (canvasRef.value) {
     ctx = canvasRef.value.getContext('2d')
@@ -304,11 +319,18 @@ onMounted(() => {
   initOrganicCore()
   preloaderTl = startPreloaderAnimation()
 
-  gsap.ticker.add(render)
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', onVisibilityChange)
+  }
+
+  startTicker()
 })
 
 onBeforeUnmount(() => {
-  gsap.ticker.remove(render)
+  stopTicker()
+  if (typeof document !== 'undefined') {
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+  }
   window.removeEventListener('resize', resizeCanvas)
   if (preloaderTl) preloaderTl.kill()
   shapes.forEach(shape => {
@@ -328,7 +350,12 @@ onBeforeUnmount(() => {
   destroyOrganicCore()
 })
 
-const expandForMenu = () => expand(wrapperRef.value)
+const expandForMenu = () => {
+  expand(wrapperRef.value)
+}
+const collapseFromMenuSafe = () => {
+  collapseFromMenu()
+}
 
-defineExpose({ expandForMenu, collapseFromMenu })
+defineExpose({ expandForMenu, collapseFromMenu: collapseFromMenuSafe })
 </script>

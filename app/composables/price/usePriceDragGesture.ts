@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import { useState, useNuxtApp } from '#imports'
 import type { PriceOption } from '~/types/organic'
 import type { PhysicsState } from '~/types/price'
+import { BASE_ORBIT_RADIUS } from './usePricePhysics'
 
 export function usePriceDragGesture(
   options: Ref<PriceOption[]>,
@@ -10,7 +11,8 @@ export function usePriceDragGesture(
   updateOrganic: () => void,
   physicsMap: Map<string, PhysicsState>,
   startOffset: { x: number, y: number },
-  getOptionOrbitPos: (opt: PriceOption) => { x: number, y: number }
+  getOptionOrbitPos: (opt: PriceOption) => { x: number, y: number },
+  getOrbitScale: () => number
 ) {
   const isHeavyDrag = useState('isHeavyDrag', () => false)
   const cursorData = useState('cursorData', () => ({ x: 0, y: 0, smoothedX: 0, smoothedY: 0, weight: 1.0 }))
@@ -74,8 +76,13 @@ export function usePriceDragGesture(
       const flingY = pState.y + pState.vy * 15;
 
       const distToCenter = Math.sqrt(flingX * flingX + flingY * flingY)
-      
-      if (distToCenter < 140) {
+
+      // Масштаб сцены под текущее разрешение. Все экранные дистанции ниже считаются
+      // в реальных px, поэтому пороги и обратный перевод в radiusOffset должны
+      // учитывать его — иначе на ноутбуках орбита и зона захвата «плывут».
+      const scale = getOrbitScale()
+
+      if (distToCenter < 140 * scale) {
         activeDragOpt.selected = true
       } else {
         const targetPos = getOptionOrbitPos(activeDragOpt)
@@ -89,7 +96,10 @@ export function usePriceDragGesture(
               const minDim = Math.min(window.innerWidth, window.innerHeight)
               activeDragOpt.radiusOffset = (distToCenter - Math.min(200, minDim * 0.28)) * 2
            } else {
-              activeDragOpt.radiusOffset = distToCenter - 310
+              // distToCenter — реальная экранная дистанция броска; в getOptionOrbitPos
+              // целевая орбита равна (BASE + radiusOffset) * scale. Делим на scale, чтобы
+              // спутник остался ровно там, куда его кинули, и инерция не схлопывалась внутрь.
+              activeDragOpt.radiusOffset = distToCenter / scale - BASE_ORBIT_RADIUS
            }
         }
       }

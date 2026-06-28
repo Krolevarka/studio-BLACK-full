@@ -7,7 +7,7 @@
         :key="index"
         :href="item.href"
         @click.prevent="$emit('navigate', item.href)"
-        class="relative flex items-center justify-center cursor-pointer select-none py-3 px-8 min-h-[2.75rem] min-w-[2.75rem]"
+        class="mobile-physics-item relative flex items-center justify-center cursor-pointer select-none py-3 px-8 min-h-[2.75rem] min-w-[2.75rem]"
         :aria-label="item.label"
         style="touch-action: none;"
       >
@@ -24,7 +24,10 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { toRef } from 'vue'
+import { useMobileGyroMenu } from '~/composables/useMobileGyroMenu'
+
+const props = defineProps<{
   isOpen: boolean
   items: Array<{ label: string, href: string }>
 }>()
@@ -32,4 +35,6 @@ defineProps<{
 defineEmits<{
   (e: 'navigate', href: string): void
 }>()
+
+useMobileGyroMenu(toRef(props, 'isOpen'))
 </script>

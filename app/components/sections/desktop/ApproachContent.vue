@@ -49,18 +49,18 @@
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
            ]">
-        <div class="flex flex-col justify-between h-full py-6 md:py-10 w-full max-w-none">
+         <div class="flex flex-col justify-between h-full py-[clamp(1.2rem,3.5dvh,2.5rem)] w-full max-w-none">
           <button 
             v-for="(step, index) in steps" 
             :key="index"
             @click="handleStepClick(index)"
             class="nav-btn relative flex items-center text-left group transition-all duration-700 w-max"
           >
-            <span class="font-secondary text-[clamp(1rem,min(1.8vw,2.5dvh),3rem)] mr-4 md:mr-8 transition-all duration-700 font-bold pointer-events-auto"
+            <span class="font-secondary text-[clamp(1.1rem,min(2.2vw,3dvh),3rem)] mr-4 md:mr-8 transition-all duration-700 font-bold pointer-events-auto"
                   :class="activeStep === index ? 'text-black' : 'text-black/20 group-hover:text-black/50'">
               {{ '0' + (index + 1) }}
             </span>
-            <span class="font-primary text-[clamp(2rem,min(4.5vw,6.5dvh),9rem)] font-black uppercase tracking-normal leading-[0.85] transition-all duration-700 ease-out pointer-events-auto flex items-center"
+            <span class="font-primary text-[clamp(2.2rem,min(5.5vw,7.8dvh),9.5rem)] font-black uppercase tracking-normal leading-[0.85] transition-all duration-700 ease-out pointer-events-auto flex items-center"
                   :class="activeStep === index ? 'text-black translate-x-4 md:translate-x-8' : 'text-black/10 group-hover:text-black/30'">
               {{ step.shortTitle || step.title }}
               

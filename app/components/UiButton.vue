@@ -38,7 +38,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, type ComponentPublicInstance } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, type ComponentPublicInstance } from 'vue'
+import { useState } from '#imports'
 import gsap from 'gsap'
 
 const props = withDefaults(defineProps<{
@@ -51,6 +52,9 @@ const props = withDefaults(defineProps<{
 const btnRef = ref<HTMLElement | ComponentPublicInstance | null>(null)
 const textRef = ref<HTMLElement | null>(null)
 const iconRef = ref<HTMLElement | null>(null)
+
+const isPageAnimating = useState('isAnimating', () => false)
+const isHovered = ref(false)
 
 import { useEventBus } from '~/composables/useEventBus'
 
@@ -94,6 +98,8 @@ onMounted(() => {
   iconYTo = gsap.quickTo(iconRef.value, 'y', { duration: 0.8, ease: 'power3.out' })
   
   window.addEventListener('resize', handleResize)
+  window.addEventListener('wheel', resetButtonOffset, { passive: true })
+  window.addEventListener('touchmove', resetButtonOffset, { passive: true })
 })
 
 const handleResize = () => {
@@ -111,7 +117,8 @@ const handleMouseUp = () => {
 }
 
 const handleMouseEnter = () => {
-  if (isTouchDevice) return
+  if (isTouchDevice || isPageAnimating.value) return
+  isHovered.value = true
   const btn = getBtnElement()
   if (!btn) return
   
@@ -119,7 +126,7 @@ const handleMouseEnter = () => {
 }
 
 const handleMouseMove = (e: MouseEvent) => {
-  if (isTouchDevice) return
+  if (isTouchDevice || isPageAnimating.value) return
   
   const btn = getBtnElement()
   if (!btn) return
@@ -153,6 +160,7 @@ const handleMouseMove = (e: MouseEvent) => {
 }
 
 const handleMouseLeave = () => {
+  isHovered.value = false
   const btn = getBtnElement()
   if (btn) gsap.to(btn, { scale: 1, duration: 0.4, ease: 'power3.out', overwrite: 'auto' })
   if (isTouchDevice || !xTo) return
@@ -164,8 +172,19 @@ const handleMouseLeave = () => {
   iconYTo?.(0)
 }
 
+const resetButtonOffset = () => {
+  if (!isHovered.value) return
+  handleMouseLeave()
+}
+
+watch(isPageAnimating, (animating) => {
+  if (animating) resetButtonOffset()
+})
+
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
+  window.removeEventListener('wheel', resetButtonOffset)
+  window.removeEventListener('touchmove', resetButtonOffset)
   
   const btn = getBtnElement()
   if (btn) gsap.killTweensOf(btn)

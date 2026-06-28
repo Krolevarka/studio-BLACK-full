@@ -7,6 +7,7 @@ import { useMouseVelocity } from '~/composables/useMouseVelocity'
 export function useCursor() {
   const cursorData = useState('cursorData', () => ({ x: 0, y: 0, smoothedX: 0, smoothedY: 0, weight: 1.0 }))
   const isHeavyDrag = useState('isHeavyDrag', () => false)
+  const isPageAnimating = useState('isAnimating', () => false)
   const { isPreloading } = useOrganicCore()
   const { startListening, stopListening, getVelocity } = useMouseVelocity()
 
@@ -44,6 +45,45 @@ export function useCursor() {
 
   let dragTimer: ReturnType<typeof setTimeout> | null = null
   let clickTimer: ReturnType<typeof setTimeout> | null = null
+
+  const resetMagneticState = () => {
+    if (!isMagnetic && !isHovering.value) return
+    if (magneticTarget && magneticTarget.closest('header, [class*="PhysicsMenu"]')) return
+    isHovering.value = false
+    isMagnetic = false
+    magneticTarget = null
+
+    gsap.to(state, {
+      width: 16,
+      height: 16,
+      coreOpacity: 1,
+      ringWidth: 16,
+      ringOpacity: 0,
+      borderRadius: 50,
+      popScale: 1,
+      duration: 0.25,
+      ease: 'power3.out',
+      overwrite: 'auto'
+    })
+  }
+
+  const onScrollTouch = () => {
+    resetMagneticState()
+  }
+
+  watch(isPageAnimating, (animating) => {
+    if (animating) {
+      resetMagneticState()
+    } else {
+      if (dragTimer) clearTimeout(dragTimer)
+      dragTimer = setTimeout(() => {
+        const el = typeof document !== 'undefined' ? document.elementFromPoint(mouseX, mouseY) : null
+        if (el) {
+          onMouseOverGlobal({ target: el } as unknown as PointerEvent)
+        }
+      }, 50)
+    }
+  })
 
   watch(isHeavyDrag, (isDragging) => {
     if (isDragging) {
@@ -125,8 +165,9 @@ export function useCursor() {
   const onMouseEnter = () => { isHidden.value = false }
 
   const onMouseOverGlobal = (e: PointerEvent | MouseEvent) => {
-    if (isHeavyDrag.value) return
     const target = e.target as HTMLElement
+    const isMenuException = target && target.closest('header, [class*="PhysicsMenu"]')
+    if (isHeavyDrag.value || (isPageAnimating.value && !isMenuException)) return
     const magnetic = target.closest('.magnetic-btn')
     const clickable = target.closest('a, button, input, textarea, select, label, [class*="cursor-pointer"], [class*="cursor-grab"]')
 
@@ -327,6 +368,8 @@ export function useCursor() {
         startListening()
 
         window.addEventListener('pointermove', onMouseMove, { passive: true })
+        window.addEventListener('wheel', onScrollTouch, { passive: true })
+        window.addEventListener('touchmove', onScrollTouch, { passive: true })
 
         document.addEventListener('pointerleave', onMouseLeave)
         document.addEventListener('pointerenter', onMouseEnter)
@@ -349,6 +392,8 @@ export function useCursor() {
     if (clickTimer) clearTimeout(clickTimer)
     stopListening()
     window.removeEventListener('pointermove', onMouseMove)
+    window.removeEventListener('wheel', onScrollTouch)
+    window.removeEventListener('touchmove', onScrollTouch)
     document.removeEventListener('pointerleave', onMouseLeave)
     document.removeEventListener('pointerenter', onMouseEnter)
     document.removeEventListener('pointerover', onMouseOverGlobal)

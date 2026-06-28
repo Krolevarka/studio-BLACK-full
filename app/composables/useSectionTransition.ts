@@ -1,4 +1,5 @@
 import { useState } from '#imports'
+import { SECTION } from '~/utils/sectionLabels'
 
 /**
  * Единый источник правды для переходов между секциями.
@@ -15,7 +16,7 @@ import { useState } from '#imports'
  * arrivedLabel инициализируется пустой строкой: даже Hero не появится, пока
  * index.vue не выставит его по событию `preloader-done` (или по фолбэк-таймеру).
  */
-export const HERO_LABEL = '[ Студия ]'
+export const HERO_LABEL = SECTION.HERO
 
 export function useSectionTransition() {
   // useState — SSR-безопасный синглтон, общий для всех компонентов

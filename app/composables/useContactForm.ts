@@ -126,10 +126,22 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
       }, 800)
       timeoutIds.push(id)
     } catch (err: unknown) {
+      interface FetchErrorLike {
+        status?: number
+        statusCode?: number
+        statusMessage?: string
+        response?: { status?: number; _data?: { statusMessage?: string } }
+      }
+      const fetchErr = err as FetchErrorLike
+      const status = fetchErr?.status || fetchErr?.statusCode || fetchErr?.response?.status
+      const msg = fetchErr?.statusMessage || fetchErr?.response?._data?.statusMessage
+
       if (err instanceof TypeError && err.message.includes('fetch')) {
         error.value = 'Ошибка сети. Проверьте подключение к интернету или сервер временно недоступен.'
-      } else if ((err as { response?: { status?: number } })?.response?.status === 429) {
-        error.value = 'Слишком много запросов. Пожалуйста, подождите немного.'
+      } else if (status === 429) {
+        error.value = 'Вы недавно уже отправляли анкету. Пожалуйста, подождите 15 минут перед повторной отправкой.'
+      } else if (msg) {
+        error.value = msg
       } else {
         error.value = 'Произошла ошибка при отправке. Пожалуйста, попробуйте еще раз.'
       }

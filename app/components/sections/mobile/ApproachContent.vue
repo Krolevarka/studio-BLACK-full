@@ -96,7 +96,7 @@ const showTechStack = ref(false)
 // Унифицированное появление/исчезновение контента секции.
 // Исключение: показываем РАНО — от старта перехода (fromActive), ещё во время скролла (~1.2s),
 // задолго до формирования сферы (~2.6–3.0s). Контент появляется первым, сфера дособирается следом.
-const { revealed } = useSectionReveal('[ Наш Подход ]', { fromActive: true, enterDelay: ANIMATION_TIMINGS.ui.sectionRevealDelay })
+const { revealed } = useSectionReveal('[ Наш Подход ]')
 
 import { watch } from 'vue'
 

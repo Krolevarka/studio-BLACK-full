@@ -6,6 +6,10 @@ import type { PhysicsState } from '~/types/price'
 import { usePriceCollision } from './usePriceCollision'
 import { useEventBus } from '~/composables/useEventBus'
 
+// Базовый радиус орбиты спутника в нескалированном пространстве сцены (эталон 1920×1080).
+// Тот же эталон, по которому строится органическое ядро в organicStates.ts.
+export const BASE_ORBIT_RADIUS = 310
+
 export function usePricePhysics(
   options: Ref<PriceOption[]>,
   isMobile: Ref<boolean>,
@@ -18,16 +22,23 @@ export function usePricePhysics(
   const cursorData = useState('cursorData', () => ({ x: 0, y: 0, smoothedX: 0, smoothedY: 0, weight: 1.0 }))
   const { checkCollision } = usePriceCollision(options, isMobile)
 
-  const getOptionOrbitPos = (opt: PriceOption) => {
-    const minDim = Math.min(window.innerWidth, window.innerHeight);
+  // Единый источник правды о масштабе сцены под текущее разрешение.
+  // На ноутбуках (1280×800, 1366×768) возвращает < 1. И позиционирование орбит,
+  // и расчёт инерции при отпускании спутника обязаны опираться на одно и то же значение,
+  // иначе брошенная орбита схлопывается внутрь (двойное домножение на масштаб).
+  const getOrbitScale = () => {
     const scaleW = window.innerWidth / 1920;
     const scaleH = window.innerHeight / 1080;
     const baseScale = Math.min(scaleW, scaleH);
-    const remScale = Math.max(10 / 16, Math.min(1.0, baseScale));
-    
-    const orbitDistance = isMobile.value 
+    return Math.max(10 / 16, Math.min(1.0, baseScale));
+  }
+
+  const getOptionOrbitPos = (opt: PriceOption) => {
+    const minDim = Math.min(window.innerWidth, window.innerHeight);
+
+    const orbitDistance = isMobile.value
       ? Math.min(200, minDim * 0.28) + opt.radiusOffset * 0.5
-      : (310 + opt.radiusOffset) * remScale;
+      : (BASE_ORBIT_RADIUS + opt.radiusOffset) * getOrbitScale();
     return {
       x: Math.cos(opt.angle) * orbitDistance,
       y: Math.sin(opt.angle) * orbitDistance
@@ -115,6 +126,7 @@ export function usePricePhysics(
   return {
     registerOptionRef,
     getOptionOrbitPos,
+    getOrbitScale,
     tick
   }
 }

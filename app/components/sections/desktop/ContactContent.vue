@@ -140,11 +140,22 @@
         <div class="shrink-0 pointer-events-auto transition-transform duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] delay-100"
              :class="step > steps.length ? '-translate-y-24' : 'translate-y-0'">
           <div class="flex flex-col gap-4 font-secondary text-lg md:text-xl text-white/70">
-            <a href="mailto:hello@studio-black.com" class="hover:text-white transition-colors w-max block border-b border-transparent hover:border-white pb-1">
-              hello@studio-black.com
-            </a>
-            <a href="https://t.me/studio_black" target="_blank" class="hover:text-white transition-colors w-max block border-b border-transparent hover:border-white pb-1">
-              @studio_black
+            <div class="flex items-center gap-4 relative">
+              <button 
+                type="button" 
+                @click="copyEmail" 
+                class="hover:text-white transition-colors w-max block border-b border-transparent hover:border-white pb-1 cursor-pointer text-left focus:outline-none"
+              >
+                kvazarweb@gmail.com
+              </button>
+              <Transition name="copy-tooltip">
+                <span v-if="copied" class="text-xs text-white/70 font-secondary tracking-[0.15em] uppercase px-2.5 py-1 rounded border border-white/10 bg-white/[0.04] backdrop-blur-md whitespace-nowrap pointer-events-none select-none">
+                  почта скопирована
+                </span>
+              </Transition>
+            </div>
+            <a href="https://t.me/kvazarweb" target="_blank" class="hover:text-white transition-colors w-max block border-b border-transparent hover:border-white pb-1">
+              @kvazarweb
             </a>
           </div>
         </div>
@@ -159,7 +170,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useEventBus } from '~/composables/useEventBus'
 import { useContactForm } from '~/composables/useContactForm'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
@@ -173,6 +184,43 @@ defineOptions({ inheritAttrs: false })
 const contactRef = ref<HTMLElement | null>(null)
 const stepWrapperRef = ref<HTMLElement | null>(null)
 const wrapperHeight = ref('auto')
+
+const copied = ref(false)
+let copyTimer: ReturnType<typeof setTimeout> | null = null
+
+const copyEmail = async () => {
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText('kvazarweb@gmail.com')
+    } else {
+      throw new Error('Clipboard API unavailable')
+    }
+  } catch (err) {
+    try {
+      const textArea = document.createElement('textarea')
+      textArea.value = 'kvazarweb@gmail.com'
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      document.execCommand('copy')
+      textArea.remove()
+    } catch (e) {
+      console.error('Failed to copy email', e)
+    }
+  }
+  copied.value = true
+  if (copyTimer) clearTimeout(copyTimer)
+  copyTimer = setTimeout(() => {
+    copied.value = false
+  }, 2500)
+}
+
+onBeforeUnmount(() => {
+  if (copyTimer) clearTimeout(copyTimer)
+})
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
 const { emit, on } = useEventBus()
@@ -333,5 +381,17 @@ textarea:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0px 1000px #000 inset !important;
   background-color: transparent !important;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Плавное появление надписи "Почта скопирована" */
+.copy-tooltip-enter-active,
+.copy-tooltip-leave-active {
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+.copy-tooltip-enter-from,
+.copy-tooltip-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
+  filter: blur(4px);
 }
 </style>

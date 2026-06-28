@@ -1,20 +1,46 @@
 import { z } from 'zod'
+import nodemailer from 'nodemailer'
 
-const rateLimitMap = new Map<string, { count: number, timestamp: number }>()
-const RATE_LIMIT_WINDOW = 60 * 1000 // 1 minute
-const MAX_REQUESTS = 5
+interface RateLimitRecord {
+  attempts: number
+  successCount: number
+  firstAttemptTime: number
+  lastSuccessTime: number
+}
+
+const rateLimitMap = new Map<string, RateLimitRecord>()
+
+// Лимиты: максимум 2 успешные отправки за 15 минут, и максимум 5 попыток за час
+const SUCCESS_WINDOW = 15 * 60 * 1000 // 15 минут
+const ATTEMPT_WINDOW = 60 * 60 * 1000 // 1 час
+const MAX_SUCCESS = 2
+const MAX_ATTEMPTS = 5
+
+// Очистка старых IP-адресов каждые 15 минут для предотвращения утечки памяти (Memory Leak)
+const cleanupTimer = setInterval(() => {
+  const now = Date.now()
+  for (const [ip, record] of rateLimitMap.entries()) {
+    if (now - record.firstAttemptTime > ATTEMPT_WINDOW && now - record.lastSuccessTime > SUCCESS_WINDOW) {
+      rateLimitMap.delete(ip)
+    }
+  }
+}, 15 * 60 * 1000)
+
+if (cleanupTimer.unref) {
+  cleanupTimer.unref()
+}
 
 const bodySchema = z.object({
   name: z.string().optional(),
   services: z.array(z.string()).optional(),
   project: z.string().optional(),
   budget: z.string().optional(),
-  contact: z.string().min(1, 'Contact info is required')
+  contact: z.string().min(1, 'Контактные данные обязательны')
 }).strict()
 
 export default defineEventHandler(async (event) => {
   try {
-    // CSRF / Origin Check
+    // Проверка Origin / Host для защиты от CSRF
     const origin = getHeader(event, 'origin')
     const host = getHeader(event, 'host')
     
@@ -29,34 +55,142 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Rate Limiting
+    // Алгоритм Rate Limiting по IP
     const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
     const now = Date.now()
-    const record = rateLimitMap.get(ip)
-    
-    if (!record || now - record.timestamp > RATE_LIMIT_WINDOW) {
-      rateLimitMap.set(ip, { count: 1, timestamp: now })
-    } else if (record.count >= MAX_REQUESTS) {
-      throw createError({ statusCode: 429, statusMessage: 'Too Many Requests' })
-    } else {
-      record.count++
+    let record = rateLimitMap.get(ip)
+
+    if (!record) {
+      record = {
+        attempts: 0,
+        successCount: 0,
+        firstAttemptTime: now,
+        lastSuccessTime: 0
+      }
+      rateLimitMap.set(ip, record)
     }
 
+    // Сброс счетчика попыток, если прошел час
+    if (now - record.firstAttemptTime > ATTEMPT_WINDOW) {
+      record.attempts = 0
+      record.firstAttemptTime = now
+    }
+
+    // Сброс счетчика успешных отправок, если прошло 15 минут
+    if (now - record.lastSuccessTime > SUCCESS_WINDOW) {
+      record.successCount = 0
+    }
+
+    // Проверка превышения лимитов
+    if (record.successCount >= MAX_SUCCESS || record.attempts >= MAX_ATTEMPTS) {
+      throw createError({ 
+        statusCode: 429, 
+        statusMessage: 'Too Many Requests',
+        message: 'Слишком много попыток отправки. Пожалуйста, подождите 15 минут.' 
+      })
+    }
+
+    record.attempts++
+
     const rawBody = await readBody(event)
-    
-    // Базовая валидация: проверяем, что тело соответствует схеме
     const body = bodySchema.parse(rawBody)
-    
-    console.log('\n============= НОВАЯ АНКЕТА =============')
+
+    // Логирование в консоль сервера (гарантия сохранности данных)
+    console.log('\n============= НОВАЯ АНКЕТА KVAZAR =============')
+    console.log('IP:', ip)
+    console.log('Время:', new Date().toLocaleString('ru-RU'))
     console.log(JSON.stringify(body, null, 2))
-    console.log('========================================\n')
-    
-    // В будущем здесь будет интеграция с Telegram Bot API или Email
-    // Например: await $fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, ...)
-    
+    console.log('===============================================\n')
+
+    // Получение настроек из переменных окружения
+    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com'
+    const smtpPort = Number(process.env.SMTP_PORT) || 587
+    const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465
+    const smtpUser = process.env.SMTP_USER || 'kvazarweb@gmail.com'
+    const smtpPass = process.env.SMTP_PASS?.replace(/\s+/g, '')
+    const mailTo = process.env.MAIL_TO || 'kvazarweb@gmail.com'
+
+    // Проверка настройки пароля
+    if (!smtpPass || smtpPass === 'ваш_16_значный_пароль_приложения') {
+      console.warn('⚠️ ВНИМАНИЕ: Пароль приложения (SMTP_PASS) еще не настроен в .env файле!')
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Internal Server Error',
+        message: 'Почтовый сервер еще не настроен. Укажите 16-значный пароль приложения в файле .env'
+      })
+    }
+
+    // Настройка транспорта Nodemailer
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpSecure,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass
+      }
+    })
+
+    const servicesList = body.services && body.services.length > 0 
+      ? body.services.map(s => `<li><b>${s}</b></li>`).join('') 
+      : '<li>Не указано</li>'
+
+    const htmlContent = `
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #050505; color: #ffffff; padding: 30px; border-radius: 16px; border: 1px solid #222222;">
+        <div style="text-align: center; margin-bottom: 30px; border-bottom: 1px solid #222222; padding-bottom: 20px;">
+          <h1 style="font-size: 28px; font-weight: 900; letter-spacing: 2px; margin: 0; color: #ffffff;">KVAZAR</h1>
+          <p style="font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 3px; margin-top: 5px;">Новая заявка с сайта</p>
+        </div>
+
+        <div style="background-color: #111111; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <p style="margin: 0 0 10px 0; font-size: 14px; color: #888888; text-transform: uppercase;">Контакт для связи:</p>
+          <p style="margin: 0; font-size: 20px; font-weight: bold; color: #ffffff; word-break: break-all;">${body.contact}</p>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px; width: 40%;">Имя / Компания:</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: 500;">${body.name || 'Не указано'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px;">Планируемый бюджет:</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: 500;">${body.budget || 'Не указано'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px; vertical-align: top;">Интересующие услуги:</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px;">
+              <ul style="margin: 0; padding-left: 18px;">${servicesList}</ul>
+            </td>
+          </tr>
+        </table>
+
+        <div style="background-color: #111111; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; color: #888888; text-transform: uppercase;">Задача проекта:</p>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #e0e0e0; white-space: pre-wrap;">${body.project || 'Не указано'}</p>
+        </div>
+
+        <div style="text-align: center; font-size: 11px; color: #555555; border-top: 1px solid #1a1a1a; pt: 15px; padding-top: 15px;">
+          Отправлено с IP: ${ip} • Время: ${new Date().toLocaleString('ru-RU')}
+        </div>
+      </div>
+    `
+
+    // Отправка письма
+    await transporter.sendMail({
+      from: `"KVAZAR Studio" <${smtpUser}>`,
+      to: mailTo,
+      subject: `⚡ Бриф от: ${body.name || body.contact} [KVAZAR]`,
+      text: `Новый бриф от ${body.contact}\nИмя: ${body.name}\nБюджет: ${body.budget}\nУслуги: ${(body.services || []).join(', ')}\nЗадача: ${body.project}`,
+      html: htmlContent
+    })
+
+    // Фиксируем успешную отправку
+    record.successCount++
+    record.lastSuccessTime = Date.now()
+
     return {
       success: true,
-      message: 'Brief accepted successfully'
+      message: 'Бриф успешно отправлен на корпоративную почту'
     }
   } catch (err: unknown) {
     console.error('API Error:', err)
@@ -64,7 +198,8 @@ export default defineEventHandler(async (event) => {
     if (err instanceof z.ZodError) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Validation Failed',
+        statusMessage: 'Bad Request',
+        message: 'Ошибка валидации полей',
         data: err.issues
       })
     }
@@ -75,7 +210,8 @@ export default defineEventHandler(async (event) => {
     
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to process contact form'
+      statusMessage: 'Internal Server Error',
+      message: 'Ошибка при отправке письма. Пожалуйста, попробуйте позже.'
     })
   }
 })

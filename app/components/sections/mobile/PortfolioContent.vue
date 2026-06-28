@@ -8,7 +8,7 @@
          ]">
 
       <!-- Верхняя половина для заголовка -->
-      <div class="flex-1 flex flex-col justify-end items-center pb-8 md:pb-12 w-full">
+      <div class="flex-1 flex flex-col justify-end items-center pb-1.5 md:pb-12 w-full">
         <h2 class="reveal-item font-primary text-5xl sm:text-6xl font-black tracking-tighter text-white leading-[0.85] uppercase flex flex-col items-center"
             :class="{ 'is-revealed': revealed }">
           <div class="pointer-events-auto">ПЕРВЫЙ</div>
@@ -17,7 +17,7 @@
       </div>
 
       <!-- Нижняя половина для текста и кнопки -->
-      <div class="flex-1 flex flex-col justify-start items-center pt-8 md:pt-12 w-full">
+      <div class="flex-1 flex flex-col justify-start items-center pt-1.5 md:pt-12 w-full">
         <div class="flex flex-col items-center max-w-sm">
           <div class="overflow-hidden mb-8">
             <p class="reveal-item font-secondary text-sm md:text-base text-white leading-relaxed pointer-events-auto"
@@ -40,8 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useEventBus } from '~/composables/useEventBus'
+import { ref } from 'vue'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useSectionReveal } from '~/composables/useSectionReveal'
 
@@ -50,20 +49,8 @@ defineOptions({ inheritAttrs: false })
 const portfolioRef = ref<HTMLElement | null>(null)
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
-const { emit, on } = useEventBus()
 // Унифицированное появление/исчезновение контента секции
 const { revealed } = useSectionReveal('[ Проекты ]')
-
-onMounted(() => {
-  // Взаимодействие со сферой (перевод OrganicCore в режим капли)
-  on('section-change', (label: string) => {
-    if (label === '[ Проекты ]') {
-      emit('portfolio-state', true)
-    } else {
-      emit('portfolio-state', false)
-    }
-  })
-})
 </script>
 
 <style scoped>

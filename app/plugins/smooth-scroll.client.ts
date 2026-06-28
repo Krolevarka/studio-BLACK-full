@@ -70,7 +70,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       const target = e.target as HTMLElement;
       if (!target) return;
       
-      const ignoredEl = target.closest('input, select, textarea, button, a, .no-swipe, [data-lenis-prevent]');
+      const ignoredEl = target.closest('input, select, textarea, .no-swipe, [data-lenis-prevent]');
       if (!ignoredEl) return;
       
       const tagName = ignoredEl.tagName;
@@ -93,9 +93,7 @@ export default defineNuxtPlugin((nuxtApp) => {
           }
         }
       } else {
-        // Для button, a, .no-swipe и [data-lenis-prevent] мы блокируем нативный скролл (wheel, touchmove).
-        // Это закрывает уязвимость свободного скролла при наведении на кнопки, которые Observer игнорирует.
-        // Клики (touchstart/touchend) не пострадают, т.к. мы слушаем только wheel и touchmove.
+        // Для .no-swipe и [data-lenis-prevent] мы блокируем нативный скролл (wheel, touchmove).
         e.preventDefault();
       }
     };

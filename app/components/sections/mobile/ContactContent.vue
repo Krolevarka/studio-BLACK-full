@@ -143,11 +143,22 @@
       <div class="absolute bottom-8 w-full left-0 px-6 shrink-0 transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]"
            :class="step > steps.length ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'">
         <div class="flex flex-col gap-3 font-secondary text-base text-white/70 items-center text-center">
-          <a href="mailto:hello@studio-black.com" class="active:text-white transition-colors block border-b border-white/20 pb-1 touch-manipulation min-h-[2.75rem] flex items-center justify-center">
-            hello@studio-black.com
-          </a>
-          <a href="https://t.me/studio_black" target="_blank" class="active:text-white transition-colors block border-b border-white/20 pb-1 touch-manipulation min-h-[2.75rem] flex items-center justify-center">
-            @studio_black
+          <div class="flex flex-col items-center justify-center relative w-full">
+            <button 
+              type="button" 
+              @click="copyEmail" 
+              class="active:text-white transition-colors block border-b border-white/20 pb-1 touch-manipulation min-h-[2.75rem] flex items-center justify-center cursor-pointer focus:outline-none"
+            >
+              kvazarweb@gmail.com
+            </button>
+            <Transition name="copy-tooltip">
+              <span v-if="copied" class="absolute -top-7 text-xs text-white/70 font-secondary tracking-[0.15em] uppercase px-2.5 py-1 rounded border border-white/10 bg-white/[0.04] backdrop-blur-md whitespace-nowrap pointer-events-none select-none">
+                почта скопирована
+              </span>
+            </Transition>
+          </div>
+          <a href="https://t.me/kvazarweb" target="_blank" class="active:text-white transition-colors block border-b border-white/20 pb-1 touch-manipulation min-h-[2.75rem] flex items-center justify-center">
+            @kvazarweb
           </a>
         </div>
       </div>
@@ -169,6 +180,43 @@ import ContactStepSuccess from '~/components/sections/contact/ContactStepSuccess
 defineOptions({ inheritAttrs: false })
 
 const contactRef = ref<HTMLElement | null>(null)
+
+const copied = ref(false)
+let copyTimer: ReturnType<typeof setTimeout> | null = null
+
+const copyEmail = async () => {
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText('kvazarweb@gmail.com')
+    } else {
+      throw new Error('Clipboard API unavailable')
+    }
+  } catch (err) {
+    try {
+      const textArea = document.createElement('textarea')
+      textArea.value = 'kvazarweb@gmail.com'
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      document.execCommand('copy')
+      textArea.remove()
+    } catch (e) {
+      console.error('Failed to copy email', e)
+    }
+  }
+  copied.value = true
+  if (copyTimer) clearTimeout(copyTimer)
+  copyTimer = setTimeout(() => {
+    copied.value = false
+  }, 2500)
+}
+
+onBeforeUnmount(() => {
+  if (copyTimer) clearTimeout(copyTimer)
+})
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
 const { emit, on } = useEventBus()
@@ -252,6 +300,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  if (copyTimer) clearTimeout(copyTimer)
   if (window.visualViewport) {
     window.visualViewport.removeEventListener('resize', updateKeyboardOffset)
     window.visualViewport.removeEventListener('scroll', updateKeyboardOffset)
@@ -362,5 +411,17 @@ onBeforeUnmount(() => {
 .text-fade-leave-to {
   opacity: 0;
   transform: translateY(-5px);
+}
+
+/* Плавное всплывающее уведомление "Почта скопирована" над кнопкой */
+.copy-tooltip-enter-active,
+.copy-tooltip-leave-active {
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+}
+.copy-tooltip-enter-from,
+.copy-tooltip-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+  filter: blur(4px);
 }
 </style>

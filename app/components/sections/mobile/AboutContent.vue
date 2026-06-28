@@ -7,7 +7,7 @@
            isMenuOpenLocal ? '!opacity-0 duration-[500ms] delay-[100ms]' : (isMenuTransitioning ? 'duration-[500ms] delay-[200ms]' : '')
          ]">
       <!-- Верхняя половина для логотипа -->
-      <div class="reveal-item flex items-center justify-center w-full flex-1 logo-container pointer-events-none px-6 pt-12"
+      <div class="reveal-item flex items-center justify-center w-full flex-1 logo-container pointer-events-none px-6"
            :class="{ 'is-revealed': revealed }">
         <LogoKvazar class="w-[85%] md:w-[75%]" />
       </div>

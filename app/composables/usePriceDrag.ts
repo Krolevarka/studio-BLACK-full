@@ -8,6 +8,7 @@ import { usePriceCollision } from './price/usePriceCollision'
 import { usePricePhysics } from './price/usePricePhysics'
 import { usePriceDragGesture } from './price/usePriceDragGesture'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
+import { SECTION } from '~/utils/sectionLabels'
 
 export function usePriceDrag(
   options: Ref<PriceOption[]>,
@@ -32,12 +33,12 @@ export function usePriceDrag(
   const { updateObstaclesCache } = usePriceCollision(options, isMobile)
   const { isMenuOpenLocal } = useMenuVisibility()
   
-  const { registerOptionRef, tick, getOptionOrbitPos } = usePricePhysics(
+  const { registerOptionRef, tick, getOptionOrbitPos, getOrbitScale } = usePricePhysics(
     options, isMobile, emit, optionRefs, physicsMap, startOffset, isMenuOpenLocal
   )
 
   const { startDrag: _startDrag, cleanupGestures } = usePriceDragGesture(
-    options, isMobile, updateOrganic, physicsMap, startOffset, getOptionOrbitPos
+    options, isMobile, updateOrganic, physicsMap, startOffset, getOptionOrbitPos, getOrbitScale
   )
 
   const startDrag = (opt: PriceOption, e: PointerEvent) => {
@@ -49,7 +50,8 @@ export function usePriceDrag(
   let isTickerActive = false
 
   const handleSectionChange = (label: string) => {
-    if (label === '[ Прайс ]') {
+    if (label === SECTION.PRICE) {
+      updateObstaclesCache()
       if (!isTickerActive) {
         gsap.ticker.add(tick)
         isTickerActive = true
