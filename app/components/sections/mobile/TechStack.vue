@@ -42,15 +42,10 @@
           <div 
             v-for="(tech, i) in techList" 
             :key="i"
-            class="tech-item relative p-6 rounded-2xl border border-white/10 bg-white/5 overflow-hidden w-full"
+            class="tech-item p-6 rounded-2xl border-2 border-white bg-transparent w-full"
           >
-            <!-- Фоновый номер -->
-            <span class="absolute -right-2 -bottom-4 font-primary font-black text-8xl text-white/5 pointer-events-none select-none">
-              0{{ i + 1 }}
-            </span>
-            
-            <h4 class="relative z-10 font-primary text-2xl font-bold text-white uppercase">{{ tech.name }}</h4>
-            <p class="relative z-10 font-secondary text-sm text-white/60 mt-2 leading-relaxed">{{ tech.desc }}</p>
+            <h4 class="font-primary text-2xl font-bold text-white uppercase">{{ tech.name }}</h4>
+            <p class="font-secondary text-sm text-white/60 mt-2 leading-relaxed">{{ tech.desc }}</p>
           </div>
         </div>
       </div>
@@ -92,10 +87,14 @@ const techList = [
 let isClosing = false;
 
 // Custom Drag Scroll Logic
+// Custom Premium Inertia Drag Scroll Logic
 let startY = 0
 let scrollY = 0
 let maxScroll = 0
 let isDragging = false
+let lastY = 0
+let lastTime = 0
+let velocity = 0
 
 const calculateMaxScroll = () => {
   if (cardsWrapperRef.value && contentRef.value) {
@@ -107,9 +106,17 @@ const onTouchStart = (e: TouchEvent) => {
   if (!isInteractive.value || isClosing) return
   isDragging = true
   startY = e.touches[0]?.clientY ?? 0
+  lastY = startY
+  lastTime = performance.now()
+  velocity = 0
   
   if (cardsWrapperRef.value) {
     gsap.killTweensOf(cardsWrapperRef.value)
+    // Подхватываем текущую позицию, если скролл ещё летел по инерции
+    const currentY = gsap.getProperty(cardsWrapperRef.value, 'y') as number
+    if (!isNaN(currentY)) {
+      scrollY = currentY
+    }
   }
 }
 
@@ -117,19 +124,30 @@ const onTouchMove = (e: TouchEvent) => {
   if (!isDragging || !isInteractive.value || isClosing) return
   
   const y = e.touches[0]?.clientY ?? 0
+  const now = performance.now()
+  const dt = now - lastTime
+  
+  if (dt > 0) {
+    // Вычисляем мгновенную скорость (px/ms) и сглаживаем её
+    const instantVel = (y - lastY) / dt
+    velocity = velocity * 0.7 + instantVel * 0.3
+  }
+  lastY = y
+  lastTime = now
+  
   const deltaY = y - startY
   startY = y
   
   scrollY += deltaY
   calculateMaxScroll()
   
-  // Rubber band effect (резинка по краям)
+  // Эффект мягкой премиальной резинки по краям
   let renderY = scrollY
   if (scrollY > 0) {
-    renderY = scrollY * 0.4
+    renderY = scrollY * 0.35
   } else if (scrollY < -maxScroll) {
     const over = scrollY + maxScroll
-    renderY = -maxScroll + over * 0.4
+    renderY = -maxScroll + over * 0.35
   }
   
   if (cardsWrapperRef.value) {
@@ -141,20 +159,33 @@ const onTouchEnd = () => {
   if (!isDragging) return
   isDragging = false
   
-  // Привязка (snap) к границам после отпускания
-  let targetY = scrollY
-  if (scrollY > 0) {
+  // Если палец оставался неподвижен перед отпусканием более 80 мс — сбрасываем инерцию
+  if (performance.now() - lastTime > 80) {
+    velocity = 0
+  }
+  
+  calculateMaxScroll()
+  
+  // Вычисляем инерционный выбег
+  const momentum = velocity * 220
+  let targetY = scrollY + momentum
+  
+  // Мягкая привязка к границам контента
+  if (targetY > 0) {
     targetY = 0
-  } else if (scrollY < -maxScroll) {
+  } else if (targetY < -maxScroll) {
     targetY = -maxScroll
   }
   
   scrollY = targetY
   
+  // Динамическая длительность анимации скольжения для шелковистого эффекта
+  const duration = Math.min(1.4, Math.max(0.6, Math.abs(velocity) * 0.45))
+  
   if (cardsWrapperRef.value) {
     gsap.to(cardsWrapperRef.value, { 
       y: targetY, 
-      duration: 0.5, 
+      duration, 
       ease: 'power3.out' 
     })
   }
@@ -165,6 +196,7 @@ const openStack = () => {
   isVisible.value = true
   isInteractive.value = false
   scrollY = 0
+  velocity = 0
   
   // Сбрасываем позицию перед открытием
   if (cardsWrapperRef.value) {
