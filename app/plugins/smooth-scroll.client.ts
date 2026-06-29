@@ -45,17 +45,27 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Блокируем свободный скролл с клавиатуры (пробел, стрелки, page up/down)
   const preventKeyboardScrollBypass = (e: KeyboardEvent) => {
-    const blockedKeys = ['Space', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'];
-    if (blockedKeys.includes(e.code)) {
+    const arrowKeys = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'];
+    const scrollKeys = ['Space', 'PageDown', 'PageUp', 'Home', 'End'];
+
+    if (arrowKeys.includes(e.code) || scrollKeys.includes(e.code)) {
       const target = e.target as HTMLElement;
       if (target) {
-        const isInput = ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(target.tagName);
-        const isButtonRole = target.getAttribute('role') === 'button';
-        const isContentEditable = target.isContentEditable;
-        
-        if (!isInput && !isButtonRole && !isContentEditable) {
-          e.preventDefault();
-        }
+        const isTextInput = ['INPUT', 'TEXTAREA'].includes(target.tagName) || target.isContentEditable;
+        const isSelect = target.tagName === 'SELECT';
+        const isButton = target.tagName === 'BUTTON' || target.getAttribute('role') === 'button';
+
+        // 1. В текстовых полях ввода разрешаем любые клавиши для перемещения курсора и ввода пробела
+        if (isTextInput) return;
+
+        // 2. В выпадающих списках (SELECT) разрешаем стрелки для выбора опций
+        if (isSelect && arrowKeys.includes(e.code)) return;
+
+        // 3. Для кнопок разрешаем только Пробел (чтобы активировать кнопку по a11y), а стрелки запрещаем
+        if (isButton && e.code === 'Space') return;
+
+        // Во всех остальных случаях (включая нажатие стрелок на кнопках или body) блокируем скролл
+        e.preventDefault();
       }
     }
   }

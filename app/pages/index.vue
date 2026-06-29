@@ -49,6 +49,7 @@ let scrollTimer: ReturnType<typeof setTimeout> | null = null
 let menuObserverTimer: ReturnType<typeof setTimeout> | null = null
 let preloaderFallbackTimer: ReturnType<typeof setTimeout> | null = null
 let globalFocusOutAlign: ((e: FocusEvent) => void) | null = null
+let globalKeyDownNav: ((e: KeyboardEvent) => void) | null = null
 
 const { on, emit } = useEventBus()
 const { isPreloading } = useOrganicCore()
@@ -219,6 +220,26 @@ onMounted(() => {
   }
   window.addEventListener('focusout', onFocusOut)
   globalFocusOutAlign = onFocusOut
+
+  // Навигация пробелом (Space -> следующая секция, Shift + Space -> предыдущая секция)
+  const onKeyDownNav = (e: KeyboardEvent) => {
+    if (e.code === 'Space') {
+      const target = e.target as HTMLElement
+      if (target) {
+        const isTextInput = ['INPUT', 'TEXTAREA'].includes(target.tagName) || target.isContentEditable
+        const isButton = target.tagName === 'BUTTON' || target.getAttribute('role') === 'button'
+        
+        // Если фокус в инпуте (ввод пробела) или на кнопке (нажатие кнопки) — не перехватываем
+        if (!isTextInput && !isButton) {
+          e.preventDefault()
+          const dir = e.shiftKey ? -1 : 1
+          gotoSection(currentIndex + dir, dir)
+        }
+      }
+    }
+  }
+  window.addEventListener('keydown', onKeyDownNav)
+  globalKeyDownNav = onKeyDownNav
 })
 
 onBeforeUnmount(() => {
@@ -230,6 +251,10 @@ onBeforeUnmount(() => {
   if (typeof window !== 'undefined' && globalFocusOutAlign) {
     window.removeEventListener('focusout', globalFocusOutAlign)
     globalFocusOutAlign = null
+  }
+  if (typeof window !== 'undefined' && globalKeyDownNav) {
+    window.removeEventListener('keydown', globalKeyDownNav)
+    globalKeyDownNav = null
   }
 })
 </script>
