@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "NODE_OPTIONS='--no-deprecation' nuxt dev",
+    "dev": "cross-env NODE_OPTIONS=\"--no-deprecation\" nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -27,6 +27,7 @@
   "devDependencies": {
     "@nuxtjs/google-fonts": "^3.2.0",
     "@types/node": "^26.0.0",
-    "@types/nodemailer": "^8.0.1"
+    "@types/nodemailer": "^8.0.1",
+    "cross-env": "^7.0.3"
   }
 }

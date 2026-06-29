@@ -66,4 +66,13 @@ textarea:-webkit-autofill:active {
   @apply bg-white/10 backdrop-blur-md border border-white/20;
 }
 
+/* Отключаем pointer-events на время любых анимаций переходов (Vue Transition / TransitionGroup) и на нераскрытых элементах,
+   чтобы курсор не примагничивался к сдвигающимся, появляющимся или уходящим элементам */
+[class*="-enter-active"],
+[class*="-leave-active"],
+[class*="-move"],
+.reveal-item:not(.is-revealed) {
+  pointer-events: none !important;
+}
+
 

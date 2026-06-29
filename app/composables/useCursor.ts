@@ -45,6 +45,7 @@ export function useCursor() {
 
   let dragTimer: ReturnType<typeof setTimeout> | null = null
   let clickTimer: ReturnType<typeof setTimeout> | null = null
+  let transitionEndHandler: (() => void) | null = null
 
   const resetMagneticState = () => {
     if (!isMagnetic && !isHovering.value) return
@@ -173,6 +174,14 @@ export function useCursor() {
 
     if (magnetic) {
       if (isMagnetic && magneticTarget === magnetic) return
+      const computed = typeof window !== 'undefined' ? window.getComputedStyle(magnetic) : null
+      if (
+        !magnetic.isConnected ||
+        magnetic.closest('[class*="-enter-active"], [class*="-leave-active"], [class*="-move"], .reveal-item:not(.is-revealed)') ||
+        (computed && (computed.pointerEvents === 'none' || computed.opacity === '0'))
+      ) {
+        return
+      }
       isHovering.value = true
       isMagnetic = true
       magneticTarget = magnetic as HTMLElement
@@ -262,14 +271,25 @@ export function useCursor() {
     let targetY = mouseY
 
     if (isMagnetic && magneticTarget) {
-      const centerX = magneticRect.left + magneticRect.width / 2
-      const centerY = magneticRect.top + magneticRect.height / 2
+      const computed = typeof window !== 'undefined' ? window.getComputedStyle(magneticTarget) : null
+      const isInvalid = !magneticTarget.isConnected ||
+                        magneticTarget.closest('[class*="-enter-active"], [class*="-leave-active"], [class*="-move"], .reveal-item:not(.is-revealed)') ||
+                        (computed && (computed.pointerEvents === 'none' || computed.opacity === '0'))
 
-      targetX = centerX
-      targetY = centerY
+      if (isInvalid) {
+        resetMagneticState()
+      } else {
+        const rect = magneticTarget.getBoundingClientRect()
+        magneticRect = { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
+        const centerX = magneticRect.left + magneticRect.width / 2
+        const centerY = magneticRect.top + magneticRect.height / 2
 
-      state.width += (magneticRect.width - state.width) * 0.2
-      state.height += (magneticRect.height - state.height) * 0.2
+        targetX = centerX
+        targetY = centerY
+
+        state.width += (magneticRect.width - state.width) * 0.2
+        state.height += (magneticRect.height - state.height) * 0.2
+      }
     }
 
     const coreEase = isHeavyDrag.value ? 0.05 : (isMagnetic ? 0.15 : 0.6)
@@ -380,6 +400,15 @@ export function useCursor() {
         document.addEventListener('pointerdown', onMouseDownGlobal)
         document.addEventListener('pointerup', onMouseUpGlobal)
 
+        transitionEndHandler = () => {
+          if (!isMagnetic && !isHeavyDrag.value && !isPageAnimating.value) {
+            const el = document.elementFromPoint(mouseX, mouseY)
+            if (el) onMouseOverGlobal({ target: el } as unknown as PointerEvent)
+          }
+        }
+        window.addEventListener('transitionend', transitionEndHandler, { passive: true })
+        window.addEventListener('animationend', transitionEndHandler, { passive: true })
+
         document.body.classList.add('custom-cursor-enabled')
 
         gsap.ticker.add(render, false, false)
@@ -400,6 +429,10 @@ export function useCursor() {
     document.removeEventListener('click', onClickGlobal)
     document.removeEventListener('pointerdown', onMouseDownGlobal)
     document.removeEventListener('pointerup', onMouseUpGlobal)
+    if (transitionEndHandler) {
+      window.removeEventListener('transitionend', transitionEndHandler)
+      window.removeEventListener('animationend', transitionEndHandler)
+    }
     document.body.classList.remove('custom-cursor-enabled')
     gsap.ticker.remove(render)
     gsap.killTweensOf(state)
