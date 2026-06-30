@@ -30,7 +30,7 @@
         <div class="mb-10 md:mb-16">
           <div class="reveal-item font-secondary text-[clamp(12px,1vw,16px)] uppercase tracking-[0.3em] text-white/70 pointer-events-auto"
                :class="{ 'is-revealed': revealed }" style="--reveal-delay: 150ms">
-            <UiKineticText text="[ Цифровые пространства ]" />
+            <UiKineticText text="[ Full-stack разработка ]" />
           </div>
         </div>
 
@@ -39,13 +39,13 @@
           <div>
             <p class="reveal-item font-secondary text-[clamp(16px,1.35vw,24px)] text-white leading-relaxed pointer-events-auto"
                :class="{ 'is-revealed': revealed }" style="--reveal-delay: 250ms">
-              <UiKineticText text="Мы не просто пишем код и рисуем дизайн. Мы создаем цифровые экосистемы, в которых бренд оживает. Каждый наш проект — это живой организм, способный адаптироваться, дышать и взаимодействовать с пользователем на глубоком уровне." />
+              <UiKineticText text="Мы создаем цифровые продукты под ключ: сайты, веб-приложения, чат-ботов, ИИ-клиентов и мобильные приложения. Берем на себя весь цикл: от идеи, UX и дизайна до frontend, backend, интеграций и запуска в production." />
             </p>
           </div>
           <div>
             <p class="reveal-item font-secondary text-[clamp(14px,1.2vw,18px)] text-white/70 leading-relaxed pointer-events-auto"
                :class="{ 'is-revealed': revealed }" style="--reveal-delay: 350ms">
-              <UiKineticText text="Отказываясь от шаблонных решений, мы используем генеративный дизайн, плавные анимации и нестандартную архитектуру. Наша цель — погрузить пользователя в состояние потока с первых секунд." />
+              <UiKineticText text="Работаем как техническая команда для бизнеса: проектируем архитектуру, настраиваем CI/CD, разворачиваем продукт на сервере и остаемся рядом после релиза. Поддерживаем, развиваем и улучшаем проект, когда он уже работает с реальными пользователями." />
             </p>
           </div>
         </div>
