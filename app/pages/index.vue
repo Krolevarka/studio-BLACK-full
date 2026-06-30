@@ -43,6 +43,7 @@ const loadPrice = ref(false)
 const loadContact = ref(false)
 let isMenuOpen = false
 let isTechStackOpen = false
+let isPriceModalOpen = false
 let wheelObserverInstance: Observer | null = null
 let touchObserverInstance: Observer | null = null
 let scrollTimer: ReturnType<typeof setTimeout> | null = null
@@ -60,7 +61,7 @@ const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 
 const easeInOutQuad = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
 
 const gotoSection = (index: number, direction: number) => {
-  if (isAnimating.value || isMenuOpen || isPreloading.value || isTechStackOpen) return
+  if (isAnimating.value || isMenuOpen || isPreloading.value || isTechStackOpen || isPriceModalOpen) return
   const isHeavyDrag = useState('isHeavyDrag', () => false)
   if (isHeavyDrag.value) return // Блокируем свайпы и скролл во время перетаскивания сфер!
   
@@ -162,6 +163,10 @@ onMounted(() => {
 
   on('techstack-state', (state: { active: boolean }) => {
     isTechStackOpen = state.active
+  })
+
+  on('price-modal-state', (state: { active: boolean }) => {
+    isPriceModalOpen = state.active
   })
 
   // Останавливаем стандартную реакцию Lenis и нативный скролл, чтобы они не конфликтовали с Observer

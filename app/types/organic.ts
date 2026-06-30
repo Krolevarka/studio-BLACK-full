@@ -5,6 +5,7 @@ export interface PriceOption {
   id: string;
   name: string;
   price: number;
+  basePrice?: number;
   selected: boolean;
   angle: number;
   radiusOffset: number;

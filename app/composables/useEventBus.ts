@@ -41,6 +41,8 @@ type EventMap = {
   'finish-preloader': void
   /** Сообщает о смене текущей секции при скролле */
   'section-change': string
+  /** Состояние модального окна сравнения подходов в Price */
+  'price-modal-state': { active: boolean }
 }
 
 declare module '#app' {

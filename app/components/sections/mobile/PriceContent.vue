@@ -1,6 +1,7 @@
 <template>
   <section ref="priceRef" v-bind="$attrs" class="reveal-scope-mobile relative h-svh w-full flex flex-col items-center justify-center bg-transparent z-10 touch-none overflow-hidden">
-    
+    <PriceDevModeModal :is-open="showDevModeModal" @close="showDevModeModal = false" />
+
     <div class="w-full max-w-sm mx-auto flex flex-col h-full justify-between pointer-events-none transition-[opacity,transform] duration-1000 ease-out pt-20 pb-16 px-6"
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
@@ -33,8 +34,8 @@
               {{ activeOption.name }}
             </h3>
 
-            <div class="font-secondary text-lg font-medium text-white mb-4">
-              от {{ activeOption.price.toLocaleString('ru-RU') }} ₽
+            <div class="font-secondary text-lg font-medium text-white mb-4 tabular-nums">
+              от {{ Math.round(activeOptionDisplayPrice).toLocaleString('ru-RU') }} ₽
             </div>
 
             <p class="font-secondary text-sm text-white/50 leading-relaxed max-w-[17.5rem] mb-8">
@@ -56,13 +57,20 @@
         </transition>
       </div>
 
+      <!-- Переключатель режимов -->
+      <div class="reveal-item w-full pointer-events-auto my-3"
+           :class="{ 'is-revealed': revealed }" style="--reveal-delay: 240ms">
+        <PriceDevModeSwitch />
+      </div>
+
       <!-- Итог -->
       <div class="reveal-item w-full pointer-events-auto"
-           :class="{ 'is-revealed': revealed }" style="--reveal-delay: 300ms">
+           :class="{ 'is-revealed': revealed }" style="--reveal-delay: 320ms">
         <div class="border-t border-white/10 pt-6">
+
           <div class="flex justify-between items-end mb-6">
             <div class="font-secondary text-xs uppercase tracking-widest text-white/50 mb-1">Итого:</div>
-            <div class="font-primary text-4xl font-black text-white leading-none tracking-tight">
+            <div class="font-primary text-4xl font-black text-white leading-none tracking-tight tabular-nums">
               <span v-if="displayPrice > 0" class="text-2xl align-baseline mr-1">от</span>{{ Math.round(displayPrice).toLocaleString('ru-RU') }} <span class="text-2xl">₽</span>
             </div>
           </div>
@@ -87,15 +95,22 @@ import gsap from 'gsap'
 import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useSectionReveal } from '~/composables/useSectionReveal'
+import { usePriceDevMode } from '~/composables/usePriceDevMode'
 import type { PriceOption } from '~/types/organic'
 import { createProductBuilderOptions } from '~/data/productBuilderOptions'
+import PriceDevModeSwitch from '~/components/sections/price/PriceDevModeSwitch.vue'
+import PriceDevModeModal from '~/components/sections/price/PriceDevModeModal.vue'
 
 defineOptions({ inheritAttrs: false })
 
 const priceRef = ref<HTMLElement | null>(null)
 
-const { emit, on } = useEventBus()
+const { emit, on, off } = useEventBus()
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
+const { getEffectivePrice, priceDevMode } = usePriceDevMode()
+
+const showDevModeModal = ref(false)
+
 // Унифицированное появление/исчезновение контента секции.
 // enterDelay: ждём, пока органическая сфера разложится в формы прайса (морф ~2.4s от старта скролла,
 // прибытие ~2.0s) — элементы выходят уже после трансформации.
@@ -109,6 +124,17 @@ const activeOption = computed(() => {
   return options.value.find(o => o.id === activeTabId.value) || options.value[0]!
 })
 
+const activeOptionDisplayPrice = ref(0)
+
+const stopActiveOptionWatch = watch(() => activeOption.value.price, (newVal) => {
+  gsap.to(activeOptionDisplayPrice, {
+    value: newVal,
+    duration: 1,
+    ease: 'power3.out',
+    snap: { value: 1 }
+  })
+}, { immediate: true })
+
 const basePrice = 0
 const displayPrice = ref(0)
 
@@ -116,15 +142,33 @@ const totalPrice = computed(() => {
   return options.value.reduce((acc, opt) => opt.selected ? acc + opt.price : acc, basePrice)
 })
 
-const toggleOption = (id: string) => {
-  const opt = options.value.find(o => o.id === id)
-  if (opt) {
-    opt.selected = !opt.selected
+const isPriceActive = ref(false)
+
+const stopDevModeWatch = watch(priceDevMode, () => {
+  options.value.forEach(opt => {
+    if (opt.basePrice === undefined) opt.basePrice = opt.price
+    opt.price = getEffectivePrice(opt.basePrice)
+  })
+  if (isPriceActive.value) {
     emit('price-update', { 
       active: true, 
       options: options.value.map(o => ({ ...o })), 
       totalPrice: totalPrice.value 
     })
+  }
+}, { immediate: true })
+
+const toggleOption = (id: string) => {
+  const opt = options.value.find(o => o.id === id)
+  if (opt) {
+    opt.selected = !opt.selected
+    if (isPriceActive.value) {
+      emit('price-update', { 
+        active: true, 
+        options: options.value.map(o => ({ ...o })), 
+        totalPrice: totalPrice.value 
+      })
+    }
   }
 }
 
@@ -132,28 +176,57 @@ const stopWatch = watch(totalPrice, (newVal) => {
   gsap.to(displayPrice, {
     value: newVal,
     duration: 1,
-    ease: 'power3.out'
+    ease: 'power3.out',
+    snap: { value: 1 }
   })
 })
 
-onMounted(() => {
-  on('section-change', (label: string) => {
-    if (label === '[ Прайс ]') {
-      emit('price-state', true)
-      emit('price-update', { 
-        active: true, 
-        options: options.value.map(o => ({ ...o })), 
-        totalPrice: totalPrice.value 
-      })
+const handlePriceModalState = (state: { active: boolean }) => {
+  showDevModeModal.value = state.active
+}
+
+const handleSectionChange = (label: string) => {
+  if (label === '[ Прайс ]') {
+    isPriceActive.value = true
+    emit('price-state', true)
+    emit('price-update', { 
+      active: true, 
+      options: options.value.map(o => ({ ...o })), 
+      totalPrice: totalPrice.value 
+    })
+  } else {
+    isPriceActive.value = false
+    emit('price-state', false)
+  }
+}
+
+watch(showDevModeModal, (val) => {
+  const items = priceRef.value?.querySelectorAll('.reveal-item')
+  if (items?.length) {
+    gsap.killTweensOf(items)
+    if (val) {
+      gsap.to(items, { y: 20, opacity: 0, duration: 0.5, ease: 'power3.inOut' })
     } else {
-      emit('price-state', false)
+      gsap.to(items, { y: 0, opacity: 1, duration: 0.6, ease: 'power4.out', delay: 0.15, clearProps: 'transform' })
     }
-  })
+  }
+})
+
+onMounted(() => {
+  on('price-modal-state', handlePriceModalState)
+  on('section-change', handleSectionChange)
 })
 
 onBeforeUnmount(() => {
   stopWatch()
+  stopDevModeWatch()
+  stopActiveOptionWatch()
   gsap.killTweensOf(displayPrice)
+  gsap.killTweensOf(activeOptionDisplayPrice)
+  const items = priceRef.value?.querySelectorAll('.reveal-item')
+  if (items?.length) gsap.killTweensOf(items)
+  off('price-modal-state', handlePriceModalState)
+  off('section-change', handleSectionChange)
 })
 </script>
 

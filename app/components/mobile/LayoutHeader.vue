@@ -7,7 +7,7 @@
   >
     <a href="#hero" @click.prevent="$emit('logo-click')" 
        class="w-20 sm:w-24 flex items-center min-h-[2.75rem] min-w-[2.75rem] transition-opacity duration-500"
-       :class="(isScrolling && !isMenuOpen) || isContactTyping ? 'pointer-events-none opacity-0' : 'pointer-events-auto cursor-pointer opacity-100'"
+       :class="(isScrolling && !isMenuOpen) || isContactTyping || isPriceModalOpen ? 'pointer-events-none opacity-0' : 'pointer-events-auto cursor-pointer opacity-100'"
        style="touch-action: none;">
       <LogoText class="w-full h-auto fill-current" />
     </a>
@@ -20,7 +20,7 @@
       role="button"
       tabindex="0"
       class="relative w-12 h-12 flex items-center justify-center rounded-full min-h-[2.75rem] min-w-[2.75rem] transition-opacity duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
-      :class="(isTechStackOpen || isContactTyping) ? 'opacity-0 pointer-events-none' : (isScrolling && !isMenuOpen ? 'pointer-events-none' : 'opacity-100 pointer-events-auto')"
+      :class="(isTechStackOpen || isPriceModalOpen || isContactTyping) ? 'opacity-0 pointer-events-none' : (isScrolling && !isMenuOpen ? 'pointer-events-none' : 'opacity-100 pointer-events-auto')"
       style="touch-action: none;"
     >
       <div class="relative w-6 h-6 flex items-center justify-center transition-transform duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)]">
@@ -53,6 +53,7 @@ const props = defineProps<{
   isMenuAnimating: boolean
   isContactTyping?: boolean
   isTechStackOpen?: boolean
+  isPriceModalOpen?: boolean
 }>()
 
 defineEmits<{

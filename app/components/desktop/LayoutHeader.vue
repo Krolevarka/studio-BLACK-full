@@ -4,12 +4,14 @@
     style="will-change: transform;"
     :class="isPreloading ? 'opacity-0' : 'opacity-100'"
   >
-    <a href="#hero" @click.prevent="$emit('logo-click')" class="w-24 md:w-32 xl:w-40 flex items-center pointer-events-auto hover:opacity-70 transition-opacity price-collision-obstacle cursor-pointer">
+    <a href="#hero" @click.prevent="$emit('logo-click')" 
+       class="w-24 md:w-32 xl:w-40 flex items-center transition-opacity duration-500 price-collision-obstacle"
+       :class="isPriceModalOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto hover:opacity-70 cursor-pointer'">
       <LogoText class="w-full h-auto fill-current" />
     </a>
     <!-- Правая часть: текст секции и бургер -->
     <div class="flex items-center gap-3 md:gap-6 transition-opacity duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
-         :class="isTechStackOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'">
+         :class="(isTechStackOpen || isPriceModalOpen) ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'">
       <!-- Индикатор текущей секции -->
       <div 
         class="relative h-6 flex items-center pointer-events-none min-w-[6rem] md:min-w-[9rem] justify-end transition-all duration-[600ms] ease-[cubic-bezier(0.25,1,0.5,1)] price-collision-obstacle"
@@ -28,7 +30,7 @@
         aria-label="Переключить меню навигации"
         :aria-expanded="isMenuOpen"
         class="magnetic-btn relative w-12 h-12 flex items-center justify-center group price-collision-obstacle rounded-full"
-        :class="isTechStackOpen ? 'pointer-events-none' : 'pointer-events-auto'"
+        :class="(isTechStackOpen || isPriceModalOpen) ? 'pointer-events-none' : 'pointer-events-auto'"
       >
         <!-- Контейнер для линий, который вращается на hover, если меню открыто -->
         <div class="relative w-6 h-6 flex items-center justify-center transition-transform duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -62,6 +64,7 @@ defineProps<{
   isMenuAnimating: boolean
   currentMenuLabel: string
   isTechStackOpen?: boolean
+  isPriceModalOpen?: boolean
 }>()
 
 defineEmits<{

@@ -55,6 +55,7 @@ export function createProductBuilderOptions(isMobile = false): PriceOption[] {
     id: item.id,
     name: item.name,
     price: item.price,
+    basePrice: item.price,
     selected: false,
     angle: isMobile ? 0 : step * index,
     radiusOffset: isMobile ? 0 : item.radiusOffset,

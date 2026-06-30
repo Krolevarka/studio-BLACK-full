@@ -11,6 +11,7 @@
       :currentMenuLabel="currentMenuLabel"
       :isContactTyping="isContactTyping"
       :isTechStackOpen="isTechStackOpen"
+      :isPriceModalOpen="isPriceModalOpen"
       @logo-click="handleLogoClick"
       @toggle-menu="isMenuOpen ? closeMenu() : openMenu()"
     />
@@ -87,6 +88,7 @@ const isMenuAnimating = ref(false)
 const currentMenuLabel = ref('[ СТУДИЯ ]')
 const isContactTyping = ref(false)
 const isTechStackOpen = ref(false)
+const isPriceModalOpen = ref(false)
 
 let menuTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -95,14 +97,14 @@ const { emit, on } = useEventBus()
 useHead({
   bodyAttrs: {
     class: computed(() => isMenuOpen.value ? 'menu-is-open' : ''),
-    style: computed(() => (isPreloading.value || isTechStackOpen.value) ? 'overflow: hidden;' : '')
+    style: computed(() => (isPreloading.value || isTechStackOpen.value || isPriceModalOpen.value) ? 'overflow: hidden;' : '')
   }
 })
 
-// Блокируем скролл во время загрузки (прелоадер) или открытия TechStack
-watch([isPreloading, isTechStackOpen], ([preloading, techStackOpen]) => {
+// Блокируем скролл во время загрузки (прелоадер), открытия TechStack или модалки Прайса
+watch([isPreloading, isTechStackOpen, isPriceModalOpen], ([preloading, techStackOpen, priceModalOpen]) => {
   if (import.meta.client) {
-    if (preloading || techStackOpen) {
+    if (preloading || techStackOpen || priceModalOpen) {
       if ($lenis) $lenis.stop()
     } else {
       if ($lenis) $lenis.start()
@@ -190,6 +192,11 @@ onMounted(() => {
   // Отслеживаем состояние окна технологий
   on('techstack-state', (state: { active: boolean, hoveredIndex?: number }) => {
     isTechStackOpen.value = state.active
+  })
+
+  // Отслеживаем состояние модалки сравнения подходов (Прайс)
+  on('price-modal-state', (state: { active: boolean }) => {
+    isPriceModalOpen.value = state.active
   })
 })
 

@@ -1,29 +1,18 @@
 <template>
   <section ref="priceRef" v-bind="$attrs" class="relative h-dvh w-full overflow-hidden pt-20 md:pt-0 bg-transparent">
-    <!-- Instruction Helper -->
+    <PriceDevModeModal :is-open="showDevModeModal" @close="showDevModeModal = false" />
+
+    <!-- Dev Mode Switch (Top) -->
     <div 
-      class="absolute top-24 md:top-12 left-0 w-full flex justify-center z-10 pointer-events-none"
+      v-show="isPriceVisible"
+      class="fixed top-6 md:top-10 left-0 w-full flex justify-center z-30 pointer-events-none"
       :class="[
-        isMenuTransitioning ? 'transition-all' : 'transition-all duration-500',
-        hintState === 'hidden' ? 'opacity-0 scale-95' : 'opacity-100 scale-100', 
-        isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
+        isMenuTransitioning ? 'transition-all duration-500' : 'transition-all duration-500',
+        isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : ''
       ]"
     >
-      <div class="price-anim-target w-full flex justify-center">
-        <Transition name="fade" mode="out-in">
-          <div 
-            v-if="hintState === 'initial'"
-            class="text-[clamp(10px,1vw,14px)] text-white/50 tracking-widest uppercase font-secondary px-4 text-center"
-          >
-            {{ isMobile ? 'Нажмите на модуль, чтобы добавить его в проект' : 'Перетащите модули в центр, чтобы собрать проект' }}
-          </div>
-          <div 
-            v-else-if="hintState === 'remove'"
-            class="text-[clamp(10px,1vw,14px)] text-white/50 tracking-widest uppercase font-secondary px-4 text-center"
-          >
-            Нажмите на сферу в центре, чтобы удалить последний модуль
-          </div>
-        </Transition>
+      <div class="price-switch-target w-full pointer-events-none">
+        <PriceDevModeSwitch />
       </div>
     </div>
 
@@ -81,6 +70,33 @@
       </div>
     </div>
 
+    <!-- Instruction Helper (Bottom) -->
+    <div 
+      class="absolute bottom-6 md:bottom-8 left-0 w-full flex justify-center z-10 pointer-events-none"
+      :class="[
+        isMenuTransitioning ? 'transition-all' : 'transition-all duration-500',
+        hintState === 'hidden' ? 'opacity-0 scale-95' : 'opacity-100 scale-100', 
+        isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
+      ]"
+    >
+      <div class="price-anim-target w-full flex justify-center">
+        <Transition name="fade" mode="out-in">
+          <div 
+            v-if="hintState === 'initial'"
+            class="text-[clamp(10px,1vw,14px)] text-white/50 tracking-widest uppercase font-secondary px-4 text-center"
+          >
+            {{ isMobile ? 'Нажмите на модуль, чтобы добавить его в проект' : 'Перетащите модули в центр, чтобы собрать проект' }}
+          </div>
+          <div 
+            v-else-if="hintState === 'remove'"
+            class="text-[clamp(10px,1vw,14px)] text-white/50 tracking-widest uppercase font-secondary px-4 text-center"
+          >
+            Нажмите на сферу в центре, чтобы удалить последний модуль
+          </div>
+        </Transition>
+      </div>
+    </div>
+
     <!-- Desktop Hover Description -->
     <div class="hidden md:block absolute inset-0 z-10 pointer-events-none" 
          :class="[
@@ -111,21 +127,26 @@ import gsap from 'gsap'
 import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { usePriceDrag } from '~/composables/usePriceDrag'
+import { usePriceDevMode } from '~/composables/usePriceDevMode'
 import type { PriceOption } from '~/types/organic'
 import { createProductBuilderOptions } from '~/data/productBuilderOptions'
 import PriceCoreDisplay from '~/components/sections/price/PriceCoreDisplay.vue'
 import PriceSatellite from '~/components/sections/price/PriceSatellite.vue'
+import PriceDevModeSwitch from '~/components/sections/price/PriceDevModeSwitch.vue'
+import PriceDevModeModal from '~/components/sections/price/PriceDevModeModal.vue'
 
 defineOptions({ inheritAttrs: false })
 
 const priceRef = ref<HTMLElement | null>(null)
 const { emit, on, off } = useEventBus()
+const { getEffectivePrice, priceDevMode } = usePriceDevMode()
 
 type HintState = 'initial' | 'remove' | 'hidden'
 const hintState = ref<HintState>('initial')
 
 const isPriceActive = ref(false)
 const isPriceVisible = ref(false)
+const showDevModeModal = ref(false)
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
 
@@ -159,6 +180,16 @@ const { hoveredOptId, hoverOption, startDrag, registerOptionRef, unselectLast, s
 const activeHoverOption = computed(() => {
   return options.value.find(opt => opt.id === hoveredOptId.value) || null
 })
+
+const stopDevModeWatch = watch(priceDevMode, () => {
+  options.value.forEach(opt => {
+    if (opt.basePrice === undefined) opt.basePrice = opt.price
+    opt.price = getEffectivePrice(opt.basePrice)
+  })
+  if (isPriceActive.value) {
+    updateOrganic()
+  }
+}, { immediate: true })
 
 watch(totalPrice, (newVal) => {
   gsap.to(displayPrice, {
@@ -246,6 +277,15 @@ const handleSectionChange = (label: string) => {
             satellites.forEach((el) => { (el as HTMLElement).style.transition = '' })
           }
         }
+
+        const switchTargets = priceRef.value?.querySelectorAll('.price-switch-target')
+        if (switchTargets && switchTargets.length) {
+          gsap.killTweensOf(switchTargets)
+          gsap.fromTo(switchTargets,
+            { opacity: 0, y: -25 },
+            { opacity: 1, y: 0, duration: 0.8, delay: 0.2, ease: 'power3.out', clearProps: 'opacity,transform' }
+          )
+        }
       })
     })
   } else {
@@ -257,10 +297,15 @@ const handleSectionChange = (label: string) => {
       const bgTargets = priceRef.value?.querySelectorAll('.price-anim-target')
       const heavyTargets = priceRef.value?.querySelectorAll('.price-heavy-target')
       const satellites = priceRef.value?.querySelectorAll('.price-satellite')
+      const switchTargets = priceRef.value?.querySelectorAll('.price-switch-target')
 
       if (bgTargets && bgTargets.length) {
         gsap.killTweensOf(bgTargets)
         gsap.to(bgTargets, { opacity: 0, duration: 0.3, ease: 'power2.out' })
+      }
+      if (switchTargets && switchTargets.length) {
+        gsap.killTweensOf(switchTargets)
+        gsap.to(switchTargets, { opacity: 0, y: -15, duration: 0.3, ease: 'power2.out' })
       }
       if (satellites && satellites.length) {
         gsap.killTweensOf(satellites)
@@ -285,32 +330,69 @@ const handleSectionChange = (label: string) => {
   }
 }
 
+const handlePriceModalState = (state: { active: boolean }) => {
+  showDevModeModal.value = state.active
+}
+
+watch(showDevModeModal, (val) => {
+  const switchTargets = priceRef.value?.querySelectorAll('.price-switch-target')
+  const heavyTargets = priceRef.value?.querySelectorAll('.price-heavy-target')
+  const satellites = priceRef.value?.querySelectorAll('.price-satellite')
+  const animTargets = priceRef.value?.querySelectorAll('.price-anim-target')
+
+  if (switchTargets?.length) gsap.killTweensOf(switchTargets)
+  if (heavyTargets?.length) gsap.killTweensOf(heavyTargets)
+  if (satellites?.length) gsap.killTweensOf(satellites)
+  if (animTargets?.length) gsap.killTweensOf(animTargets)
+
+  if (val) {
+    if (switchTargets?.length) gsap.to(switchTargets, { y: -40, opacity: 0, duration: 0.6, ease: 'power3.inOut' })
+    if (heavyTargets?.length) gsap.to(heavyTargets, { opacity: 0, scale: 0.95, duration: 0.6, ease: 'power3.inOut' })
+    if (satellites?.length) gsap.to(satellites, { opacity: 0, scale: 0.8, duration: 0.6, ease: 'power3.inOut' })
+    if (animTargets?.length) gsap.to(animTargets, { y: 30, opacity: 0, duration: 0.6, ease: 'power3.inOut' })
+  } else {
+    if (switchTargets?.length) gsap.to(switchTargets, { y: 0, opacity: 1, duration: 0.8, ease: 'power4.out', delay: 0.2, clearProps: 'transform' })
+    if (heavyTargets?.length) gsap.to(heavyTargets, { opacity: 1, scale: 1, duration: 0.8, ease: 'power4.out', delay: 0.2, clearProps: 'transform' })
+    if (satellites?.length) gsap.to(satellites, { opacity: 1, scale: 1, duration: 0.8, ease: 'power4.out', delay: 0.2, clearProps: 'transform' })
+    if (animTargets?.length) gsap.to(animTargets, { y: 0, opacity: 1, duration: 0.8, ease: 'power4.out', delay: 0.2, clearProps: 'transform' })
+  }
+})
+
 onMounted(() => {
   resize()
   window.addEventListener('resize', resize)
   on('menu-state', handleMenuState)
   on('section-change', handleSectionChange)
+  on('price-modal-state', handlePriceModalState)
 
   // Сразу прячем элементы анимации при монтировании, чтобы они не мелькали до скролла
   const initialBgTargets = priceRef.value?.querySelectorAll('.price-anim-target')
   if (initialBgTargets && initialBgTargets.length) {
     gsap.set(initialBgTargets, { opacity: 0 })
   }
+  const initialSwitchTargets = priceRef.value?.querySelectorAll('.price-switch-target')
+  if (initialSwitchTargets && initialSwitchTargets.length) {
+    gsap.set(initialSwitchTargets, { opacity: 0 })
+  }
 })
 
 onBeforeUnmount(() => {
+  stopDevModeWatch()
   if (enterDelay) enterDelay.kill()
   if (enterRaf !== null) cancelAnimationFrame(enterRaf)
   const targets = priceRef.value?.querySelectorAll('.price-anim-target')
   const heavyTargets = priceRef.value?.querySelectorAll('.price-heavy-target')
   const satellites = priceRef.value?.querySelectorAll('.price-satellite')
+  const switchTargets = priceRef.value?.querySelectorAll('.price-switch-target')
   if (targets) gsap.killTweensOf(targets)
   if (heavyTargets) gsap.killTweensOf(heavyTargets)
   if (satellites) gsap.killTweensOf(satellites)
+  if (switchTargets) gsap.killTweensOf(switchTargets)
   gsap.killTweensOf(displayPrice)
   window.removeEventListener('resize', resize)
   off('menu-state', handleMenuState)
   off('section-change', handleSectionChange)
+  off('price-modal-state', handlePriceModalState)
 })
 </script>
 
