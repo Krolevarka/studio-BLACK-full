@@ -9,6 +9,7 @@ export interface ContactAnswers {
 }
 
 import { useEventBus } from '~/composables/useEventBus'
+import { productModuleNames } from '~/data/productBuilderOptions'
 
 export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], updateOrganicState: (step?: number) => void) {
   const step = ref(1)
@@ -34,7 +35,7 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
     contact: ''
   })
 
-  // Синхронизация корзины (Прайса) с анкетой
+  // Синхронизация билдера проекта с анкетой
   on('price-update', (payload) => {
     answers.services = payload.options
       .filter(opt => opt.selected)
@@ -44,7 +45,7 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
   const steps = [
     { key: 'contact', type: 'input', question: 'Как с вами связаться?', placeholder: 'Telegram, Phone или Email' },
     { key: 'name', type: 'input', question: 'Как мы можем к вам обращаться?', placeholder: 'Имя или Название компании' },
-    { key: 'services', type: 'plaques', question: 'Какие услуги вас интересуют?', multi: true, options: ['Брендинг', 'Веб-разработка', '3D & Motion', 'Копирайтинг', 'SEO & Аналитика'] },
+    { key: 'services', type: 'plaques', question: 'Какие модули нужны в проекте?', multi: true, options: productModuleNames },
     { key: 'project', type: 'input', question: 'Кратко опишите задачу вашего проекта', placeholder: 'Суть проекта в двух предложениях' },
     { key: 'budget', type: 'plaques', question: 'Какой у вас планируемый бюджет?', multi: false, options: ['< 500 тыс. ₽', '500к - 1М ₽', '1М - 3М ₽', '> 3М ₽'] }
   ]

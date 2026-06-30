@@ -34,7 +34,7 @@
             </h3>
 
             <div class="font-secondary text-lg font-medium text-white mb-4">
-              {{ activeOption.price.toLocaleString('ru-RU') }} ₽
+              от {{ activeOption.price.toLocaleString('ru-RU') }} ₽
             </div>
 
             <p class="font-secondary text-sm text-white/50 leading-relaxed max-w-[17.5rem] mb-8">
@@ -49,7 +49,7 @@
                   ? 'bg-transparent border-white/20 text-white/50 hover:border-white/40 hover:text-white' 
                   : 'bg-transparent border-white/80 text-white hover:bg-white hover:text-black'"
               >
-                {{ activeOption.selected ? 'Убрать из чека' : 'Добавить в чек' }}
+                {{ activeOption.selected ? 'Убрать из проекта' : 'Добавить в проект' }}
               </button>
             </div>
           </div>
@@ -63,7 +63,7 @@
           <div class="flex justify-between items-end mb-6">
             <div class="font-secondary text-xs uppercase tracking-widest text-white/50 mb-1">Итого:</div>
             <div class="font-primary text-4xl font-black text-white leading-none tracking-tight">
-              {{ Math.round(displayPrice).toLocaleString('ru-RU') }} <span class="text-2xl">₽</span>
+              <span v-if="displayPrice > 0" class="text-2xl align-baseline mr-1">от</span>{{ Math.round(displayPrice).toLocaleString('ru-RU') }} <span class="text-2xl">₽</span>
             </div>
           </div>
           
@@ -88,6 +88,7 @@ import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useSectionReveal } from '~/composables/useSectionReveal'
 import type { PriceOption } from '~/types/organic'
+import { createProductBuilderOptions } from '~/data/productBuilderOptions'
 
 defineOptions({ inheritAttrs: false })
 
@@ -100,13 +101,7 @@ const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
 // прибытие ~2.0s) — элементы выходят уже после трансформации.
 const { revealed } = useSectionReveal('[ Прайс ]')
 
-const options = ref<PriceOption[]>([
-  { id: 'opt1', name: 'Брендинг', price: 150000, selected: false, angle: 0, radiusOffset: 0, description: 'Разработка логотипа, фирменного стиля, гайдлайнов и коммуникационной стратегии.' },
-  { id: 'opt2', name: 'Веб-разработка', price: 300000, selected: false, angle: 0, radiusOffset: 0, description: 'Создание премиальных сайтов и интерфейсов с использованием Canvas, WebGL и плавных анимаций.' },
-  { id: 'opt3', name: '3D & Motion', price: 200000, selected: false, angle: 0, radiusOffset: 0, description: 'Интеграция интерактивных 3D-сцен, метаболов, симуляций жидкостей и захватывающих видео-роликов.' },
-  { id: 'opt4', name: 'Копирайтинг', price: 80000, selected: false, angle: 0, radiusOffset: 0, description: 'Написание цепляющих текстов, SEO-оптимизированных статей и UX-райтинг интерфейса.' },
-  { id: 'opt5', name: 'SEO & Аналитика', price: 120000, selected: false, angle: 0, radiusOffset: 0, description: 'Оптимизация сайта под поисковые системы, настройка счетчиков и глубокая аналитика конверсий.' }
-])
+const options = ref<PriceOption[]>(createProductBuilderOptions(true))
 
 const activeTabId = ref(options.value[0]!.id)
 

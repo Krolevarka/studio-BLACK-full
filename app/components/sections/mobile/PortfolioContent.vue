@@ -22,7 +22,7 @@
           <div class="overflow-hidden mb-8">
             <p class="reveal-item font-secondary text-sm md:text-base text-white leading-relaxed pointer-events-auto"
                :class="{ 'is-revealed': revealed }" style="--reveal-delay: 140ms">
-              Великие бренды не просто существуют — они живут. Наше портфолио ждёт проект, который задаст новый ритм всей индустрии. Готовы стать нашим первым ударом сердца?
+              Каждый сильный продукт начинается с первого импульса. Здесь мы собираем проекты, где идея превращается в работающее IT-решение: от архитектуры и дизайна до разработки, запуска и роста.
             </p>
           </div>
 

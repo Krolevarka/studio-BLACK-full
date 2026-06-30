@@ -19,7 +19,7 @@
   >
     <div class="satellite-content text-white text-center flex flex-col items-center justify-center w-[6rem] h-[6rem] md:w-[10rem] md:h-[10rem] transition-opacity duration-300">
       <div class="text-xs md:text-[clamp(13px,0.73vw,15px)] font-bold uppercase tracking-tight leading-tight px-2">{{ option.name }}</div>
-      <div class="text-[10px] md:text-[clamp(12px,0.65vw,13px)] mt-1 font-secondary tracking-widest">{{ formatPrice(option.price) }} ₽</div>
+      <div class="text-[10px] md:text-[clamp(12px,0.65vw,13px)] mt-1 font-secondary tracking-widest">от {{ formatPrice(option.price) }} ₽</div>
     </div>
   </div>
 </template>

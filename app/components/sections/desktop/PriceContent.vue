@@ -15,13 +15,13 @@
             v-if="hintState === 'initial'"
             class="text-[clamp(10px,1vw,14px)] text-white/50 tracking-widest uppercase font-secondary px-4 text-center"
           >
-            {{ isMobile ? 'Нажмите на услугу, чтобы добавить её в проект' : 'Перетащите услуги в центр, чтобы собрать проект' }}
+            {{ isMobile ? 'Нажмите на модуль, чтобы добавить его в проект' : 'Перетащите модули в центр, чтобы собрать проект' }}
           </div>
           <div 
             v-else-if="hintState === 'remove'"
             class="text-[clamp(10px,1vw,14px)] text-white/50 tracking-widest uppercase font-secondary px-4 text-center"
           >
-            Нажмите на сферу в центре, чтобы удалить услугу
+            Нажмите на сферу в центре, чтобы удалить последний модуль
           </div>
         </Transition>
       </div>
@@ -112,6 +112,7 @@ import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { usePriceDrag } from '~/composables/usePriceDrag'
 import type { PriceOption } from '~/types/organic'
+import { createProductBuilderOptions } from '~/data/productBuilderOptions'
 import PriceCoreDisplay from '~/components/sections/price/PriceCoreDisplay.vue'
 import PriceSatellite from '~/components/sections/price/PriceSatellite.vue'
 
@@ -128,13 +129,7 @@ const isPriceVisible = ref(false)
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
 
-const options = ref<PriceOption[]>([
-  { id: 'opt1', name: 'Брендинг', price: 150000, selected: false, angle: 0, radiusOffset: 0, description: 'Разработка логотипа, фирменного стиля, гайдлайнов и коммуникационной стратегии.' },
-  { id: 'opt2', name: 'Веб-разработка', price: 300000, selected: false, angle: (Math.PI * 2 / 5) * 1, radiusOffset: 20, description: 'Создание премиальных сайтов и интерфейсов с использованием Canvas, WebGL и плавных анимаций.' },
-  { id: 'opt3', name: '3D & Motion', price: 200000, selected: false, angle: (Math.PI * 2 / 5) * 2, radiusOffset: -10, description: 'Интеграция интерактивных 3D-сцен, метаболов, симуляций жидкостей и захватывающих видео-роликов.' },
-  { id: 'opt4', name: 'Копирайтинг', price: 80000, selected: false, angle: (Math.PI * 2 / 5) * 3, radiusOffset: 10, description: 'Написание цепляющих текстов, SEO-оптимизированных статей и UX-райтинг интерфейса.' },
-  { id: 'opt5', name: 'SEO & Аналитика', price: 120000, selected: false, angle: (Math.PI * 2 / 5) * 4, radiusOffset: -20, description: 'Оптимизация сайта под поисковые системы, настройка счетчиков и глубокая аналитика конверсий.' }
-])
+const options = ref<PriceOption[]>(createProductBuilderOptions(false))
 
 const windowW = ref(1024)
 const isMobile = computed(() => windowW.value < 768)

@@ -56,6 +56,7 @@ import { ref, watch, onBeforeUnmount, nextTick } from 'vue'
 import gsap from 'gsap'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useEventBus } from '~/composables/useEventBus'
+import { techList } from '~/data/techStack'
 
 const props = defineProps<{
   isOpen: boolean
@@ -72,13 +73,6 @@ const containerRef = ref<HTMLElement | null>(null)
 const contentRef = ref<HTMLElement | null>(null)
 
 let openTimeline: gsap.core.Timeline | null = null
-
-const techList = [
-  { name: 'Vue 3 & Nuxt 4', desc: 'Мощный реактивный движок и SSR для мгновенной загрузки и идеального SEO.' },
-  { name: 'GSAP 3', desc: 'Математически выверенные анимации при 60 кадрах в секунду без лишней нагрузки на CPU.' },
-  { name: 'Tailwind CSS', desc: 'Утилитарный подход к стилизации. Нулевой оверхед, максимальный контроль над пикселями.' },
-  { name: 'Canvas & SVG', desc: 'Органический рендер графики и частиц, чистая математика и жидкие формы без тяжелых 3D-библиотек.' }
-]
 
 let isClosing = false;
 
@@ -177,4 +171,3 @@ onBeforeUnmount(() => {
   if (openTimeline) openTimeline.kill()
 })
 </script>
-

@@ -18,7 +18,7 @@
         class="relative w-full md:max-w-2xl bg-[#0a0a0a] border-t md:border border-white/10 md:rounded-3xl rounded-t-3xl p-6 md:p-10 shadow-2xl max-h-[80vh] overflow-y-auto"
       >
         <div class="flex justify-between items-center mb-8">
-          <h3 id="modal-title" class="text-xl md:text-2xl font-bold uppercase tracking-widest text-white">Услуги студии</h3>
+          <h3 id="modal-title" class="text-xl md:text-2xl font-bold uppercase tracking-widest text-white">Модули проекта</h3>
           <button @click="$emit('close')" aria-label="Закрыть модальное окно" class="text-white/50 hover:text-white text-3xl leading-none min-w-[44px] min-h-[44px] flex items-center justify-center">&times;</button>
         </div>
         
@@ -26,7 +26,7 @@
           <div v-for="opt in options" :key="opt.id" class="border-b border-white/5 pb-6 last:border-0">
             <div class="flex justify-between items-end mb-2">
               <h4 class="text-base md:text-lg font-bold text-white uppercase">{{ opt.name }}</h4>
-              <span class="text-sm font-secondary tracking-widest text-white/50">{{ formatPrice(opt.price) }} ₽</span>
+              <span class="text-sm font-secondary tracking-widest text-white/50">от {{ formatPrice(opt.price) }} ₽</span>
             </div>
             <p class="text-sm font-secondary text-white/70 leading-relaxed">{{ opt.description }}</p>
           </div>
