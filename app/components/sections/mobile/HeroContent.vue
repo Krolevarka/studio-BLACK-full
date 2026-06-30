@@ -29,7 +29,7 @@
 
       <p class="reveal-item font-secondary text-xs md:text-sm uppercase tracking-[0.2em] text-white/80 max-w-xs md:max-w-md mb-10 pointer-events-auto"
          :class="{ 'is-revealed': revealed }" style="--reveal-delay: 240ms">
-        Проектирование и разработка сайтов премиального уровня.
+        Проектирование и разработка IT-решений под ключ.
       </p>
 
       <div class="reveal-item pointer-events-auto"

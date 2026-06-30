@@ -24,7 +24,7 @@
 
       <p class="reveal-item font-secondary text-[clamp(12px,1vw,16px)] uppercase tracking-[0.3em] text-white/80 max-w-lg mb-12 pointer-events-auto"
          :class="{ 'is-revealed': revealed }" style="--reveal-delay: 300ms">
-        <UiKineticText text="Проектирование и разработка сайтов премиального уровня." />
+        <UiKineticText text="Проектирование и разработка IT-решений под ключ." />
       </p>
 
       <div class="reveal-item pointer-events-auto"
