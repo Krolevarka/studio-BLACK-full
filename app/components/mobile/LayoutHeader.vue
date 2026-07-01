@@ -13,30 +13,51 @@
     </a>
     
     <button 
-      @click="$emit('toggle-menu')"
-      @keydown.enter="$emit('toggle-menu')"
-      aria-label="Переключить меню навигации"
+      @click="handleButtonClick"
+      @keydown.enter="handleButtonClick"
+      aria-label="Навигация"
       :aria-expanded="isMenuOpen"
       role="button"
       tabindex="0"
       class="relative w-12 h-12 flex items-center justify-center rounded-full min-h-[2.75rem] min-w-[2.75rem] transition-opacity duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
-      :class="(isTechStackOpen || isPriceModalOpen || isContactTyping) ? 'opacity-0 pointer-events-none' : (isScrolling && !isMenuOpen ? 'pointer-events-none' : 'opacity-100 pointer-events-auto')"
+      :class="isContactTyping ? 'opacity-0 pointer-events-none' : (isBackMode ? 'opacity-100 pointer-events-auto' : ((isScrolling && !isMenuOpen) ? 'pointer-events-none' : 'opacity-100 pointer-events-auto'))"
       style="touch-action: none;"
     >
-      <div class="relative w-6 h-6 flex items-center justify-center transition-transform duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)]">
+      <!-- Тонкое мягкое кольцо вокруг кнопки в режиме Назад -->
+      <span class="absolute inset-0 rounded-full border border-white/20 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
+            :class="isBackMode ? 'opacity-100 scale-100' : 'opacity-0 scale-75'">
+      </span>
+
+      <div class="relative w-6 h-6 flex items-center justify-center transition-all duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+           :class="isBackMode ? 'will-change-transform' : ''">
         
-        <span class="absolute w-6 h-[1.5px] bg-white transition-transform duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
+        <!-- Средняя линия (Ось стрелки ← в режиме BackMode) -->
+        <span class="absolute w-6 h-[1.5px] rounded-full bg-white transition-[transform,opacity] duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
               :class="[
-                isMenuOpen || isMenuAnimating ? 'will-change-transform' : '',
-                isMenuOpen ? 'rotate-45 translate-y-0 scale-x-100' : '-translate-y-[4px] scale-x-100'
-              ]">
+                !isBackMode ? 'transform-gpu' : '',
+                isBackMode ? 'opacity-100' : 'opacity-0 scale-x-0'
+              ]"
+              :style="isBackMode ? { transform: 'scaleX(0.70)' } : {}">
         </span>
 
-        <span class="absolute w-6 h-[1.5px] bg-white transition-transform duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
+        <!-- Верхняя линия -->
+        <span class="absolute w-6 h-[1.5px] rounded-full bg-white transition-transform duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
               :class="[
-                isMenuOpen || isMenuAnimating ? 'will-change-transform' : '',
-                isMenuOpen ? '-rotate-45 translate-y-0 scale-x-100' : 'translate-y-[4px] scale-x-100'
-              ]">
+                !isBackMode ? 'transform-gpu' : '',
+                (isMenuOpen || isMenuAnimating) && !isBackMode ? 'will-change-transform' : '',
+                !isBackMode ? (isMenuOpen ? 'rotate-45 translate-y-0 scale-x-100' : '-translate-y-[4px] scale-x-100') : ''
+              ]"
+              :style="isBackMode ? { transform: 'translate3d(-0.33rem, -0.20rem, 0) rotate(-45deg) scaleX(0.38)' } : {}">
+        </span>
+
+        <!-- Нижняя линия -->
+        <span class="absolute w-6 h-[1.5px] rounded-full bg-white transition-transform duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
+              :class="[
+                !isBackMode ? 'transform-gpu' : '',
+                (isMenuOpen || isMenuAnimating) && !isBackMode ? 'will-change-transform' : '',
+                !isBackMode ? (isMenuOpen ? '-rotate-45 translate-y-0 scale-x-100' : 'translate-y-[4px] scale-x-100') : ''
+              ]"
+              :style="isBackMode ? { transform: 'translate3d(-0.33rem, 0.20rem, 0) rotate(45deg) scaleX(0.38)' } : {}">
         </span>
       </div>
     </button>
@@ -44,8 +65,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { useNuxtApp, useState } from '#imports'
+import { useEventBus } from '~/composables/useEventBus'
 
 const props = defineProps<{
   isPreloading: boolean
@@ -56,10 +78,25 @@ const props = defineProps<{
   isPriceModalOpen?: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'logo-click'): void
   (e: 'toggle-menu'): void
 }>()
+
+const { emit: emitBus } = useEventBus()
+const isBackMode = computed(() => Boolean(props.isTechStackOpen || props.isPriceModalOpen))
+
+const handleButtonClick = () => {
+  if (props.isTechStackOpen) {
+    emitBus('techstack-close')
+    return
+  }
+  if (props.isPriceModalOpen) {
+    emitBus('price-modal-close')
+    return
+  }
+  emit('toggle-menu')
+}
 
 interface LenisScrollEvent {
   velocity?: number

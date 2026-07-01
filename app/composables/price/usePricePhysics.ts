@@ -66,7 +66,16 @@ export function usePricePhysics(
     options.value.forEach(opt => {
       const el = optionRefs.get(opt.id)
       const pState = physicsMap.get(opt.id)
-      if (!pState || !el || opt.selected) return
+      if (!pState || !el) return
+
+      if (opt.selected) {
+        if (!pState.isTextHidden) {
+          pState.isTextHidden = true
+          const contentEl = el.querySelector('.satellite-content') as HTMLElement
+          if (contentEl) contentEl.style.opacity = '0'
+        }
+        return
+      }
 
       if (pState.isDragging) {
         const nextX = cursorData.value.smoothedX - window.innerWidth / 2 + startOffset.x
@@ -84,7 +93,11 @@ export function usePricePhysics(
           pState.isTextHidden = collision;
           const contentEl = el.querySelector('.satellite-content') as HTMLElement;
           if (contentEl) {
-             contentEl.style.opacity = collision ? '0' : '1';
+             if (collision) {
+               contentEl.style.opacity = '0'
+             } else {
+               contentEl.style.removeProperty('opacity')
+             }
           }
         }
       } else {
@@ -92,7 +105,7 @@ export function usePricePhysics(
            pState.isTextHidden = false;
            const contentEl = el.querySelector('.satellite-content') as HTMLElement;
            if (contentEl) {
-              contentEl.style.opacity = '1';
+              contentEl.style.removeProperty('opacity');
            }
         }
 

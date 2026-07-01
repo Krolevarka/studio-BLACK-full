@@ -43,6 +43,10 @@ type EventMap = {
   'section-change': string
   /** Состояние модального окна сравнения подходов в Price */
   'price-modal-state': { active: boolean }
+  /** Сигнал закрытия TechStack из глобальной шапки */
+  'techstack-close': void
+  /** Сигнал закрытия PriceDevModeModal из глобальной шапки */
+  'price-modal-close': void
 }
 
 declare module '#app' {

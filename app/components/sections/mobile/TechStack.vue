@@ -15,19 +15,6 @@
       <!-- Нижний градиент (мягкое растворение снизу) -->
       <div class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-[#050505] to-transparent z-[80] pointer-events-none"></div>
       
-      <!-- Кнопка назад -->
-      <button 
-        class="back-btn absolute top-4 right-4 sm:top-6 sm:right-6 text-white/50 active:text-white transition-colors z-[110] flex items-center"
-        :class="isInteractive ? 'pointer-events-auto' : 'pointer-events-none'"
-        @click="closeStack"
-      >
-        <div class="relative w-12 h-12 flex items-center justify-center rounded-full border border-white/20 active:border-transparent transition-colors duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]">
-          <svg class="w-5 h-5 transform active:-translate-x-0.5 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-          </svg>
-        </div>
-      </button>
-
       <!-- Обертка для тач-событий (перехватывает свайпы) -->
       <div class="w-full h-full relative z-[70] touch-manipulation"
            :class="isInteractive ? 'pointer-events-auto' : 'pointer-events-none'"
@@ -55,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gsap from 'gsap'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useEventBus } from '~/composables/useEventBus'
@@ -68,7 +55,7 @@ const props = defineProps<{
 const emitParent = defineEmits(['close'])
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
-const { emit } = useEventBus()
+const { emit, on } = useEventBus()
 
 const isVisible = ref(false)
 const isInteractive = ref(false)
@@ -218,9 +205,6 @@ const openStack = () => {
     }
 
     const title = cardsWrapperRef.value?.querySelector('.tech-title')
-    const backBtn = contentRef.value?.querySelector('.back-btn') // backbtn is outside wrapper now, but let's select globally
-    const backBtnElement = contentRef.value?.querySelector('.back-btn')
-
     const techItems = cardsWrapperRef.value?.querySelectorAll('.tech-item')
 
     openTimeline.addLabel('start', '+=0.2')
@@ -238,14 +222,6 @@ const openStack = () => {
         { y: 40, opacity: 0, skewY: 2 },
         { y: 0, opacity: 1, skewY: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out' },
         'start+=0.1'
-      )
-    }
-
-    if (backBtnElement) {
-      openTimeline.fromTo(backBtnElement,
-        { x: 20, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-        'start+=0.2'
       )
     }
   })
@@ -279,6 +255,12 @@ watch(() => props.isOpen, (val) => {
   } else if (isVisible.value) {
     closeStack()
   }
+})
+
+onMounted(() => {
+  on('techstack-close', () => {
+    if (isVisible.value) closeStack()
+  })
 })
 
 onBeforeUnmount(() => {

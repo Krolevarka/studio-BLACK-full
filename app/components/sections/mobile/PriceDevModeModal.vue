@@ -8,19 +8,6 @@
     <!-- Контент -->
     <div ref="contentRef" class="relative w-full min-h-full opacity-0 pointer-events-none overflow-x-hidden px-6 py-10 flex flex-col justify-center gap-6">
       
-      <!-- Кнопка назад -->
-      <button 
-        class="back-btn fixed top-4 right-4 text-white/60 active:text-white transition-colors z-[110] flex items-center cursor-pointer min-w-[44px] min-h-[44px]"
-        :class="isInteractive ? 'pointer-events-auto' : 'pointer-events-none'"
-        @click="closeModal"
-      >
-        <div class="relative w-11 h-11 flex items-center justify-center rounded-full border border-white/20 active:border-white transition-colors duration-300 bg-[#050505]/80 backdrop-blur-md">
-          <svg class="w-5 h-5 transform active:-translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-          </svg>
-        </div>
-      </button>
-
       <!-- Заголовок в стиле компактной типографики с линиями -->
       <!-- Заголовок в стиле компактной типографики с линиями -->
       <div class="poster-header relative flex flex-col pb-5">
@@ -89,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gsap from 'gsap'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useEventBus } from '~/composables/useEventBus'
@@ -104,7 +91,7 @@ const emit = defineEmits<{
 }>()
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
-const { emit: emitBus } = useEventBus()
+const { emit: emitBus, on: onBus, off: offBus } = useEventBus()
 
 const formatTypography = (text: string) => {
   return text.replace(/•/g, '<span class="inline-block relative -translate-y-[0.1em] text-white mx-2">•</span>')
@@ -146,7 +133,6 @@ const openModal = () => {
     const headerLine = contentRef.value?.querySelector('.header-line')
     const footer = contentRef.value?.querySelector('.poster-footer')
     const footerLine = contentRef.value?.querySelector('.footer-line')
-    const backBtn = contentRef.value?.querySelector('.back-btn')
     const rows = contentRef.value?.querySelectorAll('.poster-row')
 
     if (header) {
@@ -157,11 +143,6 @@ const openModal = () => {
     if (headerLine) {
       gsap.set(headerLine, { scaleX: 0, opacity: 1 })
       openTimeline.to(headerLine, { scaleX: 1, duration: 0.5, ease: 'power3.inOut' }, 0.12)
-    }
-
-    if (backBtn) {
-      gsap.set(backBtn, { clearProps: 'transform,filter', opacity: 0 })
-      openTimeline.to(backBtn, { opacity: 1, duration: 0.35, ease: 'power2.out' }, 0.08)
     }
 
     let currentTimelineTime = 0.25
@@ -286,6 +267,12 @@ watch(() => props.isOpen, (val) => {
   } else if (isVisible.value) {
     closeModal()
   }
+})
+
+onMounted(() => {
+  onBus('price-modal-close', () => {
+    if (isVisible.value) closeModal()
+  })
 })
 
 onBeforeUnmount(() => {

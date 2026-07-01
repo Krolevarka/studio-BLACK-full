@@ -1,34 +1,20 @@
 <template>
   <div 
     v-show="isVisible"
-    class="absolute inset-0 w-full h-full z-50 overflow-hidden flex bg-[#050505] text-white select-none"
+    class="absolute inset-0 w-full h-full z-50 overflow-y-auto overflow-x-hidden flex flex-col bg-[#050505] text-white select-none"
     :class="[isMenuTransitioning ? 'transition-opacity' : '', isMenuOpenLocal ? '!opacity-0 duration-[1000ms]' : '']"
     ref="containerRef"
   >
     <!-- Контент -->
-    <div ref="contentRef" class="relative z-10 flex flex-col w-full h-full opacity-0 pointer-events-none overflow-y-auto overflow-x-hidden px-8 md:px-16 xl:px-24 py-10 md:py-14 xl:py-16 justify-center gap-6 md:gap-8">
+    <div ref="contentRef" class="relative z-10 flex flex-col w-full min-h-full opacity-0 pointer-events-none px-6 md:px-12 xl:px-20 py-[clamp(1rem,2.5dvh,3rem)] justify-center my-auto gap-[clamp(0.5rem,1.5dvh,1.5rem)]">
       
-      <!-- Кнопка назад -->
-      <button 
-        class="back-btn fixed top-6 right-6 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors uppercase font-primary tracking-widest text-xs z-[70] flex items-center group cursor-pointer"
-        :class="isInteractive ? 'pointer-events-auto' : 'pointer-events-none'"
-        @click="closeModal"
-      >
-        <span class="mr-3 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]">Назад к прайсу</span>
-        <div class="magnetic-btn relative w-11 h-11 flex items-center justify-center rounded-full border border-white/20 group-hover:border-white transition-colors duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]">
-          <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-          </svg>
-        </div>
-      </button>
-
       <!-- Заголовок модального окна (Компактный швейцарский стиль с линиями сетки) -->
-      <div class="poster-header relative flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 md:pb-8 shrink-0">
-        <div class="flex flex-col max-w-xl">
+      <div class="poster-header relative flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-4 pb-[clamp(0.5rem,1.5dvh,1.5rem)] shrink-0">
+        <div class="flex flex-col max-w-xl pr-14 md:pr-0">
           <span class="text-[11px] font-mono font-bold text-white/40 uppercase tracking-[0.3em] mb-2">
             Сравнение подходов // Чистая типографика
           </span>
-          <h3 class="font-primary text-[clamp(1.6rem,2.6vw,2.8rem)] font-black text-white uppercase leading-[1.05] tracking-tight">
+          <h3 class="font-primary text-[clamp(1.4rem,min(2.5vw,4dvh),2.8rem)] font-black text-white uppercase leading-[1.05] tracking-tight">
             Эволюция разработки
           </h3>
         </div>
@@ -45,31 +31,31 @@
         <div 
           v-for="(row, index) in posterRows" 
           :key="row.id" 
-          class="poster-row relative flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12 w-full py-6 md:py-8 xl:py-10"
+          class="poster-row relative flex flex-col md:flex-row items-center justify-between gap-4 md:gap-[clamp(1rem,2vw,2.5rem)] w-full py-[clamp(0.35rem,1.3dvh,1.5rem)]"
           :class="row.align === 'right' ? 'md:flex-row-reverse' : ''"
         >
           <!-- Гигантское слово/слог (без overflow-hidden, с комфортным line-height чтобы ничего не обрезалось) -->
           <div class="giant-letter shrink-0 overflow-visible py-1">
-            <span class="block font-primary font-black uppercase text-[clamp(3.5rem,7.8vw,8.5rem)] leading-[0.95] tracking-tighter text-white transition-colors duration-300 hover:text-white/90" v-html="formatTypography(row.giantText)"></span>
+            <span class="block font-primary font-black uppercase text-[clamp(1.8rem,min(5vw,6dvh),7.5rem)] leading-[0.95] tracking-tighter text-white transition-colors duration-300 hover:text-white/90" v-html="formatTypography(row.giantText)"></span>
           </div>
 
           <!-- Редакционный блок в едином плотном ритме -->
           <div 
             v-if="row.editorial" 
-            class="editorial-block max-w-sm xl:max-w-md shrink-0"
+            class="editorial-block max-w-md xl:max-w-xl shrink-0"
             :class="row.align === 'right' ? 'md:text-left' : 'md:text-right'"
           >
             <div class="flex flex-col" :class="row.align === 'right' ? 'md:items-start' : 'md:items-end'">
-              <span class="text-[11px] font-mono font-bold text-white/50 tracking-[0.25em] uppercase mb-1.5">
+              <span class="text-[10px] font-mono font-bold text-white/50 tracking-[0.25em] uppercase mb-[clamp(0.1rem,0.5dvh,0.35rem)]">
                 {{ row.editorial.tag }}
               </span>
-              <h4 class="text-base xl:text-lg font-primary font-bold text-white uppercase tracking-tight mb-2 leading-snug">
+              <h4 class="text-[clamp(0.9rem,min(1.2vw,1.8dvh),1.15rem)] font-primary font-bold text-white uppercase tracking-tight mb-[clamp(0.15rem,0.5dvh,0.35rem)] leading-tight">
                 {{ row.editorial.headline }}
               </h4>
-              <p class="text-xs xl:text-sm font-secondary text-white/70 leading-relaxed mb-3">
+              <p class="text-[clamp(11px,min(0.9vw,1.4dvh),13px)] font-secondary text-white/70 leading-snug mb-[clamp(0.25rem,0.8dvh,0.5rem)]">
                 {{ row.editorial.body }}
               </p>
-              <span v-if="row.editorial.stat" class="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-white text-black uppercase tracking-widest inline-block">
+              <span v-if="row.editorial.stat" class="px-2 py-0.5 rounded-full text-[9px] font-mono font-extrabold bg-white text-black uppercase tracking-widest inline-block">
                 {{ row.editorial.stat }}
               </span>
             </div>
@@ -83,7 +69,7 @@
       </div>
 
       <!-- Футер плаката -->
-      <div class="poster-footer relative pt-6 md:pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-white/40 tracking-widest uppercase shrink-0">
+      <div class="poster-footer relative pt-[clamp(0.5rem,1.5dvh,1.5rem)] flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-white/40 tracking-widest uppercase shrink-0 gap-2">
         <div class="footer-line absolute top-0 left-0 w-full h-[1px] bg-white/15" :class="posterRows[posterRows.length - 1]?.align === 'right' ? 'origin-right' : 'origin-left'"></div>
         <span>STUDIO-BLACK // ARCHITECTURAL AI SYSTEM</span>
         <span>NO BORDERS • PURE TYPOGRAPHY</span>
@@ -94,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gsap from 'gsap'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useEventBus } from '~/composables/useEventBus'
@@ -109,7 +95,7 @@ const emit = defineEmits<{
 }>()
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
-const { emit: emitBus } = useEventBus()
+const { emit: emitBus, on: onBus, off: offBus } = useEventBus()
 
 const formatTypography = (text: string) => {
   return text.replace(/•/g, '<span class="inline-block relative -translate-y-[0.1em] text-white mx-2">•</span>')
@@ -151,7 +137,6 @@ const openModal = () => {
     const headerLine = contentRef.value?.querySelector('.header-line')
     const footer = contentRef.value?.querySelector('.poster-footer')
     const footerLine = contentRef.value?.querySelector('.footer-line')
-    const backBtn = contentRef.value?.querySelector('.back-btn')
     const rows = contentRef.value?.querySelectorAll('.poster-row')
 
     if (header) {
@@ -162,11 +147,6 @@ const openModal = () => {
     if (headerLine) {
       gsap.set(headerLine, { scaleX: 0, opacity: 1 })
       openTimeline.to(headerLine, { scaleX: 1, duration: 0.6, ease: 'power3.inOut' }, 0.15)
-    }
-
-    if (backBtn) {
-      gsap.set(backBtn, { clearProps: 'transform,filter', opacity: 0 })
-      openTimeline.to(backBtn, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 0.1)
     }
 
     let currentTimelineTime = 0.32
@@ -291,6 +271,12 @@ watch(() => props.isOpen, (val) => {
   } else if (isVisible.value) {
     closeModal()
   }
+})
+
+onMounted(() => {
+  onBus('price-modal-close', () => {
+    if (isVisible.value) closeModal()
+  })
 })
 
 onBeforeUnmount(() => {

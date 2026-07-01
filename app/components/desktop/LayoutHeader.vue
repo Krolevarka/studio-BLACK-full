@@ -10,46 +10,69 @@
       <LogoText class="w-full h-auto fill-current" />
     </a>
     <!-- Правая часть: текст секции и бургер -->
-    <div class="flex items-center gap-3 md:gap-6 transition-opacity duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
-         :class="(isTechStackOpen || isPriceModalOpen) ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'">
+    <!-- Правая часть: текст секции и бургер -->
+    <div class="flex items-center gap-3 md:gap-6 transition-opacity duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] opacity-100 pointer-events-auto group/nav">
       <!-- Индикатор текущей секции -->
       <div 
         class="relative h-6 flex items-center pointer-events-none min-w-[6rem] md:min-w-[9rem] justify-end transition-all duration-[600ms] ease-[cubic-bezier(0.25,1,0.5,1)] price-collision-obstacle"
-        :class="isMenuOpen ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'"
+        :class="[
+          !isBackMode ? (isMenuOpen ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0') : '',
+          isBackMode ? 'opacity-0 translate-x-4 group-hover/nav:opacity-100 group-hover/nav:translate-x-0' : ''
+        ]"
       >
         <Transition name="revolver">
-          <span :key="currentMenuLabel" class="absolute font-secondary uppercase text-[10px] md:text-[clamp(13px,0.73vw,15px)] tracking-[0.3em] whitespace-nowrap right-0 text-white/80">
-            {{ currentMenuLabel }}
+          <span :key="displayLabel" class="absolute font-secondary uppercase text-[10px] md:text-[clamp(13px,0.73vw,15px)] tracking-[0.3em] whitespace-nowrap right-0 text-white/80">
+            {{ displayLabel }}
           </span>
         </Transition>
       </div>
 
-      <!-- Единая кнопка (Бургер / Крестик) -->
+      <!-- Единая кнопка (Бургер / Крестик / Назад) -->
       <button 
-        @click="$emit('toggle-menu')"
-        aria-label="Переключить меню навигации"
+        @click="handleButtonClick"
+        aria-label="Навигация"
         :aria-expanded="isMenuOpen"
-        class="magnetic-btn relative w-12 h-12 flex items-center justify-center group price-collision-obstacle rounded-full"
-        :class="(isTechStackOpen || isPriceModalOpen) ? 'pointer-events-none' : 'pointer-events-auto'"
+        class="magnetic-btn relative w-12 h-12 flex items-center justify-center group price-collision-obstacle rounded-full pointer-events-auto cursor-pointer"
       >
-        <!-- Контейнер для линий, который вращается на hover, если меню открыто -->
-        <div class="relative w-6 h-6 flex items-center justify-center transition-transform duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
-             :class="isMenuOpen ? 'group-hover:rotate-90' : ''">
+        <!-- Тонкое мягкое кольцо вокруг кнопки в режиме Назад -->
+        <span class="absolute inset-0 rounded-full border border-white/20 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
+              :class="isBackMode ? 'opacity-100 scale-100 group-hover:border-white/45 group-hover:scale-[1.04]' : 'opacity-0 scale-75'">
+        </span>
+
+        <!-- Контейнер для линий, который вращается на hover в режиме меню или сдвигается в режиме назад -->
+        <div class="relative w-6 h-6 flex items-center justify-center transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+             :class="[
+               (isMenuOpen && !isBackMode) ? 'group-hover:rotate-90' : '',
+               isBackMode ? 'group-hover:-translate-x-1 will-change-transform' : ''
+             ]">
           
-          <!-- Верхняя линия -->
-          <span class="absolute w-6 h-[1.5px] bg-white transition-transform duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center group-hover:will-change-transform"
+          <!-- Средняя линия (Ось стрелки ← в режиме BackMode) -->
+          <span class="absolute w-6 h-[1.5px] rounded-full bg-white transition-[transform,opacity] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
                 :class="[
-                  isMenuOpen || isMenuAnimating ? 'will-change-transform' : '',
-                  isMenuOpen ? 'rotate-45 translate-y-0 scale-x-100' : '-translate-y-[4px] scale-x-100 group-hover:scale-x-[0.66] group-hover:-translate-x-[4px]'
-                ]">
+                  !isBackMode ? 'transform-gpu' : '',
+                  isBackMode ? 'opacity-100' : 'opacity-0 scale-x-0'
+                ]"
+                :style="isBackMode ? { transform: 'scaleX(0.70)' } : {}">
+          </span>
+
+          <!-- Верхняя линия -->
+          <span class="absolute w-6 h-[1.5px] rounded-full bg-white transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
+                :class="[
+                  !isBackMode ? 'transform-gpu group-hover:will-change-transform' : '',
+                  (isMenuOpen || isMenuAnimating) && !isBackMode ? 'will-change-transform' : '',
+                  !isBackMode ? (isMenuOpen ? 'rotate-45 translate-y-0 scale-x-100' : '-translate-y-[4px] scale-x-100 group-hover:scale-x-[0.66] group-hover:-translate-x-[4px]') : ''
+                ]"
+                :style="isBackMode ? { transform: 'translate3d(-0.33rem, -0.20rem, 0) rotate(-45deg) scaleX(0.38)' } : {}">
           </span>
 
           <!-- Нижняя линия -->
-          <span class="absolute w-6 h-[1.5px] bg-white transition-transform duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center group-hover:will-change-transform"
+          <span class="absolute w-6 h-[1.5px] rounded-full bg-white transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
                 :class="[
-                  isMenuOpen || isMenuAnimating ? 'will-change-transform' : '',
-                  isMenuOpen ? '-rotate-45 translate-y-0 translate-x-0 scale-x-100' : 'translate-y-[4px] translate-x-[4px] scale-x-[0.66] group-hover:scale-x-100 group-hover:translate-x-0'
-                ]">
+                  !isBackMode ? 'transform-gpu group-hover:will-change-transform' : '',
+                  (isMenuOpen || isMenuAnimating) && !isBackMode ? 'will-change-transform' : '',
+                  !isBackMode ? (isMenuOpen ? '-rotate-45 translate-y-0 translate-x-0 scale-x-100' : 'translate-y-[4px] translate-x-[4px] scale-x-[0.66] group-hover:scale-x-100 group-hover:translate-x-0') : ''
+                ]"
+                :style="isBackMode ? { transform: 'translate3d(-0.33rem, 0.20rem, 0) rotate(45deg) scaleX(0.38)' } : {}">
           </span>
         </div>
       </button>
@@ -58,7 +81,10 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue'
+import { useEventBus } from '~/composables/useEventBus'
+
+const props = defineProps<{
   isPreloading: boolean
   isMenuOpen: boolean
   isMenuAnimating: boolean
@@ -67,10 +93,31 @@ defineProps<{
   isPriceModalOpen?: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'logo-click'): void
   (e: 'toggle-menu'): void
 }>()
+
+const { emit: emitBus } = useEventBus()
+
+const isBackMode = computed(() => Boolean(props.isTechStackOpen || props.isPriceModalOpen))
+
+const displayLabel = computed(() => {
+  if (isBackMode.value) return 'НАЗАД'
+  return props.currentMenuLabel
+})
+
+const handleButtonClick = () => {
+  if (props.isTechStackOpen) {
+    emitBus('techstack-close')
+    return
+  }
+  if (props.isPriceModalOpen) {
+    emitBus('price-modal-close')
+    return
+  }
+  emit('toggle-menu')
+}
 </script>
 
 <style scoped>

@@ -16,7 +16,7 @@
           <!-- Этот блок заменяет верхний padding и плавно сжимается вместе с заголовком -->
           <div class="w-full h-[4.5rem] shrink-0"></div>
           
-          <div class="flex justify-between items-end mb-4" :class="step < 6 ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'">
+          <div class="flex justify-between items-end mb-4" :class="step <= steps.length ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'">
             <h2 class="font-primary text-3xl font-black uppercase tracking-tight leading-none text-white relative">
               <Transition name="title-fade" mode="out-in">
                 <span :key="step === 1 ? 'svyaz' : 'detali'" class="block">{{ step === 1 ? 'СВЯЗЬ' : 'ДЕТАЛИ' }}</span>
@@ -44,14 +44,21 @@
                  class="absolute inset-0 w-full h-full flex flex-col overflow-y-auto no-scrollbar pb-4">
                  
                  <div class="w-full mt-auto mb-auto flex flex-col shrink-0">
-                   <h3 class="font-primary text-[1.25rem] md:text-[1.5rem] leading-[1.2] font-bold uppercase tracking-tight mb-6 text-white text-balance w-full shrink-0">
+                   <h3 class="font-primary text-[1.25rem] md:text-[1.5rem] leading-[1.2] font-bold uppercase tracking-tight text-white text-balance w-full shrink-0"
+                       :class="currentStepData.key === 'services' ? 'mb-4' : 'mb-6'">
                      {{ currentStepData.question }}
                    </h3>
 
+                   <MobileContactDevModeSwitch
+                     v-if="currentStepData.key === 'services'"
+                     v-model="answers.devMode"
+                     class="mb-5"
+                   />
+
                    <MobileContactStepInput 
                      v-if="currentStepData.type === 'input'"
-                     v-model="answers[currentStepData.key as keyof typeof answers]"
-                     :is-textarea="step === 4"
+                     v-model="answers[currentStepData.key as 'contact' | 'name' | 'project' | 'budget']"
+                     :is-textarea="currentStepData.key === 'project'"
                      :placeholder="currentStepData.placeholder"
                      @focus="onFocus"
                      @blur="onBlur"
@@ -62,8 +69,22 @@
                    <MobileContactStepPlaques
                      v-if="currentStepData.type === 'plaques'"
                      :options="currentStepData.options || []"
-                     :selected-options="answers[currentStepData.key as keyof typeof answers]"
+                     :selected-options="answers[currentStepData.key as 'services']"
                      @toggle="toggleOption(currentStepData.key, $event, !!currentStepData.multi)"
+                     class="w-full shrink-0"
+                   />
+
+                   <MobileContactStepReferences
+                     v-if="currentStepData.type === 'references'"
+                     :reference-urls="answers.referenceUrls"
+                     :attached-files="answers.attachedFiles"
+                     :placeholder="currentStepData.placeholder"
+                     @add-url="addReferenceUrl"
+                     @remove-url="removeReferenceUrl"
+                     @attach-files="attachFiles"
+                     @remove-file="removeFile"
+                     @focus="onFocus"
+                     @blur="onBlur"
                      class="w-full shrink-0"
                    />
                  </div>
@@ -71,7 +92,7 @@
           </Transition>
 
           <Transition name="form-step">
-            <div v-show="step === 6" class="absolute inset-0 w-full h-full flex flex-col justify-center">
+            <div v-show="step > steps.length" class="absolute inset-0 w-full h-full flex flex-col justify-center">
               <ContactStepSuccess />
             </div>
           </Transition>
@@ -175,6 +196,8 @@ import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useSectionReveal } from '~/composables/useSectionReveal'
 import MobileContactStepInput from './MobileContactStepInput.vue'
 import MobileContactStepPlaques from './MobileContactStepPlaques.vue'
+import MobileContactStepReferences from './MobileContactStepReferences.vue'
+import MobileContactDevModeSwitch from './MobileContactDevModeSwitch.vue'
 import ContactStepSuccess from '~/components/sections/contact/ContactStepSuccess.vue'
 
 defineOptions({ inheritAttrs: false })
@@ -242,6 +265,10 @@ const {
   canProceed,
   isStepEmpty,
   toggleOption,
+  addReferenceUrl,
+  removeReferenceUrl,
+  attachFiles,
+  removeFile,
   onFocus,
   onBlur,
   nextStep,

@@ -35,7 +35,9 @@ const bodySchema = z.object({
   services: z.array(z.string()).optional(),
   project: z.string().optional(),
   budget: z.string().optional(),
-  contact: z.string().min(1, 'Контактные данные обязательны')
+  contact: z.string().min(1, 'Контактные данные обязательны'),
+  devMode: z.string().optional(),
+  referenceUrls: z.array(z.string()).optional()
 }).strict()
 
 export default defineEventHandler(async (event) => {
@@ -92,14 +94,68 @@ export default defineEventHandler(async (event) => {
 
     record.attempts++
 
-    const rawBody = await readBody(event)
-    const body = bodySchema.parse(rawBody)
+    const contentType = getHeader(event, 'content-type') || ''
+    let name = ''
+    let services: string[] = []
+    let project = ''
+    let budget = ''
+    let contact = ''
+    let devMode = ''
+    let referenceUrls: string[] = []
+    const files: { filename: string; data: Buffer; contentType: string }[] = []
+
+    if (contentType.includes('multipart/form-data')) {
+      const parts = await readMultipartFormData(event)
+      if (parts) {
+        for (const part of parts) {
+          if (!part.name) continue
+          const valueStr = part.data.toString('utf-8')
+
+          if (part.name === 'name') name = valueStr
+          else if (part.name === 'project') project = valueStr
+          else if (part.name === 'budget') budget = valueStr
+          else if (part.name === 'contact') contact = valueStr
+          else if (part.name === 'devMode') devMode = valueStr
+          else if (part.name === 'services') services.push(valueStr)
+          else if (part.name === 'referenceUrls') referenceUrls.push(valueStr)
+          else if (part.name === 'files' && part.filename) {
+            if (files.length >= 4) continue
+            if (part.data.length > 5 * 1024 * 1024) continue
+            
+            const safeName = part.filename.replace(/[^a-zA-Z0-9.\-_а-яА-ЯёЁ\s]/g, '_').slice(0, 100)
+            files.push({
+              filename: safeName || 'attachment',
+              data: part.data,
+              contentType: part.type || 'application/octet-stream'
+            })
+          }
+        }
+      }
+    } else {
+      const rawBody = await readBody(event)
+      const parsed = bodySchema.parse(rawBody)
+      name = parsed.name || ''
+      services = parsed.services || []
+      project = parsed.project || ''
+      budget = parsed.budget || ''
+      contact = parsed.contact || ''
+      devMode = parsed.devMode || ''
+      referenceUrls = parsed.referenceUrls || []
+    }
+
+    if (!contact || contact.trim().length === 0) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Bad Request',
+        message: 'Контактные данные обязательны'
+      })
+    }
 
     // Логирование в консоль сервера (гарантия сохранности данных)
     console.log('\n============= НОВАЯ АНКЕТА KVAZAR =============')
     console.log('IP:', ip)
     console.log('Время:', new Date().toLocaleString('ru-RU'))
-    console.log(JSON.stringify(body, null, 2))
+    console.log(JSON.stringify({ name, contact, budget, devMode, services, referenceUrls, filesCount: files.length }, null, 2))
     console.log('===============================================\n')
 
     // Получение настроек из переменных окружения
@@ -131,9 +187,17 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    const servicesList = body.services && body.services.length > 0 
-      ? body.services.map(s => `<li><b>${s}</b></li>`).join('') 
+    const servicesList = services && services.length > 0 
+      ? services.map(s => `<li><b>${s}</b></li>`).join('') 
       : '<li>Не указано</li>'
+
+    const referencesList = referenceUrls && referenceUrls.length > 0
+      ? referenceUrls.map(u => `<li style="margin-bottom: 6px;"><a href="${u}" target="_blank" style="color: #4da6ff; text-decoration: none;">${u}</a></li>`).join('')
+      : '<li>Не указано</li>'
+
+    const filesList = files && files.length > 0
+      ? files.map(f => `<li style="margin-bottom: 6px;"><b>${f.filename}</b> <span style="color:#888888;">(${(f.data.length / 1024).toFixed(1)} КБ)</span></li>`).join('')
+      : '<li>Файлы не прикреплены</li>'
 
     const htmlContent = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #050505; color: #ffffff; padding: 30px; border-radius: 16px; border: 1px solid #222222;">
@@ -144,17 +208,21 @@ export default defineEventHandler(async (event) => {
 
         <div style="background-color: #111111; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
           <p style="margin: 0 0 10px 0; font-size: 14px; color: #888888; text-transform: uppercase;">Контакт для связи:</p>
-          <p style="margin: 0; font-size: 20px; font-weight: bold; color: #ffffff; word-break: break-all;">${body.contact}</p>
+          <p style="margin: 0; font-size: 20px; font-weight: bold; color: #ffffff; word-break: break-all;">${contact}</p>
         </div>
 
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
           <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px; width: 40%;">Имя / Компания:</td>
-            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: 500;">${body.name || 'Не указано'}</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: 500;">${name || 'Не указано'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px;">Режим разработки:</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: bold;">${devMode || 'AI-Сборка (-30%)'}</td>
           </tr>
           <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px;">Планируемый бюджет:</td>
-            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: 500;">${body.budget || 'Не указано'}</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: 500;">${budget || 'Не указано'}</td>
           </tr>
           <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px; vertical-align: top;">Интересующие услуги:</td>
@@ -164,9 +232,19 @@ export default defineEventHandler(async (event) => {
           </tr>
         </table>
 
+        <div style="background-color: #111111; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; color: #888888; text-transform: uppercase;">Дизайн-референсы (понравившиеся сайты):</p>
+          <ul style="margin: 0; padding-left: 18px; font-size: 15px; color: #ffffff;">${referencesList}</ul>
+        </div>
+
+        <div style="background-color: #111111; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; color: #888888; text-transform: uppercase;">Прикрепленные файлы:</p>
+          <ul style="margin: 0; padding-left: 18px; font-size: 15px; color: #ffffff;">${filesList}</ul>
+        </div>
+
         <div style="background-color: #111111; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
           <p style="margin: 0 0 8px 0; font-size: 14px; color: #888888; text-transform: uppercase;">Задача проекта:</p>
-          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #e0e0e0; white-space: pre-wrap;">${body.project || 'Не указано'}</p>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #e0e0e0; white-space: pre-wrap;">${project || 'Не указано'}</p>
         </div>
 
         <div style="text-align: center; font-size: 11px; color: #555555; border-top: 1px solid #1a1a1a; pt: 15px; padding-top: 15px;">
@@ -179,9 +257,14 @@ export default defineEventHandler(async (event) => {
     await transporter.sendMail({
       from: `"KVAZAR Studio" <${smtpUser}>`,
       to: mailTo,
-      subject: `⚡ Бриф от: ${body.name || body.contact} [KVAZAR]`,
-      text: `Новый бриф от ${body.contact}\nИмя: ${body.name}\nБюджет: ${body.budget}\nУслуги: ${(body.services || []).join(', ')}\nЗадача: ${body.project}`,
-      html: htmlContent
+      subject: `⚡ Бриф от: ${name || contact} [KVAZAR]`,
+      text: `Новый бриф от ${contact}\nРежим: ${devMode || 'AI-Сборка (-30%)'}\nИмя: ${name}\nБюджет: ${budget}\nУслуги: ${(services || []).join(', ')}\nСайты: ${(referenceUrls || []).join(', ')}\nФайлы: ${files.map(f => f.filename).join(', ')}\nЗадача: ${project}`,
+      html: htmlContent,
+      attachments: files.map(f => ({
+        filename: f.filename,
+        content: f.data,
+        contentType: f.contentType
+      }))
     })
 
     // Фиксируем успешную отправку

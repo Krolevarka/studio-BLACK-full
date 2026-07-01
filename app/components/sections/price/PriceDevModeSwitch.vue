@@ -11,7 +11,7 @@
         role="button"
         tabindex="0"
         aria-label="Сравнение подходов к разработке"
-        class="absolute w-8 h-8 rounded-full border border-white/20 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-center text-white/70 hover:text-black hover:bg-white hover:border-white hover:scale-105 active:scale-95 transition-all duration-300 pointer-events-auto z-20 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6)] opacity-0 group"
+        class="magnetic-btn absolute w-8 h-8 rounded-full border border-white/20 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-transparent hover:border-transparent hover:shadow-none transition-colors duration-300 pointer-events-auto z-20 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6)] opacity-0 group price-collision-obstacle"
         @click="openInfoModal"
       >
         <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -23,7 +23,7 @@
       <!-- Переключатель пилс с кинетическим глайдером -->
       <div 
         ref="containerRef"
-        class="relative flex items-center p-1 rounded-full bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/20 shadow-[0_10px_35px_rgba(0,0,0,0.85)] overflow-hidden pointer-events-auto z-10"
+        class="relative flex items-center p-1 rounded-full bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/20 shadow-[0_10px_35px_rgba(0,0,0,0.85)] overflow-hidden pointer-events-auto z-10 price-collision-obstacle"
         role="group"
         aria-label="Выбор режима разработки"
       >
@@ -71,19 +71,6 @@
     </div>
   </div>
 
-    <!-- Минималистичное текстовое пояснение без рамок -->
-    <div 
-      ref="descRef"
-      class="mt-3 min-h-[2.4rem] flex items-center justify-center text-center px-4"
-    >
-      <p v-if="isAiMode" key="ai-desc" class="font-secondary text-xs md:text-sm text-white/75 leading-relaxed max-w-md text-balance">
-        AI-генерация кода под контролем Senior-архитекторов. Проект на <span class="text-white font-bold tracking-wide">30% дешевле</span> и в 2 раза быстрее без рисков.
-      </p>
-      <p v-else key="manual-desc" class="font-secondary text-xs md:text-sm text-white/50 leading-relaxed max-w-md text-balance">
-        Классический формат разработки командой инженеров с нуля без применения AI-ускорителей.
-      </p>
-    </div>
-
   </div>
 </template>
 
@@ -100,7 +87,6 @@ const containerRef = ref<HTMLElement | null>(null)
 const gliderRef = ref<HTMLElement | null>(null)
 const aiBtnRef = ref<HTMLElement | null>(null)
 const manualBtnRef = ref<HTMLElement | null>(null)
-const descRef = ref<HTMLElement | null>(null)
 const questionBtnRef = ref<HTMLElement | null>(null)
 
 let resizeObserver: ResizeObserver | null = null
@@ -223,17 +209,6 @@ const updateGlider = (immediate = false) => {
   }
 }
 
-const animateDescChange = () => {
-  const desc = descRef.value
-  if (!desc) return
-
-  gsap.killTweensOf(desc)
-  gsap.fromTo(desc,
-    { opacity: 0, y: 8, filter: 'blur(6px)' },
-    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.85, ease: 'power3.out', clearProps: 'filter' }
-  )
-}
-
 const selectMode = (mode: DevModeType) => {
   if (isAiMode.value === (mode === 'ai')) return
   setMode(mode)
@@ -246,7 +221,6 @@ watch(isAiMode, () => {
     requestAnimationFrame(() => {
       updateGlider(false)
       updateQuestionIcon(false)
-      animateDescChange()
     })
   })
 })
@@ -269,6 +243,8 @@ onMounted(() => {
         const newWidth = entry.contentRect.width
         if (newWidth > 0 && Math.abs(newWidth - lastKnownWidth) > 8) {
           lastKnownWidth = newWidth
+          if (questionBtnRef.value && gsap.isTweening(questionBtnRef.value)) return
+          if (gliderRef.value && gsap.isTweening(gliderRef.value)) return
           updateGlider(true)
           updateQuestionIcon(true)
         }
@@ -281,7 +257,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (resizeObserver) resizeObserver.disconnect()
   if (gliderRef.value) gsap.killTweensOf(gliderRef.value)
-  if (descRef.value) gsap.killTweensOf(descRef.value)
   if (questionBtnRef.value) gsap.killTweensOf(questionBtnRef.value)
 })
 </script>

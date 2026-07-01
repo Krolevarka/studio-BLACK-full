@@ -13,10 +13,10 @@
         
         <!-- Заголовок -->
         <div class="shrink-0 pointer-events-auto transition-all duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center"
-             :class="step < 6 ? 'overflow-visible' : 'overflow-hidden'"
+             :class="step <= steps.length ? 'overflow-visible' : 'overflow-hidden'"
              :style="{ 
-               maxHeight: step < 6 ? '15rem' : '0rem', 
-               opacity: step < 6 ? 1 : 0
+               maxHeight: step <= steps.length ? '15rem' : '0rem', 
+               opacity: step <= steps.length ? 1 : 0
              }">
           <h2 class="font-primary text-6xl md:text-8xl lg:text-[clamp(4rem,6vw,9rem)] font-black uppercase tracking-tighter leading-[0.8] relative w-full h-[1em]">
             <Transition name="title-ticker">
@@ -46,14 +46,21 @@
                   </div>
                 </div>
 
-                <h3 class="font-primary text-[clamp(1.75rem,2.8vw,3rem)] font-bold uppercase tracking-tight mb-8 leading-tight text-balance">
+                <h3 class="font-primary text-[clamp(1.75rem,2.8vw,3rem)] font-bold uppercase tracking-tight leading-tight text-balance"
+                    :class="stepData.key === 'services' ? 'mb-5' : 'mb-8'">
                   {{ stepData.question }}
                 </h3>
 
+                <ContactDevModeSwitch
+                  v-if="stepData.key === 'services'"
+                  v-model="answers.devMode"
+                  class="mb-6"
+                />
+
                 <ContactStepInput 
                   v-if="stepData.type === 'input'"
-                  v-model="answers[stepData.key as keyof typeof answers]"
-                  :is-textarea="idx === 2"
+                  v-model="answers[stepData.key as 'contact' | 'name' | 'project' | 'budget']"
+                  :is-textarea="stepData.key === 'project'"
                   :placeholder="stepData.placeholder"
                   @focus="onFocus"
                   @blur="onBlur"
@@ -63,8 +70,21 @@
                 <ContactStepPlaques
                   v-if="stepData.type === 'plaques'"
                   :options="stepData.options || []"
-                  :selected-options="answers[stepData.key as keyof typeof answers]"
+                  :selected-options="answers[stepData.key as 'services']"
                   @toggle="toggleOption(stepData.key, $event, !!stepData.multi)"
+                />
+
+                <ContactStepReferences
+                  v-if="stepData.type === 'references'"
+                  :reference-urls="answers.referenceUrls"
+                  :attached-files="answers.attachedFiles"
+                  :placeholder="stepData.placeholder"
+                  @add-url="addReferenceUrl"
+                  @remove-url="removeReferenceUrl"
+                  @attach-files="attachFiles"
+                  @remove-file="removeFile"
+                  @focus="onFocus"
+                  @blur="onBlur"
                 />
 
                 </div>
@@ -73,7 +93,7 @@
 
             <!-- Success Step -->
             <Transition name="form-step">
-              <ContactStepSuccess v-show="step === 6" data-success-step="true" />
+              <ContactStepSuccess v-show="step > steps.length" data-success-step="true" />
             </Transition>
           </div>
 
@@ -177,7 +197,9 @@ import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useSectionReveal } from '~/composables/useSectionReveal'
 import ContactStepInput from '~/components/sections/contact/ContactStepInput.vue'
 import ContactStepPlaques from '~/components/sections/contact/ContactStepPlaques.vue'
+import ContactStepReferences from '~/components/sections/contact/ContactStepReferences.vue'
 import ContactStepSuccess from '~/components/sections/contact/ContactStepSuccess.vue'
+import ContactDevModeSwitch from '~/components/sections/contact/ContactDevModeSwitch.vue'
 
 defineOptions({ inheritAttrs: false })
 
@@ -218,8 +240,14 @@ const copyEmail = async () => {
   }, 2500)
 }
 
+let wrapperObserver: ResizeObserver | null = null
+
 onBeforeUnmount(() => {
   if (copyTimer) clearTimeout(copyTimer)
+  if (wrapperObserver) {
+    wrapperObserver.disconnect()
+    wrapperObserver = null
+  }
 })
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
@@ -246,6 +274,10 @@ const {
   canProceed,
   isStepEmpty,
   toggleOption,
+  addReferenceUrl,
+  removeReferenceUrl,
+  attachFiles,
+  removeFile,
   onFocus,
   onBlur,
   nextStep,
@@ -262,6 +294,9 @@ const updateHeight = async () => {
                       stepWrapperRef.value?.querySelector('[data-success-step]')
     if (currentEl) {
       wrapperHeight.value = `${(currentEl as HTMLElement).offsetHeight}px`
+      if (wrapperObserver) {
+        wrapperObserver.observe(currentEl)
+      }
     }
   }, 10)
 }
@@ -271,6 +306,20 @@ watch(step, () => {
 })
 
 onMounted(() => {
+  if (typeof ResizeObserver !== 'undefined' && stepWrapperRef.value) {
+    wrapperObserver = new ResizeObserver(() => {
+      const currentEl = stepWrapperRef.value?.querySelector(`[data-step="${step.value}"]`) ||
+                        stepWrapperRef.value?.querySelector('[data-success-step]')
+      if (currentEl) {
+        wrapperHeight.value = `${(currentEl as HTMLElement).offsetHeight}px`
+      }
+    })
+    stepWrapperRef.value.querySelectorAll('[data-step], [data-success-step]').forEach(el => {
+      wrapperObserver?.observe(el)
+    })
+    wrapperObserver.observe(stepWrapperRef.value)
+  }
+
   updateHeight()
 
   on('section-change', (label: string) => {

@@ -9,20 +9,6 @@
     <!-- Контент -->
     <div ref="contentRef" class="relative z-10 flex w-full h-full opacity-0 pointer-events-none">
       
-      <!-- Кнопка назад -->
-      <button 
-        class="back-btn fixed top-6 right-6 md:top-10 md:right-10 text-white/50 hover:text-white transition-colors uppercase font-primary tracking-widest text-[clamp(12px,1vw,14px)] z-[70] flex items-center group"
-        :class="isInteractive ? 'pointer-events-auto' : 'pointer-events-none'"
-        @click="closeStack"
-      >
-        <span class="mr-3 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]">Назад</span>
-        <div class="magnetic-btn relative w-12 h-12 flex items-center justify-center rounded-full border border-white/20 group-hover:border-transparent transition-colors duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]">
-          <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-          </svg>
-        </div>
-      </button>
-
       <!-- Левая часть: Место под движок сферы (OrganicCore рисует под нами) -->
       <div class="w-1/2 h-full flex items-center justify-center relative pointer-events-none">
       </div>
@@ -65,7 +51,7 @@ const props = defineProps<{
 const emitParent = defineEmits(['close'])
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
-const { emit } = useEventBus()
+const { emit, on } = useEventBus()
 
 const isVisible = ref(false)
 const isInteractive = ref(false)
@@ -105,7 +91,6 @@ const openStack = () => {
     }
 
     const title = contentRef.value?.querySelector('.tech-title')
-    const backBtn = contentRef.value?.querySelector('.back-btn')
     const techItems = contentRef.value?.querySelectorAll('.tech-item')
 
     openTimeline.addLabel('start', '+=0.6')
@@ -123,14 +108,6 @@ const openStack = () => {
         { x: 50, opacity: 0, skewX: -5 },
         { x: 0, opacity: 1, skewX: 0, duration: 0.6, stagger: 0.1, ease: 'power3.out' },
         'start+=0.2'
-      )
-    }
-
-    if (backBtn) {
-      openTimeline.fromTo(backBtn,
-        { x: 30, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-        'start+=0.4'
       )
     }
   })
@@ -165,6 +142,12 @@ watch(() => props.isOpen, (val) => {
   } else if (isVisible.value) {
     closeStack()
   }
+})
+
+onMounted(() => {
+  on('techstack-close', () => {
+    if (isVisible.value) closeStack()
+  })
 })
 
 onBeforeUnmount(() => {

@@ -81,14 +81,15 @@ export function usePriceDragGesture(
       // в реальных px, поэтому пороги и обратный перевод в radiusOffset должны
       // учитывать его — иначе на ноутбуках орбита и зона захвата «плывут».
       const scale = getOrbitScale()
+      const pointerMoveDist = Math.hypot(e.clientX - startPointer.x, e.clientY - startPointer.y)
 
-      if (distToCenter < 140 * scale) {
+      if (pointerMoveDist < 12 || distToCenter < 140 * scale) {
         activeDragOpt.selected = true
       } else {
         const targetPos = getOptionOrbitPos(activeDragOpt)
         const dx = pState.x - targetPos.x
         const dy = pState.y - targetPos.y
-        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+        if (Math.abs(dx) < 15 && Math.abs(dy) < 15) {
            activeDragOpt.selected = true
         } else {
            activeDragOpt.angle = Math.atan2(flingY, flingX)
