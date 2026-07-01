@@ -79,7 +79,7 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
     { key: 'name', type: 'input', question: 'Как мы можем к вам обращаться?', placeholder: 'Имя или Название компании' },
     { key: 'services', type: 'plaques', question: 'Какие модули нужны в проекте?', multi: true, options: productModuleNames },
     { key: 'project', type: 'input', question: 'Кратко опишите задачу вашего проекта', placeholder: 'Суть проекта в двух предложениях' },
-    { key: 'references', type: 'references', question: 'Понравившиеся сайты и файлы', placeholder: 'Введите URL сайта (например, apple.com)' },
+    { key: 'references', type: 'references', question: 'ПОНРАВИВШИЕСЯ САЙТЫ И ДИЗАЙНЫ', placeholder: 'Введите URL сайта (например, apple.com)' },
     { key: 'budget', type: 'plaques', question: 'Какой у вас планируемый бюджет?', multi: false, options: ['< 500 тыс. ₽', '500к - 1М ₽', '1М - 3М ₽', '> 3М ₽'] }
   ]
 
@@ -102,19 +102,20 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
     if (answers.referenceUrls.length >= 5) {
       return { success: false, error: 'Можно добавить не более 5 сайтов' }
     }
-    let cleaned = rawUrl.trim()
+    const cleaned = rawUrl.trim()
     if (!cleaned) return { success: false, error: 'Введите URL адреса' }
     
     if (cleaned.toLowerCase().startsWith('javascript:') || cleaned.toLowerCase().startsWith('data:')) {
       return { success: false, error: 'Недопустимый формат ссылки' }
     }
     
-    if (!/^https?:\/\//i.test(cleaned)) {
-      cleaned = 'https://' + cleaned
+    let testUrl = cleaned
+    if (!/^https?:\/\//i.test(testUrl)) {
+      testUrl = 'https://' + testUrl
     }
 
     try {
-      const urlObj = new URL(cleaned)
+      const urlObj = new URL(testUrl)
       if (!urlObj.hostname || urlObj.hostname.length < 3 || !urlObj.hostname.includes('.')) {
         return { success: false, error: 'Введите корректный домен (например, site.com)' }
       }

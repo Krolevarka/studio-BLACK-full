@@ -2,50 +2,50 @@
   <section ref="priceRef" v-bind="$attrs" class="reveal-scope-mobile relative h-svh w-full flex flex-col items-center justify-center bg-transparent z-10 touch-none overflow-hidden">
     <PriceDevModeModal :is-open="showDevModeModal" @close="showDevModeModal = false" />
 
-    <div class="w-full max-w-sm mx-auto flex flex-col h-full justify-between pointer-events-none transition-[opacity,transform] duration-1000 ease-out pt-20 pb-16 px-6"
+    <div class="w-full max-w-sm mx-auto flex flex-col h-full justify-between pointer-events-none transition-[opacity,transform] duration-1000 ease-out pt-16 pb-5 px-5 sm:px-6"
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[500ms] delay-[100ms]' : (isMenuTransitioning ? 'duration-[500ms] delay-[200ms]' : '')
          ]">
       
       <!-- Навигация: Чипы -->
-      <div class="reveal-item w-full flex flex-wrap gap-2 justify-center pointer-events-auto"
+      <div class="reveal-item w-full flex flex-wrap gap-1.5 justify-center pointer-events-auto shrink-0"
            :class="{ 'is-revealed': revealed }">
         <button 
           v-for="opt in options" :key="opt.id"
           @click="activeTabId = opt.id"
-          class="px-4 py-2 rounded-full border text-[0.6875rem] font-secondary uppercase tracking-widest transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] flex items-center justify-center min-h-[2.75rem] min-w-[2.75rem]"
-          :class="opt.id === activeTabId ? 'bg-white/10 border-white/40 text-white' : 'bg-transparent border-white/15 text-white/60 hover:text-white hover:border-white/30'"
+          class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border text-[0.65rem] sm:text-[0.6875rem] font-secondary uppercase tracking-widest transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] flex items-center justify-center min-h-[2.5rem] sm:min-h-[2.75rem]"
+          :class="opt.id === activeTabId ? 'bg-white/10 border-white/40 text-white font-semibold' : 'bg-transparent border-white/15 text-white/60 hover:text-white hover:border-white/30'"
         >
           <div 
             class="rounded-full bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shrink-0"
-            :class="opt.selected ? 'w-1.5 h-1.5 opacity-100 mr-2' : 'w-0 h-1.5 opacity-0 mr-0'"
+            :class="opt.selected ? 'w-1.5 h-1.5 opacity-100 mr-1.5' : 'w-0 h-1.5 opacity-0 mr-0'"
           ></div>
           <span class="whitespace-nowrap">{{ opt.name }}</span>
         </button>
       </div>
 
       <!-- Центральный Контент (reveal — на стабильной обёртке, внутри свой fade для смены вкладок) -->
-      <div class="reveal-item flex-1 flex flex-col justify-center items-center w-full relative pointer-events-none my-6"
+      <div class="reveal-item flex-1 flex flex-col justify-center items-center w-full relative pointer-events-none my-2 sm:my-4 min-h-0"
            :class="{ 'is-revealed': revealed }" style="--reveal-delay: 150ms">
         <transition name="fade" mode="out-in">
           <div :key="activeOption.id" class="flex flex-col items-center text-center w-full">
-            <h3 class="font-primary text-[1.75rem] leading-tight font-bold uppercase tracking-tight text-white mb-2">
+            <h3 class="font-primary text-xl sm:text-2xl leading-tight font-bold uppercase tracking-tight text-white mb-1 sm:mb-2">
               {{ activeOption.name }}
             </h3>
 
-            <div class="font-secondary text-lg font-medium text-white mb-4 tabular-nums">
+            <div class="font-secondary text-base sm:text-lg font-medium text-white mb-2 sm:mb-3 tabular-nums">
               от {{ Math.round(activeOptionDisplayPrice).toLocaleString('ru-RU') }} ₽
             </div>
 
-            <p class="font-secondary text-sm text-white/50 leading-relaxed max-w-[17.5rem] mb-8">
+            <p class="font-secondary text-xs sm:text-sm text-white/60 leading-relaxed max-w-[17.5rem] mb-3.5 sm:mb-5 line-clamp-3 sm:line-clamp-none">
               {{ activeOption.description }}
             </p>
 
             <div class="pointer-events-auto">
               <button 
                 @click="toggleOption(activeOption.id)"
-                class="px-8 py-3 rounded-full font-secondary text-xs uppercase tracking-widest font-bold transition-all duration-300 border active:scale-[0.97] min-h-[2.75rem] min-w-[2.75rem]"
+                class="px-6 sm:px-8 py-2 sm:py-2.5 rounded-full font-secondary text-xs uppercase tracking-widest font-bold transition-all duration-300 border active:scale-[0.97] min-h-[2.5rem] sm:min-h-[2.75rem]"
                 :class="activeOption.selected 
                   ? 'bg-transparent border-white/20 text-white/50 hover:border-white/40 hover:text-white' 
                   : 'bg-transparent border-white/80 text-white hover:bg-white hover:text-black'"
@@ -58,25 +58,25 @@
       </div>
 
       <!-- Переключатель режимов -->
-      <div class="reveal-item w-full pointer-events-auto my-3"
+      <div class="reveal-item w-full pointer-events-auto my-1.5 sm:my-2 shrink-0"
            :class="{ 'is-revealed': revealed }" style="--reveal-delay: 240ms">
-        <PriceDevModeSwitch />
+        <MobilePriceDevModeSwitch />
       </div>
 
       <!-- Итог -->
-      <div class="reveal-item w-full pointer-events-auto"
+      <div class="reveal-item w-full pointer-events-auto shrink-0"
            :class="{ 'is-revealed': revealed }" style="--reveal-delay: 320ms">
-        <div class="border-t border-white/10 pt-6">
+        <div class="border-t border-white/10 pt-3 sm:pt-4">
 
-          <div class="flex justify-between items-end mb-6">
-            <div class="font-secondary text-xs uppercase tracking-widest text-white/50 mb-1">Итого:</div>
-            <div class="font-primary text-4xl font-black text-white leading-none tracking-tight tabular-nums">
-              <span v-if="displayPrice > 0" class="text-2xl align-baseline mr-1">от</span>{{ Math.round(displayPrice).toLocaleString('ru-RU') }} <span class="text-2xl">₽</span>
+          <div class="flex justify-between items-end mb-3 sm:mb-4">
+            <div class="font-secondary text-[10px] sm:text-xs uppercase tracking-widest text-white/50 mb-0.5">Итого:</div>
+            <div class="font-primary text-2xl sm:text-3xl font-black text-white leading-none tracking-tight tabular-nums">
+              <span v-if="displayPrice > 0" class="text-base sm:text-xl align-baseline mr-1">от</span>{{ Math.round(displayPrice).toLocaleString('ru-RU') }} <span class="text-base sm:text-xl">₽</span>
             </div>
           </div>
           
           <UiButton 
-            class="w-full font-secondary !bg-white !text-black !border-transparent hover:!bg-white/90 active:!bg-white/80 transition-colors duration-200 min-h-[3rem] flex items-center justify-center text-sm uppercase tracking-widest font-bold touch-manipulation"
+            class="w-full font-secondary !bg-white !text-black !border-transparent hover:!bg-white/90 active:!bg-white/80 transition-colors duration-200 min-h-[2.75rem] sm:min-h-[3rem] flex items-center justify-center text-xs sm:text-sm uppercase tracking-widest font-bold touch-manipulation"
             :class="totalPrice > 0 ? 'opacity-100' : 'opacity-50 pointer-events-none'"
             to="#contact"
           >
@@ -98,7 +98,7 @@ import { useSectionReveal } from '~/composables/useSectionReveal'
 import { usePriceDevMode } from '~/composables/usePriceDevMode'
 import type { PriceOption } from '~/types/organic'
 import { createProductBuilderOptions } from '~/data/productBuilderOptions'
-import PriceDevModeSwitch from '~/components/sections/price/PriceDevModeSwitch.vue'
+import MobilePriceDevModeSwitch from '~/components/sections/mobile/MobilePriceDevModeSwitch.vue'
 import PriceDevModeModal from '~/components/sections/price/PriceDevModeModal.vue'
 
 defineOptions({ inheritAttrs: false })

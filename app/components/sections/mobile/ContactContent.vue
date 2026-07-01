@@ -41,9 +41,14 @@
         <div class="absolute inset-0 w-full h-full">
           <Transition name="form-step">
             <div :key="step" v-if="step <= steps.length"
-                 class="absolute inset-0 w-full h-full flex flex-col overflow-y-auto no-scrollbar pb-4">
+                 class="absolute inset-0 w-full h-full flex flex-col pb-4"
+                 :class="currentStepData.key === 'services' ? 'overflow-hidden' : 'overflow-y-auto no-scrollbar'">
                  
-                 <div class="w-full mt-auto mb-auto flex flex-col shrink-0">
+                 <div class="w-full flex flex-col transition-all duration-300"
+                      :class="[
+                        currentStepData.key === 'references' ? 'shrink-0 my-0 pt-1 pb-28' : '',
+                        currentStepData.key === 'services' ? 'h-full shrink-0 my-0 pt-1' : (currentStepData.key !== 'references' ? 'shrink-0 mt-auto mb-auto' : '')
+                      ]">
                    <h3 class="font-primary text-[1.25rem] md:text-[1.5rem] leading-[1.2] font-bold uppercase tracking-tight text-white text-balance w-full shrink-0"
                        :class="currentStepData.key === 'services' ? 'mb-4' : 'mb-6'">
                      {{ currentStepData.question }}
@@ -52,7 +57,7 @@
                    <MobileContactDevModeSwitch
                      v-if="currentStepData.key === 'services'"
                      v-model="answers.devMode"
-                     class="mb-5"
+                     class="mb-4 shrink-0"
                    />
 
                    <MobileContactStepInput 
@@ -70,8 +75,9 @@
                      v-if="currentStepData.type === 'plaques'"
                      :options="currentStepData.options || []"
                      :selected-options="answers[currentStepData.key as 'services']"
+                     :enable-custom-scroll="currentStepData.key === 'services'"
                      @toggle="toggleOption(currentStepData.key, $event, !!currentStepData.multi)"
-                     class="w-full shrink-0"
+                     :class="currentStepData.key === 'services' ? 'w-full flex-1 min-h-0 relative' : 'w-full shrink-0'"
                    />
 
                    <MobileContactStepReferences

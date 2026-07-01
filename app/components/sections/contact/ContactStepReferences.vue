@@ -40,7 +40,7 @@
             :key="url"
             class="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 bg-white/5 backdrop-blur-md text-white font-secondary text-xs md:text-sm transition-all hover:border-white/60 group"
           >
-            <a :href="url" target="_blank" class="hover:underline truncate max-w-[220px]" @click.stop>{{ url }}</a>
+            <a :href="url.startsWith('http://') || url.startsWith('https://') ? url : 'https://' + url" target="_blank" class="hover:underline truncate max-w-[220px]" @click.stop>{{ url }}</a>
             <button 
               @click.prevent="$emit('removeUrl', idx)"
               type="button"
@@ -199,27 +199,27 @@ const handleAddUrl = () => {
     return
   }
 
-  let cleaned = raw
-  if (cleaned.toLowerCase().startsWith('javascript:') || cleaned.toLowerCase().startsWith('data:')) {
+  if (raw.toLowerCase().startsWith('javascript:') || raw.toLowerCase().startsWith('data:')) {
     showError('Недопустимый формат ссылки')
     return
   }
 
-  if (!/^https?:\/\//i.test(cleaned)) {
-    cleaned = 'https://' + cleaned
+  let testUrl = raw
+  if (!/^https?:\/\//i.test(testUrl)) {
+    testUrl = 'https://' + testUrl
   }
 
   try {
-    const urlObj = new URL(cleaned)
+    const urlObj = new URL(testUrl)
     if (!urlObj.hostname || urlObj.hostname.length < 3 || !urlObj.hostname.includes('.')) {
       showError('Введите корректный домен (например, site.com)')
       return
     }
-    if (props.referenceUrls.includes(cleaned)) {
+    if (props.referenceUrls.includes(raw)) {
       showError('Этот сайт уже добавлен')
       return
     }
-    emit('addUrl', cleaned)
+    emit('addUrl', raw)
     inputUrl.value = ''
     localError.value = null
   } catch {
