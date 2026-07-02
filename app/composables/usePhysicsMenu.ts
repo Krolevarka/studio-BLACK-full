@@ -15,7 +15,7 @@ interface PhysicsNode {
 export function usePhysicsMenu(isOpen: Ref<boolean>) {
   let nodes: PhysicsNode[] = []
   let rAF: number | null = null
-  let mouse = { x: -1000, y: -1000 }
+  const mouse = { x: -1000, y: -1000 }
 
   const onMouseEnter = (index: number) => {
     if (nodes[index]) nodes[index].isHovered = true

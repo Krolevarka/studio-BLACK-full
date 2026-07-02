@@ -1,8 +1,9 @@
 <template>
   <div ref="wrapperRef" class="organic-core-wrapper absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden pointer-events-none">
-    <canvas ref="canvasRef"
+    <canvas
+ref="canvasRef"
             class="absolute pointer-events-none max-w-none"
-            style="top: -80px; left: -80px; transform: translateZ(0); will-change: transform;"></canvas>
+            style="top: -80px; left: -80px; transform: translateZ(0); will-change: transform;"/>
   </div>
 </template>
 

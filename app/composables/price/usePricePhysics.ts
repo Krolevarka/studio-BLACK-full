@@ -1,10 +1,10 @@
-import { type Ref } from 'vue'
+import type { Ref } from 'vue'
 import gsap from 'gsap'
 import { useState } from '#imports'
 import type { PriceOption } from '~/types/organic'
 import type { PhysicsState } from '~/types/price'
 import { usePriceCollision } from './usePriceCollision'
-import { useEventBus } from '~/composables/useEventBus'
+import type { useEventBus } from '~/composables/useEventBus'
 
 // Базовый радиус орбиты спутника в нескалированном пространстве сцены (эталон 1920×1080).
 // Тот же эталон, по которому строится органическое ядро в organicStates.ts.
@@ -87,7 +87,7 @@ export function usePricePhysics(
         pState.x = nextX
         pState.y = nextY
 
-        let collision = checkCollision(pState, el, opt, physicsMap)
+        const collision = checkCollision(pState, el, opt, physicsMap)
 
         if (pState.isTextHidden !== collision) {
           pState.isTextHidden = collision;

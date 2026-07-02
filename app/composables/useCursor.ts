@@ -309,7 +309,7 @@ export function useCursor() {
       trailY = coreY
     }
 
-    let targetAngle = 0
+    let targetAngle: number
     let targetScaleX = 1
     let targetScaleY = 1
 

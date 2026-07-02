@@ -5,16 +5,15 @@
       (isPreloading || isContactTyping || (isScrolling && !isMenuOpen)) ? 'header-anim-hidden pointer-events-none' : 'header-anim-visible'
     ]"
   >
-    <a href="#hero" @click.prevent="$emit('logo-click')" 
-       class="w-20 sm:w-24 flex items-center min-h-[2.75rem] min-w-[2.75rem] transition-opacity duration-500"
+    <a
+href="#hero" class="w-20 sm:w-24 flex items-center min-h-[2.75rem] min-w-[2.75rem] transition-opacity duration-500" 
        :class="(isScrolling && !isMenuOpen) || isContactTyping || isPriceModalOpen ? 'pointer-events-none opacity-0' : 'pointer-events-auto cursor-pointer opacity-100'"
-       style="touch-action: none;">
+       style="touch-action: none;"
+       @click.prevent="$emit('logo-click')">
       <LogoText class="w-full h-auto fill-current" />
     </a>
     
     <button 
-      @click="handleButtonClick"
-      @keydown.enter="handleButtonClick"
       aria-label="Навигация"
       :aria-expanded="isMenuOpen"
       role="button"
@@ -22,43 +21,46 @@
       class="relative w-12 h-12 flex items-center justify-center rounded-full min-h-[2.75rem] min-w-[2.75rem] transition-opacity duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
       :class="isContactTyping ? 'opacity-0 pointer-events-none' : (isBackMode ? 'opacity-100 pointer-events-auto' : ((isScrolling && !isMenuOpen) ? 'pointer-events-none' : 'opacity-100 pointer-events-auto'))"
       style="touch-action: none;"
+      @click="handleButtonClick"
+      @keydown.enter="handleButtonClick"
     >
       <!-- Тонкое мягкое кольцо вокруг кнопки в режиме Назад -->
-      <span class="absolute inset-0 rounded-full border border-white/20 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
-            :class="isBackMode ? 'opacity-100 scale-100' : 'opacity-0 scale-75'">
-      </span>
+      <span
+class="absolute inset-0 rounded-full border border-white/20 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
+            :class="isBackMode ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"/>
 
-      <div class="relative w-6 h-6 flex items-center justify-center transition-all duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+      <div
+class="relative w-6 h-6 flex items-center justify-center transition-all duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
            :class="isBackMode ? 'will-change-transform' : ''">
         
         <!-- Средняя линия (Ось стрелки ← в режиме BackMode) -->
-        <span class="absolute w-6 h-[1.5px] rounded-full bg-white transition-[transform,opacity] duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
+        <span
+class="absolute w-6 h-[1.5px] rounded-full bg-white transition-[transform,opacity] duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
               :class="[
                 !isBackMode ? 'transform-gpu' : '',
                 isBackMode ? 'opacity-100' : 'opacity-0 scale-x-0'
               ]"
-              :style="isBackMode ? { transform: 'scaleX(0.70)' } : {}">
-        </span>
+              :style="isBackMode ? { transform: 'scaleX(0.70)' } : {}"/>
 
         <!-- Верхняя линия -->
-        <span class="absolute w-6 h-[1.5px] rounded-full bg-white transition-transform duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
+        <span
+class="absolute w-6 h-[1.5px] rounded-full bg-white transition-transform duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
               :class="[
                 !isBackMode ? 'transform-gpu' : '',
                 (isMenuOpen || isMenuAnimating) && !isBackMode ? 'will-change-transform' : '',
                 !isBackMode ? (isMenuOpen ? 'rotate-45 translate-y-0 scale-x-100' : '-translate-y-[4px] scale-x-100') : ''
               ]"
-              :style="isBackMode ? { transform: 'translate3d(-0.33rem, -0.20rem, 0) rotate(-45deg) scaleX(0.38)' } : {}">
-        </span>
+              :style="isBackMode ? { transform: 'translate3d(-0.33rem, -0.20rem, 0) rotate(-45deg) scaleX(0.38)' } : {}"/>
 
         <!-- Нижняя линия -->
-        <span class="absolute w-6 h-[1.5px] rounded-full bg-white transition-transform duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
+        <span
+class="absolute w-6 h-[1.5px] rounded-full bg-white transition-transform duration-[500ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center"
               :class="[
                 !isBackMode ? 'transform-gpu' : '',
                 (isMenuOpen || isMenuAnimating) && !isBackMode ? 'will-change-transform' : '',
                 !isBackMode ? (isMenuOpen ? '-rotate-45 translate-y-0 scale-x-100' : 'translate-y-[4px] scale-x-100') : ''
               ]"
-              :style="isBackMode ? { transform: 'translate3d(-0.33rem, 0.20rem, 0) rotate(45deg) scaleX(0.38)' } : {}">
-        </span>
+              :style="isBackMode ? { transform: 'translate3d(-0.33rem, 0.20rem, 0) rotate(45deg) scaleX(0.38)' } : {}"/>
       </div>
     </button>
   </header>
@@ -79,8 +81,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'logo-click'): void
-  (e: 'toggle-menu'): void
+  'logo-click': []
+  'toggle-menu': []
 }>()
 
 const { emit: emitBus } = useEventBus()

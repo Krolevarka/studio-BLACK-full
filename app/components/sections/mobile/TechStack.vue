@@ -1,22 +1,23 @@
 <template>
   <div 
     v-show="isVisible"
+    ref="containerRef"
     class="fixed inset-0 w-full h-[100dvh] z-[100] overflow-hidden flex flex-col bg-[#050505]"
     :class="[isMenuTransitioning ? 'transition-opacity' : '', isMenuOpenLocal ? '!opacity-0 duration-[1000ms]' : '']"
-    ref="containerRef"
   >
 
     <!-- Контент -->
     <div ref="contentRef" class="relative w-full h-full opacity-0 pointer-events-none overflow-hidden">
       
       <!-- Верхний градиент (растворение к верху) -->
-      <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#050505] via-[#050505]/80 to-transparent z-[80] pointer-events-none"></div>
+      <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#050505] via-[#050505]/80 to-transparent z-[80] pointer-events-none"/>
 
       <!-- Нижний градиент (мягкое растворение снизу) -->
-      <div class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-[#050505] to-transparent z-[80] pointer-events-none"></div>
+      <div class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-[#050505] to-transparent z-[80] pointer-events-none"/>
       
       <!-- Обертка для тач-событий (перехватывает свайпы) -->
-      <div class="w-full h-full relative z-[70] touch-manipulation"
+      <div
+class="w-full h-full relative z-[70] touch-manipulation"
            :class="isInteractive ? 'pointer-events-auto' : 'pointer-events-none'"
            @touchstart="onTouchStart"
            @touchmove="onTouchMove"

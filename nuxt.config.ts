@@ -5,7 +5,17 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
-  modules: ['@nuxtjs/google-fonts', 'nuxt-security', '@nuxtjs/device'],
+  // Серверные секреты. Значения берутся из .env при старте;
+  // в продакшене их можно переопределить переменными NUXT_SMTP_HOST, NUXT_SMTP_PASS и т.д.
+  runtimeConfig: {
+    smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+    smtpPort: process.env.SMTP_PORT || '587',
+    smtpSecure: process.env.SMTP_SECURE || '',
+    smtpUser: process.env.SMTP_USER || '',
+    smtpPass: process.env.SMTP_PASS || '',
+    mailTo: process.env.MAIL_TO || ''
+  },
+  modules: ['@nuxtjs/google-fonts', 'nuxt-security', '@nuxtjs/device', '@nuxt/eslint'],
   googleFonts: {
     families: {
       'Wix+Madefor+Display': '400..800',

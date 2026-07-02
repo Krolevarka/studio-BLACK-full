@@ -1,9 +1,9 @@
 <template>
   <div 
     v-show="isVisible"
+    ref="containerRef"
     class="absolute inset-0 w-full h-full z-50 overflow-y-auto overflow-x-hidden flex flex-col bg-[#050505] text-white select-none"
     :class="[isMenuTransitioning ? 'transition-opacity' : '', isMenuOpenLocal ? '!opacity-0 duration-[1000ms]' : '']"
-    ref="containerRef"
   >
     <!-- Контент -->
     <div ref="contentRef" class="relative z-10 flex flex-col w-full min-h-full opacity-0 pointer-events-none px-6 md:px-12 xl:px-20 py-[clamp(1rem,2.5dvh,3rem)] justify-center my-auto gap-[clamp(0.5rem,1.5dvh,1.5rem)]">
@@ -23,7 +23,7 @@
             Генерация кода под контролем <span class="text-white font-bold">Senior-архитекторов</span>: вдвое быстрее, на 30% выгоднее и с нулевым техническим долгом.
           </p>
         </div>
-        <div class="header-line absolute bottom-0 left-0 w-full h-[1px] bg-white/15" :class="posterRows[0]?.align === 'right' ? 'origin-right' : 'origin-left'"></div>
+        <div class="header-line absolute bottom-0 left-0 w-full h-[1px] bg-white/15" :class="posterRows[0]?.align === 'right' ? 'origin-right' : 'origin-left'"/>
       </div>
 
       <!-- Компактный швейцарский плакат: чистая типографика без обрезки букв -->
@@ -36,7 +36,9 @@
         >
           <!-- Гигантское слово/слог (без overflow-hidden, с комфортным line-height чтобы ничего не обрезалось) -->
           <div class="giant-letter shrink-0 overflow-visible py-1">
-            <span class="block font-primary font-black uppercase text-[clamp(1.8rem,min(5vw,6dvh),7.5rem)] leading-[0.95] tracking-tighter text-white transition-colors duration-300 hover:text-white/90" v-html="formatTypography(row.giantText)"></span>
+            <!-- Контент статический (локальные данные), пользовательский ввод сюда не попадает -->
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <span class="block font-primary font-black uppercase text-[clamp(1.8rem,min(5vw,6dvh),7.5rem)] leading-[0.95] tracking-tighter text-white transition-colors duration-300 hover:text-white/90" v-html="formatTypography(row.giantText)"/>
           </div>
 
           <!-- Редакционный блок в едином плотном ритме -->
@@ -64,13 +66,13 @@
             v-if="index !== posterRows.length - 1" 
             class="row-line absolute bottom-0 left-0 w-full h-[1px] bg-white/15" 
             :class="posterRows[index + 1]?.align === 'right' ? 'origin-right' : 'origin-left'"
-          ></div>
+          />
         </div>
       </div>
 
       <!-- Футер плаката -->
       <div class="poster-footer relative pt-[clamp(0.5rem,1.5dvh,1.5rem)] flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-white/40 tracking-widest uppercase shrink-0 gap-2">
-        <div class="footer-line absolute top-0 left-0 w-full h-[1px] bg-white/15" :class="posterRows[posterRows.length - 1]?.align === 'right' ? 'origin-right' : 'origin-left'"></div>
+        <div class="footer-line absolute top-0 left-0 w-full h-[1px] bg-white/15" :class="posterRows[posterRows.length - 1]?.align === 'right' ? 'origin-right' : 'origin-left'"/>
         <span>STUDIO-BLACK // ARCHITECTURAL AI SYSTEM</span>
         <span>NO BORDERS • PURE TYPOGRAPHY</span>
       </div>
@@ -95,7 +97,7 @@ const emit = defineEmits<{
 }>()
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
-const { emit: emitBus, on: onBus, off: offBus } = useEventBus()
+const { emit: emitBus, on: onBus } = useEventBus()
 
 const formatTypography = (text: string) => {
   return text.replace(/•/g, '<span class="inline-block relative -translate-y-[0.1em] text-white mx-2">•</span>')

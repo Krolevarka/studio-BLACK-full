@@ -5,7 +5,8 @@
        не используется намеренно (нет риска hydration-mismatch). -->
   <div class="rotate-notice" aria-hidden="true">
     <div class="rotate-notice__inner">
-      <svg class="rotate-notice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      <svg
+class="rotate-notice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <rect x="7" y="2" width="10" height="20" rx="2" />
         <path d="M11 19h2" />

@@ -30,14 +30,26 @@ if (cleanupTimer.unref) {
   cleanupTimer.unref()
 }
 
+// Экранирование HTML: пользовательские данные попадают в разметку письма,
+// без этого возможна инъекция произвольных тегов и фишинговых ссылок
+const escapeHtml = (str: string): string =>
+  str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
 const bodySchema = z.object({
-  name: z.string().optional(),
-  services: z.array(z.string()).optional(),
-  project: z.string().optional(),
-  budget: z.string().optional(),
-  contact: z.string().min(1, 'Контактные данные обязательны'),
-  devMode: z.string().optional(),
-  referenceUrls: z.array(z.string()).optional()
+  name: z.string().max(200).optional(),
+  services: z.array(z.string().max(200)).max(20).optional(),
+  project: z.string().max(5000).optional(),
+  budget: z.string().max(200).optional(),
+  contact: z.string().min(1, 'Контактные данные обязательны').max(500),
+  devMode: z.string().max(200).optional(),
+  referenceUrls: z.array(
+    z.url({ protocol: /^https?$/, error: 'Ссылка-референс должна быть корректным http(s)-адресом' }).max(2000)
+  ).max(10).optional()
 }).strict()
 
 export default defineEventHandler(async (event) => {
@@ -131,6 +143,18 @@ export default defineEventHandler(async (event) => {
           }
         }
       }
+
+      // Multipart-поля проходят ту же валидацию (лимиты длины, http(s)-ссылки), что и JSON
+      const parsed = bodySchema.parse({
+        name: name || undefined,
+        services: services.length > 0 ? services : undefined,
+        project: project || undefined,
+        budget: budget || undefined,
+        contact,
+        devMode: devMode || undefined,
+        referenceUrls: referenceUrls.length > 0 ? referenceUrls : undefined
+      })
+      referenceUrls = parsed.referenceUrls || []
     } else {
       const rawBody = await readBody(event)
       const parsed = bodySchema.parse(rawBody)
@@ -151,28 +175,23 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Логирование в консоль сервера (гарантия сохранности данных)
-    console.log('\n============= НОВАЯ АНКЕТА KVAZAR =============')
-    console.log('IP:', ip)
-    console.log('Время:', new Date().toLocaleString('ru-RU'))
-    console.log(JSON.stringify({ name, contact, budget, devMode, services, referenceUrls, filesCount: files.length }, null, 2))
-    console.log('===============================================\n')
+    // Без PII: контакты и текст заявки в штатный лог не попадают
+    console.log(`[contact] Новая заявка: ip=${ip}, услуг=${services.length}, референсов=${referenceUrls.length}, файлов=${files.length}, время=${new Date().toLocaleString('ru-RU')}`)
 
-    // Получение настроек из переменных окружения
-    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com'
-    const smtpPort = Number(process.env.SMTP_PORT) || 587
-    const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465
-    const smtpUser = process.env.SMTP_USER || 'kvazarweb@gmail.com'
-    const smtpPass = process.env.SMTP_PASS?.replace(/\s+/g, '')
-    const mailTo = process.env.MAIL_TO || 'kvazarweb@gmail.com'
+    const config = useRuntimeConfig(event)
+    const smtpHost = config.smtpHost
+    const smtpPort = Number(config.smtpPort) || 587
+    const smtpSecure = config.smtpSecure === 'true' || smtpPort === 465
+    const smtpUser = config.smtpUser
+    const smtpPass = config.smtpPass?.replace(/\s+/g, '')
+    const mailTo = config.mailTo || smtpUser
 
-    // Проверка настройки пароля
-    if (!smtpPass || smtpPass === 'ваш_16_значный_пароль_приложения') {
-      console.warn('⚠️ ВНИМАНИЕ: Пароль приложения (SMTP_PASS) еще не настроен в .env файле!')
+    if (!smtpUser || !smtpPass || smtpPass === 'ваш_16_значный_пароль_приложения') {
+      console.error('[contact] SMTP не настроен: задайте SMTP_USER и SMTP_PASS в .env (или NUXT_SMTP_USER / NUXT_SMTP_PASS в окружении)')
       throw createError({
         statusCode: 500,
         statusMessage: 'Internal Server Error',
-        message: 'Почтовый сервер еще не настроен. Укажите 16-значный пароль приложения в файле .env'
+        message: 'Почтовый сервер еще не настроен. Укажите SMTP_USER и SMTP_PASS в файле .env'
       })
     }
 
@@ -187,16 +206,16 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    const servicesList = services && services.length > 0 
-      ? services.map(s => `<li><b>${s}</b></li>`).join('') 
+    const servicesList = services && services.length > 0
+      ? services.map(s => `<li><b>${escapeHtml(s)}</b></li>`).join('')
       : '<li>Не указано</li>'
 
     const referencesList = referenceUrls && referenceUrls.length > 0
-      ? referenceUrls.map(u => `<li style="margin-bottom: 6px;"><a href="${u}" target="_blank" style="color: #4da6ff; text-decoration: none;">${u}</a></li>`).join('')
+      ? referenceUrls.map(u => `<li style="margin-bottom: 6px;"><a href="${escapeHtml(u)}" target="_blank" style="color: #4da6ff; text-decoration: none;">${escapeHtml(u)}</a></li>`).join('')
       : '<li>Не указано</li>'
 
     const filesList = files && files.length > 0
-      ? files.map(f => `<li style="margin-bottom: 6px;"><b>${f.filename}</b> <span style="color:#888888;">(${(f.data.length / 1024).toFixed(1)} КБ)</span></li>`).join('')
+      ? files.map(f => `<li style="margin-bottom: 6px;"><b>${escapeHtml(f.filename)}</b> <span style="color:#888888;">(${(f.data.length / 1024).toFixed(1)} КБ)</span></li>`).join('')
       : '<li>Файлы не прикреплены</li>'
 
     const htmlContent = `
@@ -208,21 +227,21 @@ export default defineEventHandler(async (event) => {
 
         <div style="background-color: #111111; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
           <p style="margin: 0 0 10px 0; font-size: 14px; color: #888888; text-transform: uppercase;">Контакт для связи:</p>
-          <p style="margin: 0; font-size: 20px; font-weight: bold; color: #ffffff; word-break: break-all;">${contact}</p>
+          <p style="margin: 0; font-size: 20px; font-weight: bold; color: #ffffff; word-break: break-all;">${escapeHtml(contact)}</p>
         </div>
 
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
           <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px; width: 40%;">Имя / Компания:</td>
-            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: 500;">${name || 'Не указано'}</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: 500;">${escapeHtml(name) || 'Не указано'}</td>
           </tr>
           <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px;">Режим разработки:</td>
-            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: bold;">${devMode || 'AI-Сборка (-30%)'}</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: bold;">${escapeHtml(devMode) || 'AI-Сборка (-30%)'}</td>
           </tr>
           <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px;">Планируемый бюджет:</td>
-            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: 500;">${budget || 'Не указано'}</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #ffffff; font-size: 15px; font-weight: 500;">${escapeHtml(budget) || 'Не указано'}</td>
           </tr>
           <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #1a1a1a; color: #888888; font-size: 14px; vertical-align: top;">Интересующие услуги:</td>
@@ -244,28 +263,35 @@ export default defineEventHandler(async (event) => {
 
         <div style="background-color: #111111; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
           <p style="margin: 0 0 8px 0; font-size: 14px; color: #888888; text-transform: uppercase;">Задача проекта:</p>
-          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #e0e0e0; white-space: pre-wrap;">${project || 'Не указано'}</p>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #e0e0e0; white-space: pre-wrap;">${escapeHtml(project) || 'Не указано'}</p>
         </div>
 
         <div style="text-align: center; font-size: 11px; color: #555555; border-top: 1px solid #1a1a1a; pt: 15px; padding-top: 15px;">
-          Отправлено с IP: ${ip} • Время: ${new Date().toLocaleString('ru-RU')}
+          Отправлено с IP: ${escapeHtml(ip)} • Время: ${new Date().toLocaleString('ru-RU')}
         </div>
       </div>
     `
 
     // Отправка письма
-    await transporter.sendMail({
-      from: `"KVAZAR Studio" <${smtpUser}>`,
-      to: mailTo,
-      subject: `⚡ Бриф от: ${name || contact} [KVAZAR]`,
-      text: `Новый бриф от ${contact}\nРежим: ${devMode || 'AI-Сборка (-30%)'}\nИмя: ${name}\nБюджет: ${budget}\nУслуги: ${(services || []).join(', ')}\nСайты: ${(referenceUrls || []).join(', ')}\nФайлы: ${files.map(f => f.filename).join(', ')}\nЗадача: ${project}`,
-      html: htmlContent,
-      attachments: files.map(f => ({
-        filename: f.filename,
-        content: f.data,
-        contentType: f.contentType
-      }))
-    })
+    try {
+      await transporter.sendMail({
+        from: `"KVAZAR Studio" <${smtpUser}>`,
+        to: mailTo,
+        subject: `⚡ Бриф от: ${name || contact} [KVAZAR]`,
+        text: `Новый бриф от ${contact}\nРежим: ${devMode || 'AI-Сборка (-30%)'}\nИмя: ${name}\nБюджет: ${budget}\nУслуги: ${(services || []).join(', ')}\nСайты: ${(referenceUrls || []).join(', ')}\nФайлы: ${files.map(f => f.filename).join(', ')}\nЗадача: ${project}`,
+        html: htmlContent,
+        attachments: files.map(f => ({
+          filename: f.filename,
+          content: f.data,
+          contentType: f.contentType
+        }))
+      })
+    } catch (mailErr) {
+      // Письмо не ушло — логируем заявку целиком, чтобы данные не потерялись
+      console.error('[contact] Отправка письма не удалась, содержимое заявки:')
+      console.error(JSON.stringify({ name, contact, budget, devMode, services, referenceUrls, project, files: files.map(f => f.filename) }, null, 2))
+      throw mailErr
+    }
 
     // Фиксируем успешную отправку
     record.successCount++

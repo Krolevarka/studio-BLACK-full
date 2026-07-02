@@ -5,18 +5,18 @@
       <input 
         v-model="inputUrl"
         type="text" 
+        class="min-w-0 flex-1 bg-transparent text-base sm:text-lg font-secondary text-left text-white outline-none focus:outline-none ring-0 placeholder-white/30"
+        :placeholder="placeholder || 'Сайт (например, apple.com)'"
         @focus="$emit('focus')"
         @blur="$emit('blur')"
         @keydown.enter.prevent="handleAddUrl"
-        class="min-w-0 flex-1 bg-transparent text-base sm:text-lg font-secondary text-left text-white outline-none focus:outline-none ring-0 placeholder-white/30"
-        :placeholder="placeholder || 'Сайт (например, apple.com)'"
       >
       <button 
-        @click.prevent="handleAddUrl"
         type="button"
         :disabled="referenceUrls.length >= 4"
         :class="referenceUrls.length >= 4 ? 'opacity-30 pointer-events-none' : 'active:bg-white active:text-black'"
         class="shrink-0 uppercase tracking-widest font-secondary text-[0.6875rem] px-3.5 py-2 min-h-[36px] flex items-center justify-center rounded-full border border-white/30 transition-all duration-300"
+        @click.prevent="handleAddUrl"
       >
         + Добавить
       </button>
@@ -44,10 +44,10 @@
             >
               <a :href="url.startsWith('http://') || url.startsWith('https://') ? url : 'https://' + url" target="_blank" class="truncate max-w-[150px] sm:max-w-[190px]" @click.stop>{{ url }}</a>
               <button 
-                @click.prevent="$emit('removeUrl', idx)"
                 type="button"
                 aria-label="Удалить ссылку"
                 class="text-white/60 active:text-white ml-0.5 font-bold text-sm min-w-[24px] min-h-[24px] flex items-center justify-center"
+                @click.prevent="$emit('removeUrl', idx)"
               >&times;</button>
             </div>
           </TransitionGroup>
@@ -68,11 +68,11 @@
       
       <!-- Кнопка прикрепления файлов (всегда на экране, отключается при достижении лимита 4) -->
       <button 
-        @click.prevent="openFileDialog"
         type="button"
         :disabled="attachedFiles.length >= 4"
         :class="attachedFiles.length >= 4 ? 'opacity-40 pointer-events-none' : 'active:bg-white active:text-black cursor-pointer'"
         class="w-full inline-flex items-center justify-center gap-2.5 px-4 py-3 min-h-[44px] rounded-full border border-white/40 bg-white/[0.05] transition-all duration-300 shadow-sm"
+        @click.prevent="openFileDialog"
       >
         <span class="text-base shrink-0">📎</span>
         <span class="font-secondary text-xs tracking-widest uppercase font-medium">Прикрепить файлы</span>
@@ -89,9 +89,9 @@
         <div class="overflow-hidden flex justify-start">
           <div class="pt-1 pb-0.5">
             <button 
-              @click.prevent="resetFiles"
               type="button"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[30px] rounded-full border border-red-400/30 bg-red-500/10 active:bg-red-500/25 text-red-300 font-secondary text-[0.65rem] tracking-wider uppercase font-medium transition-all duration-300"
+              @click.prevent="resetFiles"
             >
               <span>✕ Сбросить файлы ({{ attachedFiles.length }})</span>
             </button>
@@ -113,12 +113,12 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'addUrl', url: string): void
-  (e: 'removeUrl', idx: number): void
-  (e: 'attachFiles', files: FileList | File[]): void
-  (e: 'removeFile', id: string): void
-  (e: 'focus'): void
-  (e: 'blur'): void
+  addUrl: [url: string]
+  removeUrl: [idx: number]
+  attachFiles: [files: FileList | File[]]
+  removeFile: [id: string]
+  focus: []
+  blur: []
 }>()
 
 const inputUrl = ref('')

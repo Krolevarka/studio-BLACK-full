@@ -8,8 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount } from 'vue'
-
 useHead({
   htmlAttrs: { lang: 'ru' },
   titleTemplate: (titleChunk) => {

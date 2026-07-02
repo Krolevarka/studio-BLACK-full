@@ -1,10 +1,15 @@
 <template>
   <component 
     :is="to ? 'NuxtLink' : 'div'" 
-    :role="to ? undefined : 'button'"
-    :tabindex="to ? undefined : '0'"
-    :to="to" 
     ref="btnRef"
+    :role="to ? undefined : 'button'"
+    :tabindex="to ? undefined : '0'" 
+    :to="to"
+    :class="[
+      'group relative isolate inline-flex items-center justify-center gap-4 rounded-full px-8 py-3.5 min-h-[44px] min-w-[44px] touch-manipulation overflow-hidden transition-colors transition-shadow transition-opacity duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]',
+      variant === 'default' ? 'bg-black/40 border border-white/10 text-white hover:border-white/25 hover:shadow-[0_0_20px_rgba(255,255,255,0.03)]' : '',
+      variant === 'accent' ? 'bg-white text-black border border-transparent hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]' : ''
+    ]"
     @click="handleBtnClick"
     @keydown.enter="handleBtnClick"
     @keydown.space.prevent="handleBtnClick"
@@ -15,14 +20,10 @@
     @mouseenter="handleMouseEnter"
     @mousemove="handleMouseMove"
     @mouseleave="handleMouseLeave"
-    :class="[
-      'group relative isolate inline-flex items-center justify-center gap-4 rounded-full px-8 py-3.5 min-h-[44px] min-w-[44px] touch-manipulation overflow-hidden transition-colors transition-shadow transition-opacity duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]',
-      variant === 'default' ? 'bg-black/40 border border-white/10 text-white hover:border-white/25 hover:shadow-[0_0_20px_rgba(255,255,255,0.03)]' : '',
-      variant === 'accent' ? 'bg-white text-black border border-transparent hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]' : ''
-    ]"
   >
     <!-- Текст с мягким параллаксом -->
-    <span ref="textRef" class="relative z-10 font-semibold tracking-[0.1em] uppercase text-[clamp(10px,1vw,12px)] pointer-events-none transition-colors duration-500"
+    <span
+ref="textRef" class="relative z-10 font-semibold tracking-[0.1em] uppercase text-[clamp(10px,1vw,12px)] pointer-events-none transition-colors duration-500"
           :class="variant === 'accent' ? 'text-black group-hover:text-black/80' : 'group-hover:text-white'">
       <slot />
     </span>
@@ -30,8 +31,8 @@
     <!-- Иконка с элегантным поворотом -->
     <div ref="iconRef" class="relative z-10 flex items-center justify-center pointer-events-none">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-[-45deg] group-hover:translate-x-1 group-hover:-translate-y-0.5">
-        <path d="M5 12h14"></path>
-        <path d="m12 5 7 7-7 7"></path>
+        <path d="M5 12h14"/>
+        <path d="m12 5 7 7-7 7"/>
       </svg>
     </div>
   </component>
@@ -42,10 +43,13 @@ import { ref, onMounted, onBeforeUnmount, watch, type ComponentPublicInstance } 
 import { useState } from '#imports'
 import gsap from 'gsap'
 
+import { useEventBus } from '~/composables/useEventBus'
+
 const props = withDefaults(defineProps<{
   to?: string
   variant?: 'default' | 'accent'
 }>(), {
+  to: undefined,
   variant: 'default'
 })
 
@@ -55,8 +59,6 @@ const iconRef = ref<HTMLElement | null>(null)
 
 const isPageAnimating = useState('isAnimating', () => false)
 const isHovered = ref(false)
-
-import { useEventBus } from '~/composables/useEventBus'
 
 const { emit } = useEventBus()
 
@@ -77,7 +79,6 @@ let xTo: gsap.QuickToFunc | undefined, yTo: gsap.QuickToFunc | undefined
 let textXTo: gsap.QuickToFunc | undefined, textYTo: gsap.QuickToFunc | undefined
 let iconXTo: gsap.QuickToFunc | undefined, iconYTo: gsap.QuickToFunc | undefined
 
-let currentRect: DOMRect | null = null
 let isTouchDevice = false
 
 onMounted(() => {
@@ -97,14 +98,9 @@ onMounted(() => {
   iconXTo = gsap.quickTo(iconRef.value, 'x', { duration: 0.8, ease: 'power3.out' })
   iconYTo = gsap.quickTo(iconRef.value, 'y', { duration: 0.8, ease: 'power3.out' })
   
-  window.addEventListener('resize', handleResize)
   window.addEventListener('wheel', resetButtonOffset, { passive: true })
   window.addEventListener('touchmove', resetButtonOffset, { passive: true })
 })
-
-const handleResize = () => {
-  currentRect = null
-}
 
 const handleMouseDown = () => {
   const btn = getBtnElement()
@@ -119,10 +115,6 @@ const handleMouseUp = () => {
 const handleMouseEnter = () => {
   if (isTouchDevice || isPageAnimating.value) return
   isHovered.value = true
-  const btn = getBtnElement()
-  if (!btn) return
-  
-  currentRect = btn.getBoundingClientRect()
 }
 
 const handleMouseMove = (e: MouseEvent) => {
@@ -182,7 +174,6 @@ watch(isPageAnimating, (animating) => {
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize)
   window.removeEventListener('wheel', resetButtonOffset)
   window.removeEventListener('touchmove', resetButtonOffset)
   

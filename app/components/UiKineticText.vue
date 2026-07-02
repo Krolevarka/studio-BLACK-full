@@ -14,7 +14,7 @@
         >
           {{ char }}
         </span>
-        <span class="inline-block" v-if="wIndex < words.length - 1">&nbsp;</span>
+        <span v-if="wIndex < words.length - 1" class="inline-block">&nbsp;</span>
       </span>
     </span>
   </component>
@@ -61,8 +61,7 @@ function onMouseOver(e: MouseEvent) {
   // Ограничиваем максимальную деформацию
   const maxSpread = 12
   const maxSpeed = 50
-  const clampedSpeed = Math.min(speed, maxSpeed)
-  
+
   const spreadX = (vx / maxSpeed) * maxSpread
   const spreadY = (vy / maxSpeed) * maxSpread
   

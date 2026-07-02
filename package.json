@@ -7,7 +7,10 @@
     "dev": "cross-env NODE_OPTIONS=\"--no-deprecation\" nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
     "@nuxtjs/device": "^4.0.0",
@@ -25,9 +28,13 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@nuxt/eslint": "^1.16.0",
     "@nuxtjs/google-fonts": "^3.2.0",
     "@types/node": "^26.0.0",
     "@types/nodemailer": "^8.0.1",
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "eslint": "^10.6.0",
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.3.6"
   }
 }

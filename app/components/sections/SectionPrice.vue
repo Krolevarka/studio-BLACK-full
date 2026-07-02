@@ -1,8 +1,8 @@
 <template>
   <DeviceSwitch
+    :id="id"
     :desktop="DesktopPriceContent"
     :mobile="MobilePriceContent"
-    :id="id"
   />
 </template>
 

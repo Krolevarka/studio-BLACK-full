@@ -1,20 +1,23 @@
 <template>
-  <section ref="contactRef" v-bind="$attrs" class="reveal-scope-mobile fixed inset-0 w-full h-dvh flex flex-col overflow-hidden bg-[#050505] z-10"
+  <section
+ref="contactRef" v-bind="$attrs" class="reveal-scope-mobile fixed inset-0 w-full h-dvh flex flex-col overflow-hidden bg-[#050505] z-10"
            :class="[
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[500ms] delay-[100ms]' : (isMenuTransitioning ? 'duration-[500ms] delay-[200ms]' : '')
            ]">
 
-    <div class="reveal-item relative w-full h-full px-6 pt-[2rem] flex flex-col"
+    <div
+class="reveal-item relative w-full h-full px-6 pt-[2rem] flex flex-col"
          :class="{ 'is-revealed': revealed }"
          :style="{ paddingBottom: `calc(2rem + ${keyboardOffset}px)` }">
          
       <!-- Top Section: Header & Progress (Fixed) -->
-      <div class="w-full shrink-0 collapsible transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" 
+      <div
+class="w-full shrink-0 collapsible transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" 
            :class="isTyping ? 'is-closed mb-0' : 'is-open mb-6'">
         <div class="collapsible-inner flex flex-col w-full">
           <!-- Этот блок заменяет верхний padding и плавно сжимается вместе с заголовком -->
-          <div class="w-full h-[4.5rem] shrink-0"></div>
+          <div class="w-full h-[4.5rem] shrink-0"/>
           
           <div class="flex justify-between items-end mb-4" :class="step <= steps.length ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'">
             <h2 class="font-primary text-3xl font-black uppercase tracking-tight leading-none text-white relative">
@@ -30,7 +33,7 @@
           
           <!-- Progress Bar -->
           <div v-if="step <= steps.length" class="w-full h-[0.125rem] bg-white/10 overflow-hidden relative rounded-full">
-            <div class="absolute top-0 left-0 h-full bg-white transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" :style="{ width: `${(step / steps.length) * 100}%` }"></div>
+            <div class="absolute top-0 left-0 h-full bg-white transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" :style="{ width: `${(step / steps.length) * 100}%` }"/>
           </div>
         </div>
       </div>
@@ -40,16 +43,19 @@
         <!-- Внутренний контейнер для абсолютного позиционирования шагов -->
         <div class="absolute inset-0 w-full h-full">
           <Transition name="form-step">
-            <div :key="step" v-if="step <= steps.length"
+            <div
+v-if="step <= steps.length" :key="step"
                  class="absolute inset-0 w-full h-full flex flex-col pb-4"
                  :class="currentStepData.key === 'services' ? 'overflow-hidden' : 'overflow-y-auto no-scrollbar'">
                  
-                 <div class="w-full flex flex-col transition-all duration-300"
+                 <div
+class="w-full flex flex-col transition-all duration-300"
                       :class="[
                         currentStepData.key === 'references' ? 'shrink-0 my-0 pt-1 pb-28' : '',
                         currentStepData.key === 'services' ? 'h-full shrink-0 my-0 pt-1' : (currentStepData.key !== 'references' ? 'shrink-0 mt-auto mb-auto' : '')
                       ]">
-                   <h3 class="font-primary text-[1.25rem] md:text-[1.5rem] leading-[1.2] font-bold uppercase tracking-tight text-white text-balance w-full shrink-0"
+                   <h3
+class="font-primary text-[1.25rem] md:text-[1.5rem] leading-[1.2] font-bold uppercase tracking-tight text-white text-balance w-full shrink-0"
                        :class="currentStepData.key === 'services' ? 'mb-4' : 'mb-6'">
                      {{ currentStepData.question }}
                    </h3>
@@ -65,10 +71,10 @@
                      v-model="answers[currentStepData.key as 'contact' | 'name' | 'project' | 'budget']"
                      :is-textarea="currentStepData.key === 'project'"
                      :placeholder="currentStepData.placeholder"
+                     class="w-full shrink-0"
                      @focus="onFocus"
                      @blur="onBlur"
                      @enter="nextStep"
-                     class="w-full shrink-0"
                    />
 
                    <MobileContactStepPlaques
@@ -76,8 +82,8 @@
                      :options="currentStepData.options || []"
                      :selected-options="answers[currentStepData.key as 'services']"
                      :enable-custom-scroll="currentStepData.key === 'services'"
-                     @toggle="toggleOption(currentStepData.key, $event, !!currentStepData.multi)"
                      :class="currentStepData.key === 'services' ? 'w-full flex-1 min-h-0 relative' : 'w-full shrink-0'"
+                     @toggle="toggleOption(currentStepData.key, $event, !!currentStepData.multi)"
                    />
 
                    <MobileContactStepReferences
@@ -85,13 +91,13 @@
                      :reference-urls="answers.referenceUrls"
                      :attached-files="answers.attachedFiles"
                      :placeholder="currentStepData.placeholder"
+                     class="w-full shrink-0"
                      @add-url="addReferenceUrl"
                      @remove-url="removeReferenceUrl"
                      @attach-files="attachFiles"
                      @remove-file="removeFile"
                      @focus="onFocus"
                      @blur="onBlur"
-                     class="w-full shrink-0"
                    />
                  </div>
             </div>
@@ -106,12 +112,13 @@
       </div>
 
       <!-- Bottom Section: Navigation (Fixed) -->
-      <div class="flex flex-col items-center w-full shrink-0 z-20"
+      <div
+class="flex flex-col items-center w-full shrink-0 z-20"
            :class="step <= steps.length ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'">
         
         <Transition name="error-fade">
           <div v-if="error" class="mb-4 flex items-center gap-3 px-4 py-3 border border-red-500/20 bg-red-500/10 rounded-xl w-full">
-            <span class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse shrink-0"></span>
+            <span class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse shrink-0"/>
             <span class="text-red-400/90 text-[0.6875rem] font-secondary uppercase tracking-widest leading-tight">{{ error }}</span>
           </div>
         </Transition>
@@ -123,8 +130,8 @@
               <!-- Шаг 1: Кнопка Отправить (если заполнено) -->
               <button 
                 v-if="step === 1 && canProceed(1)" 
-                @click="submitForm"
                 class="absolute inset-0 w-full h-full rounded-full bg-white text-black font-secondary text-[0.75rem] tracking-widest uppercase font-bold flex items-center justify-center transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                @click="submitForm"
               >
                 <span v-if="!isLoading">ОТПРАВИТЬ</span>
                 <span v-else>...</span>
@@ -133,8 +140,8 @@
               <!-- Шаг 2-5: Кнопка Назад -->
               <button 
                 v-else-if="step > 1 && step <= steps.length" 
-                @click="prevStep"
                 class="absolute inset-0 w-full h-full rounded-full border border-white/10 bg-black/40 text-white font-secondary text-[0.75rem] tracking-widest uppercase font-bold flex items-center justify-center transition-all duration-300 active:bg-white/10"
+                @click="prevStep"
               >
                 НАЗАД
               </button>
@@ -146,12 +153,12 @@
             <Transition name="btn-swap">
               <button 
                 v-if="step <= steps.length"
-                @click="step === steps.length ? submitForm() : nextStep()"
                 class="absolute inset-0 w-full h-full rounded-full font-secondary text-[0.75rem] tracking-widest uppercase font-bold flex items-center justify-center transition-all duration-300"
                 :class="[
                   (!canProceed(step) || isLoading) ? 'opacity-30 pointer-events-none' : (step === steps.length ? 'active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)]' : 'active:bg-white/10'),
                   step === steps.length ? 'bg-white text-black' : 'border border-white/10 bg-black/40 text-white'
                 ]"
+                @click="step === steps.length ? submitForm() : nextStep()"
               >
                 <span v-if="isLoading">...</span>
                 <span v-else-if="step === steps.length">ОТПРАВИТЬ</span>
@@ -167,14 +174,15 @@
       </div>
 
       <!-- Контакты (внизу, если успех) -->
-      <div class="absolute bottom-8 w-full left-0 px-6 shrink-0 transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]"
+      <div
+class="absolute bottom-8 w-full left-0 px-6 shrink-0 transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]"
            :class="step > steps.length ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'">
         <div class="flex flex-col gap-3 font-secondary text-base text-white/70 items-center text-center">
           <div class="flex flex-col items-center justify-center relative w-full">
             <button 
               type="button" 
-              @click="copyEmail" 
-              class="active:text-white transition-colors block border-b border-white/20 pb-1 touch-manipulation min-h-[2.75rem] flex items-center justify-center cursor-pointer focus:outline-none"
+              class="active:text-white transition-colors block border-b border-white/20 pb-1 touch-manipulation min-h-[2.75rem] flex items-center justify-center cursor-pointer focus:outline-none" 
+              @click="copyEmail"
             >
               kvazarweb@gmail.com
             </button>
@@ -195,7 +203,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useEventBus } from '~/composables/useEventBus'
 import { useContactForm } from '~/composables/useContactForm'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
@@ -220,7 +228,7 @@ const copyEmail = async () => {
     } else {
       throw new Error('Clipboard API unavailable')
     }
-  } catch (err) {
+  } catch {
     try {
       const textArea = document.createElement('textarea')
       textArea.value = 'kvazarweb@gmail.com'
@@ -264,7 +272,6 @@ const {
   step,
   isTyping,
   isLoading,
-  isSuccess,
   error,
   answers,
   steps,

@@ -60,7 +60,7 @@ const { activeLabel, arrivedLabel } = useSectionTransition()
 const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 const easeInOutQuad = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
 
-const gotoSection = (index: number, direction: number) => {
+const gotoSection = (index: number) => {
   if (isAnimating.value || isMenuOpen || isPreloading.value || isTechStackOpen || isPriceModalOpen) return
   const isHeavyDrag = useState('isHeavyDrag', () => false)
   if (isHeavyDrag.value) return // Блокируем свайпы и скролл во время перетаскивания сфер!
@@ -175,9 +175,9 @@ onMounted(() => {
     type: 'wheel',
     tolerance: 50,
     preventDefault: true,
-    ignore: '.no-swipe, input, textarea, select, [data-lenis-prevent]',
-    onUp: () => gotoSection(currentIndex - 1, -1),   // Колесо мыши вверх -> ПРЕДЫДУЩИЙ экран
-    onDown: () => gotoSection(currentIndex + 1, 1), // Колесо мыши вниз -> СЛЕДУЮЩИЙ экран
+    ignore: '.no-swipe, .no-swipe *, [data-lenis-prevent], [data-lenis-prevent] *, input, textarea, select',
+    onUp: () => gotoSection(currentIndex - 1),   // Колесо мыши вверх -> ПРЕДЫДУЩИЙ экран
+    onDown: () => gotoSection(currentIndex + 1), // Колесо мыши вниз -> СЛЕДУЮЩИЙ экран
   })
 
   touchObserverInstance = Observer.create({
@@ -185,9 +185,9 @@ onMounted(() => {
     type: 'touch',
     tolerance: 80, // Больший порог для свайпов на touch
     preventDefault: true,
-    ignore: '.no-swipe, input, textarea, select, [data-lenis-prevent]',
-    onUp: () => gotoSection(currentIndex + 1, 1),   // Свайп пальцем вверх -> СЛЕДУЮЩИЙ экран (естественный скролл вниз)
-    onDown: () => gotoSection(currentIndex - 1, -1), // Свайп пальцем вниз -> ПРЕДЫДУЩИЙ экран (естественный скролл вверх)
+    ignore: '.no-swipe, .no-swipe *, [data-lenis-prevent], [data-lenis-prevent] *, input, textarea, select',
+    onUp: () => gotoSection(currentIndex + 1),   // Свайп пальцем вверх -> СЛЕДУЮЩИЙ экран (естественный скролл вниз)
+    onDown: () => gotoSection(currentIndex - 1), // Свайп пальцем вниз -> ПРЕДЫДУЩИЙ экран (естественный скролл вверх)
   })
 
   // Слушаем события из навигации (например, по клику в меню)
@@ -196,7 +196,7 @@ onMounted(() => {
     const targetId = targetHref.replace('#', '#section-')
     const index = sections.indexOf(targetId)
     if (index !== -1) {
-      gotoSection(index, index > currentIndex ? 1 : -1)
+      gotoSection(index)
     } else {
       // Фолбэк, если ID не в массиве (например #contact, если он где-то в футере)
       if ($lenis) {
@@ -238,7 +238,7 @@ onMounted(() => {
         if (!isTextInput && !isButton) {
           e.preventDefault()
           const dir = e.shiftKey ? -1 : 1
-          gotoSection(currentIndex + dir, dir)
+          gotoSection(currentIndex + dir)
         }
       }
     }

@@ -99,14 +99,14 @@ export function computeShapeBoundary(
     const noise = getNoise(p.angle, shapeTime, morphWeight) * amp
     const tNoise = getTangentNoise(p.angle, shapeTime, morphWeight) * amp * 0.3
 
-    let x = p.x + p.normal.x * noise + (-p.normal.y) * tNoise
+    const x = p.x + p.normal.x * noise + (-p.normal.y) * tNoise
     let y = p.y + p.normal.y * noise + (p.normal.x) * tNoise
 
     if (pulseWeight > 0) {
       let nx = (x - minX) / currentWw
       nx = Math.max(0, Math.min(1, nx))
 
-      let pulseDisplacementY = 0
+      let pulseDisplacementY: number
       if (pulseType === 'soft') {
         const pulsePos = (pulseTime * 1.2) % 1.2 - 0.1
         const dist = (nx - pulsePos) * 8

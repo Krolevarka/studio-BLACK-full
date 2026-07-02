@@ -50,7 +50,8 @@
 
     <!-- Options Satellites -->
     <!-- z-20 above everything, localized mix-blend-difference transform-gpu to invert color over the white canvas blobs -->
-    <div v-show="isPriceVisible" class="fixed inset-0 z-20 pointer-events-none" 
+    <div
+v-show="isPriceVisible" class="fixed inset-0 z-20 pointer-events-none" 
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
@@ -59,10 +60,10 @@
         <PriceSatellite
           v-for="opt in options"
           :key="opt.id"
+          :ref="(el) => registerOptionRef(opt.id, (el as import('vue').ComponentPublicInstance)?.$el as HTMLElement)"
           class="price-satellite mix-blend-difference transform-gpu"
           :option="opt"
           :is-active="isPriceActive"
-          :ref="(el) => registerOptionRef(opt.id, (el as import('vue').ComponentPublicInstance)?.$el as HTMLElement)"
           @start-drag="startDrag"
           @select="opt.selected = true; updateOrganic()"
           @hover="hoverOption"
@@ -98,7 +99,8 @@
     </div>
 
     <!-- Desktop Hover Description -->
-    <div class="hidden md:block absolute inset-0 z-10 pointer-events-none" 
+    <div
+class="hidden md:block absolute inset-0 z-10 pointer-events-none" 
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')

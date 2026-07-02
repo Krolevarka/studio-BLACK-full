@@ -1,6 +1,9 @@
 import { ref, reactive, watch, onBeforeUnmount } from 'vue'
 import { usePriceDevMode, type DevModeType } from '~/composables/usePriceDevMode'
 
+import { useEventBus } from '~/composables/useEventBus'
+import { productModuleNames } from '~/data/productBuilderOptions'
+
 export interface AttachedFileItem {
   id: string
   file: File
@@ -20,9 +23,6 @@ export interface ContactAnswers {
   referenceUrls: string[]
   attachedFiles: AttachedFileItem[]
 }
-
-import { useEventBus } from '~/composables/useEventBus'
-import { productModuleNames } from '~/data/productBuilderOptions'
 
 export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], updateOrganicState: (step?: number) => void) {
   const step = ref(1)
@@ -205,7 +205,7 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
     }
   }
 
-  const toggleOption = (key: string, opt: string, multi: boolean) => {
+  const toggleOption = (key: string, opt: string, _multi: boolean) => {
     switch (key) {
       case 'services': {
         const idx = answers.services.indexOf(opt)

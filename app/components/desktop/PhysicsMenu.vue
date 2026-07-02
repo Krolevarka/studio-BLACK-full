@@ -6,12 +6,12 @@
         v-for="(item, index) in items" 
         :key="index"
         :href="item.href"
-        @click.prevent="$emit('navigate', item.href)"
-        @mouseenter="onMouseEnter(index)"
-        @mouseleave="onMouseLeave(index)"
         class="physics-item relative flex items-center justify-center cursor-pointer select-none py-1 md:py-2"
         :class="isOpen ? 'pointer-events-auto' : 'pointer-events-none'"
         :aria-label="item.label"
+        @click.prevent="$emit('navigate', item.href)"
+        @mouseenter="onMouseEnter(index)"
+        @mouseleave="onMouseLeave(index)"
       >
         <!-- Текст меню -->
         <span 
@@ -42,6 +42,10 @@ import { usePhysicsMenu } from '~/composables/usePhysicsMenu'
 const props = defineProps<{
   isOpen: boolean
   items: Array<{ label: string, href: string }>
+}>()
+
+defineEmits<{
+  navigate: [href: string]
 }>()
 
 const { onMouseEnter, onMouseLeave } = usePhysicsMenu(toRef(props, 'isOpen'))

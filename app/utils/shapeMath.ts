@@ -79,7 +79,7 @@ function getPointsFromVertices(n: number, vertices: {x: number, y: number}[], cx
     const x = edge.p1.x + t * (edge.p2.x - edge.p1.x);
     const y = edge.p1.y + t * (edge.p2.y - edge.p1.y);
 
-    let normal = { x: edge.nx, y: edge.ny };
+    const normal = { x: edge.nx, y: edge.ny };
     
     if (cornerRadius > 0) {
       const distToP1 = distOnEdge;
@@ -158,8 +158,8 @@ export function getInfinityPoints(n: number, width: number, cx: number, cy: numb
     const dy = y_next - y;
     const length = Math.sqrt(dx * dx + dy * dy);
     
-    let nx = length > 0 ? -dy / length : 0;
-    let ny = length > 0 ? dx / length : 1;
+    const nx = length > 0 ? -dy / length : 0;
+    const ny = length > 0 ? dx / length : 1;
     
     let angle = Math.atan2(y, x);
     if (angle < 0) angle += 2 * Math.PI;
@@ -247,8 +247,8 @@ export function getRectanglePoints(n: number, width: number, height: number, cx:
 
   let currentDist = 0;
   for (let i = 0; i < n; i++) {
-    let x = 0, y = 0;
-    let edgeNormal = { x: 0, y: 0 };
+    let x: number, y: number;
+    let edgeNormal: { x: number; y: number };
 
     if (currentDist <= height / 2) {
       // Right edge (bottom half)
@@ -417,7 +417,7 @@ export function getSvgPathPoints(n: number, pathString: string, cx: number, cy: 
       
       // Вектор касательной (dx, dy). Нормаль наружу (при обходе по часовой) = (-dy, dx)
       const len = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y);
-      let normal = len > 0 ? { x: -tangent.y / len, y: tangent.x / len } : { x: 0, y: -1 };
+      const normal = len > 0 ? { x: -tangent.y / len, y: tangent.x / len } : { x: 0, y: -1 };
       
       let angle = Math.atan2(y, x);
       if (angle < 0) angle += 2 * Math.PI;
@@ -452,8 +452,8 @@ export function getSvgPathPoints(n: number, pathString: string, cx: number, cy: 
     let bestStartIndex = 0;
     let minAngleDiff = Infinity;
     for (let i = 0; i < n; i++) {
-      let a = basePoints[i]!.angle;
-      let diff = Math.min(a, 2 * Math.PI - a);
+      const a = basePoints[i]!.angle;
+      const diff = Math.min(a, 2 * Math.PI - a);
       if (diff < minAngleDiff) {
         minAngleDiff = diff;
         bestStartIndex = i;

@@ -2,7 +2,8 @@
   <section ref="heroRef" v-bind="$attrs" class="snap-section relative h-dvh w-full overflow-hidden bg-transparent flex flex-col justify-center items-center">
     
     <!-- Текстовый контент -->
-    <div ref="contentRef" class="w-full max-w-7xl mx-auto z-10 relative flex flex-col items-center justify-center text-center px-6 mix-blend-difference transform-gpu pointer-events-none" 
+    <div
+ref="contentRef" class="w-full max-w-7xl mx-auto z-10 relative flex flex-col items-center justify-center text-center px-6 mix-blend-difference transform-gpu pointer-events-none" 
          style="will-change: filter, transform; transform: translateZ(0);"
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
@@ -22,12 +23,14 @@
         </div>
       </div>
 
-      <p class="reveal-item font-secondary text-[clamp(12px,1vw,16px)] uppercase tracking-[0.3em] text-white/80 max-w-lg mb-12 pointer-events-auto"
+      <p
+class="reveal-item font-secondary text-[clamp(12px,1vw,16px)] uppercase tracking-[0.3em] text-white/80 max-w-lg mb-12 pointer-events-auto"
          :class="{ 'is-revealed': revealed }" style="--reveal-delay: 300ms">
         <UiKineticText text="Проектирование и разработка IT-решений под ключ." />
       </p>
 
-      <div class="reveal-item pointer-events-auto"
+      <div
+class="reveal-item pointer-events-auto"
            :class="{ 'is-revealed': revealed }" style="--reveal-delay: 360ms">
         <!-- Кнопка прозрачная. При наведении курсор (белый blob) становится её фоном. -->
         <UiButton class="magnetic-btn font-secondary !bg-transparent !text-white !border !border-white/20 hover:!border-transparent transition-all duration-300" to="#contact">
@@ -38,7 +41,8 @@
     </div>
 
     <!-- Подсказка скролла (меню-затухание на обёртке, унифицированный reveal — на внутреннем элементе) -->
-    <div class="hero-scroll-hint-wrapper absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 mix-blend-difference transform-gpu z-20 pointer-events-none"
+    <div
+class="hero-scroll-hint-wrapper absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 mix-blend-difference transform-gpu z-20 pointer-events-none"
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')

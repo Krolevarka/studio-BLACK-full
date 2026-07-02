@@ -1,5 +1,6 @@
 <template>
-  <section ref="approachRef" v-bind="$attrs" class="reveal-scope-mobile relative h-dvh w-full flex flex-col overflow-hidden bg-transparent"
+  <section
+ref="approachRef" v-bind="$attrs" class="reveal-scope-mobile relative h-dvh w-full flex flex-col overflow-hidden bg-transparent"
            :class="[
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[500ms] delay-[100ms]' : (isMenuTransitioning ? 'duration-[500ms] delay-[200ms]' : '')
@@ -9,8 +10,9 @@
 
     <!-- Белая плашка (дизайн-элемент): fixed к вьюпорту, чтобы уезжать за реальный край экрана
          независимо от скролла (иначе при скролле видно её «у шва» секции). Скользит вниз при уходе. -->
-    <div ref="whitePanelRef" class="white-panel fixed bottom-0 left-0 w-full h-[55%] bg-white pointer-events-none z-10"
-         :class="{ 'is-revealed': revealed }"></div>
+    <div
+ref="whitePanelRef" class="white-panel fixed bottom-0 left-0 w-full h-[55%] bg-white pointer-events-none z-10"
+         :class="{ 'is-revealed': revealed }"/>
 
     <!-- Унифицированный reveal-обёртка вокруг текстового контента (TechStack — отдельный оверлей, сюда не входит).
          GSAP-watcher TechStack продолжает управлять дочерними элементами независимо. -->
@@ -44,25 +46,29 @@
           <button 
             v-for="(step, index) in steps" 
             :key="index"
-            @click="handleStepClick(index)"
             class="relative flex items-center text-left transition-all duration-500 w-full min-h-[2.75rem] touch-manipulation group"
+            @click="handleStepClick(index)"
           >
-            <span class="font-secondary text-base transition-all duration-500 font-bold pointer-events-auto mr-4"
+            <span
+class="font-secondary text-base transition-all duration-500 font-bold pointer-events-auto mr-4"
                   :class="activeStep === index ? 'text-black' : 'text-black/30'">
               {{ '0' + (index + 1) }}
             </span>
-            <span class="font-primary text-2xl font-black uppercase tracking-normal leading-none transition-all duration-500 ease-out pointer-events-auto flex-1 flex items-center"
+            <span
+class="font-primary text-2xl font-black uppercase tracking-normal leading-none transition-all duration-500 ease-out pointer-events-auto flex-1 flex items-center"
                   :class="activeStep === index ? 'text-black translate-x-2' : 'text-black/30'">
               {{ step.shortTitle || step.title }}
               
               <!-- Arrow for 'Разработка' step -->
-              <span v-if="index === 3" 
+              <span
+v-if="index === 3" 
                     class="ml-auto pointer-events-auto inline-flex items-center justify-center overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
                     :class="activeStep === 3 ? 'w-8 opacity-100 mr-2' : 'w-0 opacity-0 mr-0'">
-                <svg class="w-6 h-6 text-black transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shrink-0" 
+                <svg
+class="w-6 h-6 text-black transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shrink-0" 
                      :class="activeStep === 3 ? 'translate-x-0 group-active:translate-x-1' : '-translate-x-full'"
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                 </svg>
               </span>
             </span>
@@ -76,13 +82,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onBeforeUnmount } from 'vue'
+import { onMounted, ref, onBeforeUnmount, watch  } from 'vue'
 import gsap from 'gsap'
 import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useSectionReveal } from '~/composables/useSectionReveal'
-import { ANIMATION_TIMINGS } from '~/utils/animation.config'
 import TechStack from './TechStack.vue'
+
+
+import { steps } from '~/data/approachSteps'
 
 defineOptions({ inheritAttrs: false })
 
@@ -97,8 +105,6 @@ const showTechStack = ref(false)
 // Исключение: показываем РАНО — от старта перехода (fromActive), ещё во время скролла (~1.2s),
 // задолго до формирования сферы (~2.6–3.0s). Контент появляется первым, сфера дособирается следом.
 const { revealed } = useSectionReveal('[ Наш Подход ]')
-
-import { watch } from 'vue'
 
 watch(showTechStack, (val) => {
   const content = contentTopRef.value
@@ -124,8 +130,6 @@ watch(showTechStack, (val) => {
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
 const { emit, on } = useEventBus()
-
-import { steps } from '~/data/approachSteps'
 
 const emitState = () => {
   emit('approach-state', { active: isSectionActive.value, step: activeStep.value })

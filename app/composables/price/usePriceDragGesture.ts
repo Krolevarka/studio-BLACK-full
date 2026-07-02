@@ -1,4 +1,4 @@
-import { type Ref } from 'vue'
+import type { Ref } from 'vue'
 import gsap from 'gsap'
 import { useState, useNuxtApp } from '#imports'
 import type { PriceOption } from '~/types/organic'
@@ -21,7 +21,7 @@ export function usePriceDragGesture(
   let startPointer = { x: 0, y: 0 }
   
   const { $lenis } = useNuxtApp()
-  let lenisInstance = $lenis
+  const lenisInstance = $lenis
 
   const startDrag = (opt: PriceOption, e: PointerEvent, hoveredOptId: Ref<string | null>) => {
     hoveredOptId.value = null

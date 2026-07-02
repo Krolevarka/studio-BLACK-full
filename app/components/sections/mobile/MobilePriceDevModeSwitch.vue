@@ -11,7 +11,7 @@
         role="button"
         tabindex="0"
         aria-label="Сравнение подходов к разработке"
-        class="magnetic-btn absolute w-8 h-8 rounded-full border border-white/20 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-transparent hover:border-transparent hover:shadow-none transition-colors duration-300 pointer-events-auto z-20 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6)] opacity-0 focus:outline-none"
+        class="magnetic-btn absolute w-8 h-8 rounded-full border border-white/20 bg-[#050505]/95 backdrop-blur-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-transparent hover:border-transparent hover:shadow-none transition-colors duration-300 pointer-events-auto z-20 cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.6)] opacity-0 focus:outline-none after:content-[''] after:absolute after:-inset-1.5"
         @click="openInfoModal"
       >
         <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,7 +31,7 @@
         <div 
           ref="gliderRef"
           class="absolute top-1 bottom-1 left-0 rounded-full bg-white shadow-[0_2px_15px_rgba(255,255,255,0.4)] pointer-events-none opacity-0"
-        ></div>
+        />
 
         <!-- Кнопка AI-Сборка -->
         <button
@@ -40,7 +40,7 @@
           role="button"
           tabindex="0"
           aria-label="Режим AI-сборка со скидкой 30%"
-          class="relative z-10 px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-primary font-bold tracking-[0.08em] uppercase transition-colors duration-500 flex items-center justify-center gap-1.5 min-h-[2.25rem] touch-manipulation cursor-pointer focus:outline-none"
+          class="relative z-10 px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-primary font-bold tracking-[0.08em] uppercase transition-colors duration-500 flex items-center justify-center gap-1.5 min-h-[2.75rem] touch-manipulation cursor-pointer focus:outline-none"
           :class="isAiMode ? 'text-black' : 'text-white/60 hover:text-white'"
           @click="selectMode('ai')"
           @keydown.enter="selectMode('ai')"
@@ -61,7 +61,7 @@
           role="button"
           tabindex="0"
           aria-label="Ручная классическая разработка"
-          class="relative z-10 px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-primary font-bold tracking-[0.08em] uppercase transition-colors duration-500 flex items-center justify-center min-h-[2.25rem] touch-manipulation cursor-pointer focus:outline-none"
+          class="relative z-10 px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-primary font-bold tracking-[0.08em] uppercase transition-colors duration-500 flex items-center justify-center min-h-[2.75rem] touch-manipulation cursor-pointer focus:outline-none"
           :class="!isAiMode ? 'text-black' : 'text-white/60 hover:text-white'"
           @click="selectMode('manual')"
           @keydown.enter="selectMode('manual')"

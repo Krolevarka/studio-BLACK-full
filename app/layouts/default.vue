@@ -5,13 +5,13 @@
     <DeviceSwitch 
       :desktop="DesktopLayoutHeader"
       :mobile="MobileLayoutHeader"
-      :isPreloading="isPreloading"
-      :isMenuOpen="isMenuOpen"
-      :isMenuAnimating="isMenuAnimating"
-      :currentMenuLabel="currentMenuLabel"
-      :isContactTyping="isContactTyping"
-      :isTechStackOpen="isTechStackOpen"
-      :isPriceModalOpen="isPriceModalOpen"
+      :is-preloading="isPreloading"
+      :is-menu-open="isMenuOpen"
+      :is-menu-animating="isMenuAnimating"
+      :current-menu-label="currentMenuLabel"
+      :is-contact-typing="isContactTyping"
+      :is-tech-stack-open="isTechStackOpen"
+      :is-price-modal-open="isPriceModalOpen"
       @logo-click="handleLogoClick"
       @toggle-menu="isMenuOpen ? closeMenu() : openMenu()"
     />
@@ -29,7 +29,7 @@
     <DeviceSwitch 
       :desktop="DesktopPhysicsMenu"
       :mobile="MobileMenu"
-      :isOpen="isMenuOpen" 
+      :is-open="isMenuOpen" 
       :items="menuItems" 
       @navigate="handleMenuClick" 
     />
@@ -61,7 +61,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, type ComponentPublicInstance, watch, computed } from 'vue'
-import gsap from 'gsap'
 import { useNuxtApp, useHead } from '#imports'
 import { useEventBus } from '~/composables/useEventBus'
 import { ANIMATION_TIMINGS } from '~/utils/animation.config'

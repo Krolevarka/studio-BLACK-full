@@ -4,13 +4,15 @@
 
     <!-- Белая плашка (дизайн-элемент): fixed к вьюпорту, чтобы уезжать за реальный край экрана
          независимо от скролла. Внешняя обёртка — меню-затухание (opacity), внутренняя — слайд (transform). -->
-    <div class="fixed bottom-0 left-0 w-full h-[50%] z-10 pointer-events-none"
+    <div
+class="fixed bottom-0 left-0 w-full h-[50%] z-10 pointer-events-none"
          :class="[
            isMenuTransitioning ? 'transition-opacity' : '',
            isMenuOpenLocal ? '!opacity-0 duration-[1000ms] delay-0' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
          ]">
-      <div ref="inversionBarRef" class="white-panel w-full h-full bg-white [clip-path:inset(0_0_1px_0)] border-b border-transparent"
-           :class="{ 'is-revealed': revealed }"></div>
+      <div
+ref="inversionBarRef" class="white-panel w-full h-full bg-white [clip-path:inset(0_0_1px_0)] border-b border-transparent"
+           :class="{ 'is-revealed': revealed }"/>
     </div>
 
     <!-- Унифицированный reveal-обёртка вокруг текстового контента (TechStack — отдельный оверлей, сюда не входит).
@@ -21,7 +23,8 @@
     <div class="absolute inset-0 w-full h-full flex flex-col pointer-events-auto" :class="showTechStack ? 'pointer-events-none' : ''">
 
       <!-- ВЕРХНЯЯ ЧАСТЬ (50%): Контент (Заголовок + Описание) в черной зоне -->
-      <div class="w-full h-[50%] flex flex-col justify-end pb-8 md:pb-12 px-6 sm:px-12 md:px-16 lg:px-24 approach-content relative"
+      <div
+class="w-full h-[50%] flex flex-col justify-end pb-8 md:pb-12 px-6 sm:px-12 md:px-16 lg:px-24 approach-content relative"
            :class="[
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
@@ -44,7 +47,8 @@
       </div>
 
       <!-- НИЖНЯЯ ЧАСТЬ (50%): Навигация (слева) в белой зоне -->
-      <div class="w-full h-[50%] flex flex-col justify-center px-6 sm:px-12 md:px-16 lg:px-24 approach-nav"
+      <div
+class="w-full h-[50%] flex flex-col justify-center px-6 sm:px-12 md:px-16 lg:px-24 approach-nav"
            :class="[
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
@@ -53,25 +57,29 @@
           <button 
             v-for="(step, index) in steps" 
             :key="index"
-            @click="handleStepClick(index)"
             class="nav-btn relative flex items-center text-left group transition-all duration-700 w-max"
+            @click="handleStepClick(index)"
           >
-            <span class="font-secondary text-[clamp(1.1rem,min(2.2vw,3dvh),3rem)] mr-4 md:mr-8 transition-all duration-700 font-bold pointer-events-auto"
+            <span
+class="font-secondary text-[clamp(1.1rem,min(2.2vw,3dvh),3rem)] mr-4 md:mr-8 transition-all duration-700 font-bold pointer-events-auto"
                   :class="activeStep === index ? 'text-black' : 'text-black/20 group-hover:text-black/50'">
               {{ '0' + (index + 1) }}
             </span>
-            <span class="font-primary text-[clamp(2.2rem,min(5.5vw,7.8dvh),9.5rem)] font-black uppercase tracking-normal leading-[0.85] transition-all duration-700 ease-out pointer-events-auto flex items-center"
+            <span
+class="font-primary text-[clamp(2.2rem,min(5.5vw,7.8dvh),9.5rem)] font-black uppercase tracking-normal leading-[0.85] transition-all duration-700 ease-out pointer-events-auto flex items-center"
                   :class="activeStep === index ? 'text-black translate-x-4 md:translate-x-8' : 'text-black/10 group-hover:text-black/30'">
               {{ step.shortTitle || step.title }}
               
               <!-- Arrow for 'Разработка' step -->
-              <span v-if="index === 3" 
+              <span
+v-if="index === 3" 
                     class="overflow-hidden inline-flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
                     :class="activeStep === 3 ? 'ml-4 md:ml-6 w-10 md:w-14 opacity-100' : 'w-0 opacity-0 ml-0 group-hover:w-10 group-hover:md:w-14 group-hover:ml-4 group-hover:md:ml-6 group-hover:opacity-40'">
-                <svg class="w-8 h-8 md:w-12 md:h-12 text-black transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shrink-0" 
+                <svg
+class="w-8 h-8 md:w-12 md:h-12 text-black transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] shrink-0" 
                      :class="activeStep === 3 ? 'translate-x-0 group-hover:translate-x-2' : '-translate-x-full group-hover:translate-x-0'"
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                 </svg>
               </span>
             </span>
@@ -85,13 +93,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onBeforeUnmount } from 'vue'
+import { onMounted, ref, onBeforeUnmount, watch  } from 'vue'
 import gsap from 'gsap'
 import { useEventBus } from '~/composables/useEventBus'
 import { useMenuVisibility } from '~/composables/useMenuVisibility'
 import { useSectionReveal } from '~/composables/useSectionReveal'
 import { ANIMATION_TIMINGS } from '~/utils/animation.config'
 import TechStack from './TechStack.vue'
+
+
+import { steps } from '~/data/approachSteps'
 
 defineOptions({ inheritAttrs: false })
 
@@ -105,8 +116,6 @@ const showTechStack = ref(false)
 // Исключение: показываем РАНО — от старта перехода (fromActive), ещё во время скролла (~1.2s),
 // задолго до формирования сферы (~2.6–3.0s). Контент появляется первым, сфера дособирается следом.
 const { revealed } = useSectionReveal('[ Наш Подход ]', { fromActive: true, enterDelay: ANIMATION_TIMINGS.ui.sectionRevealDelay })
-
-import { watch } from 'vue'
 
 watch(showTechStack, (val) => {
   const content = approachRef.value?.querySelector('.approach-content')
@@ -128,8 +137,6 @@ watch(showTechStack, (val) => {
 
 const { isMenuOpenLocal, isMenuTransitioning } = useMenuVisibility()
 const { emit, on } = useEventBus()
-
-import { steps } from '~/data/approachSteps'
 
 const emitState = () => {
   emit('approach-state', { active: isSectionActive.value, step: activeStep.value })

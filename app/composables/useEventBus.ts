@@ -16,7 +16,7 @@ import type { PriceOption } from '~/types/organic'
  */
 type EventMap = {
   /** Уведомляет, что прелоадер завершил свою анимацию (сфера может раскрыться) */
-  'preloader-done': void
+  'preloader-done': undefined
   /** Состояние глобального меню (открыто/закрыто) */
   'menu-state': boolean
   /** Команда на переход к секции (вызывается из меню с задержкой) */
@@ -38,15 +38,15 @@ type EventMap = {
   /** Состояние TechStack (при ховере или открытии) */
   'techstack-state': { active: boolean; hoveredIndex?: number }
   /** Сигнал самому прелоадеру на завершение/скрытие */
-  'finish-preloader': void
+  'finish-preloader': undefined
   /** Сообщает о смене текущей секции при скролле */
   'section-change': string
   /** Состояние модального окна сравнения подходов в Price */
   'price-modal-state': { active: boolean }
   /** Сигнал закрытия TechStack из глобальной шапки */
-  'techstack-close': void
+  'techstack-close': undefined
   /** Сигнал закрытия PriceDevModeModal из глобальной шапки */
-  'price-modal-close': void
+  'price-modal-close': undefined
 }
 
 declare module '#app' {

@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(() => {
 
   gsap.registerPlugin(ScrollTrigger)
   ScrollTrigger.config({ ignoreMobileResize: true })

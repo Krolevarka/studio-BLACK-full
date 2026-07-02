@@ -2,7 +2,7 @@
   <div class="scroll-hint flex flex-col items-center pointer-events-none z-20">
     <span ref="textRef" class="font-secondary text-[10px] md:text-[clamp(12px,0.65vw,13px)] uppercase tracking-[0.5em] text-white/30 mb-3 ml-[0.5em] select-none">Скролл</span>
     <div class="relative w-[1px] h-[60px] bg-gradient-to-b from-white/20 to-transparent">
-      <div ref="dotRef" class="absolute top-0 left-0 w-[1px] h-[12px] bg-white opacity-0"></div>
+      <div ref="dotRef" class="absolute top-0 left-0 w-[1px] h-[12px] bg-white opacity-0"/>
     </div>
   </div>
 </template>

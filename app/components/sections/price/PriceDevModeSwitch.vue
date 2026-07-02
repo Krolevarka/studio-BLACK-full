@@ -31,7 +31,7 @@
       <div 
         ref="gliderRef"
         class="absolute top-1 bottom-1 left-0 rounded-full bg-white shadow-[0_2px_15px_rgba(255,255,255,0.4)] pointer-events-none opacity-0"
-      ></div>
+      />
 
       <!-- Кнопка AI-Сборка -->
       <button

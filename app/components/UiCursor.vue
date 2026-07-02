@@ -21,12 +21,12 @@ const disableHeavyFilters = isSafari || isIos
     <div class="custom-cursor-wrapper" :class="{ 'is-hidden': isHidden || isPreloading }">
       <div class="cursor-gooey-container" :class="disableHeavyFilters ? 'no-filter' : ''">
         <!-- Ведомая капля (Trail) -->
-        <div ref="trailRef" class="cursor-blob cursor-trail"></div>
+        <div ref="trailRef" class="cursor-blob cursor-trail"/>
         <!-- Главная капля (Core) -->
-        <div ref="coreRef" class="cursor-blob cursor-core"></div>
+        <div ref="coreRef" class="cursor-blob cursor-core"/>
       </div>
       <!-- Отдельный контур для ссылок (без gooey фильтра) -->
-      <div ref="ringRef" class="cursor-ring"></div>
+      <div ref="ringRef" class="cursor-ring"/>
     </div>
 </template>
 

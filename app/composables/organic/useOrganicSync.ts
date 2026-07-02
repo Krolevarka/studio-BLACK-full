@@ -256,7 +256,7 @@ export function useOrganicSync() {
     const targetY = mainTarget ? mainTarget.yOffset : 0;
 
     for (let i = target.shapes.length; i < s.shapes.length; i++) {
-      let shape = s.shapes[i]
+      const shape = s.shapes[i]
       if (!shape) continue
       shape.active = false
 

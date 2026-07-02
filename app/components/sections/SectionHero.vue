@@ -1,9 +1,9 @@
 <template>
   <h1 class="sr-only">Studio Black</h1>
   <DeviceSwitch
+    :id="id"
     :desktop="DesktopHeroContent"
     :mobile="MobileHeroContent"
-    :id="id"
   />
 </template>
 

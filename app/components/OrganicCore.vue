@@ -1,8 +1,9 @@
 <template>
   <div ref="wrapperRef" class="organic-core-wrapper absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden pointer-events-none">
-    <canvas ref="canvasRef" 
+    <canvas
+ref="canvasRef" 
             class="absolute pointer-events-none max-w-none" 
-            style="width: calc(100% + 160px); height: calc(100% + 160px); top: -80px; left: -80px; transform: translateZ(0); will-change: transform;"></canvas>
+            style="width: calc(100% + 160px); height: calc(100% + 160px); top: -80px; left: -80px; transform: translateZ(0); will-change: transform;"/>
   </div>
 </template>
 
@@ -123,7 +124,7 @@ const render = () => {
         const noise = getNoise(p.angle, shapeTime, morphWeight) * amp
         const tNoise = getTangentNoise(p.angle, shapeTime, morphWeight) * amp * 0.3
         
-        let x = p.x + p.normal.x * noise + (-p.normal.y) * tNoise
+        const x = p.x + p.normal.x * noise + (-p.normal.y) * tNoise
         let y = p.y + p.normal.y * noise + (p.normal.x) * tNoise
 
         let pulseDisplacementY = 0;

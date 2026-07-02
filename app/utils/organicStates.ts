@@ -96,7 +96,7 @@ function getPriceState({ w, h, isMobile, priceOptions = [], totalPrice = 0, isCo
   }
 }
 
-function getApproachState({ w, h, isMobile, approachStep, isContactActive }: TargetStateOptions): TargetStateConfig {
+function getApproachState({ w, isMobile, approachStep, isContactActive }: TargetStateOptions): TargetStateConfig {
   const pts = isMobile ? 90 : 240;
 
   const xOff = isMobile ? 0 : w / 4;
@@ -176,7 +176,7 @@ function getApproachState({ w, h, isMobile, approachStep, isContactActive }: Tar
   }
 }
 
-function getPortfolioState({ w, h, isMobile, isContactActive }: TargetStateOptions): TargetStateConfig {
+function getPortfolioState({ w, isMobile, isContactActive }: TargetStateOptions): TargetStateConfig {
   const pts = isMobile ? 90 : 240;
   const rectW = isMobile ? w * 0.9 : w * 0.6
   const rectH = isMobile ? 12 : 14
@@ -259,7 +259,7 @@ function getContactState({ w, h, isMobile, contactStep = 1, isContactTyping = fa
   }
 }
 
-function getDefaultState({ w, h, isMobile, isContactActive }: TargetStateOptions): TargetStateConfig {
+function getDefaultState({ isMobile, isContactActive }: TargetStateOptions): TargetStateConfig {
   const pts = isMobile ? 90 : 240;
   const radius = isMobile ? 120 : 180
   return {

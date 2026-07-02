@@ -1,5 +1,6 @@
 <template>
-  <section ref="contactRef" v-bind="$attrs" class="relative h-dvh w-full flex items-center justify-center overflow-hidden bg-transparent z-10 pointer-events-none"
+  <section
+ref="contactRef" v-bind="$attrs" class="relative h-dvh w-full flex items-center justify-center overflow-hidden bg-transparent z-10 pointer-events-none"
            :class="[
              isMenuTransitioning ? 'transition-opacity' : '',
              isMenuOpenLocal ? '!opacity-0 duration-[600ms] delay-[200ms]' : (isMenuTransitioning ? 'duration-[800ms] delay-[400ms]' : '')
@@ -8,11 +9,13 @@
     <div class="relative w-full max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center text-white pointer-events-none md:translate-y-0 2xl:-translate-y-20">
       
       <!-- Левая половина: Всё выстроено в одну линию -->
-      <div class="reveal-item w-full md:w-1/2 flex flex-col justify-center pointer-events-none relative z-20 py-12 md:py-0 mix-blend-difference transform-gpu"
+      <div
+class="reveal-item w-full md:w-1/2 flex flex-col justify-center pointer-events-none relative z-20 py-12 md:py-0 mix-blend-difference transform-gpu"
            :class="{ 'is-revealed': revealed }">
         
         <!-- Заголовок -->
-        <div class="shrink-0 pointer-events-auto transition-all duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center"
+        <div
+class="shrink-0 pointer-events-auto transition-all duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center"
              :class="step <= steps.length ? 'overflow-visible' : 'overflow-hidden'"
              :style="{ 
                maxHeight: step <= steps.length ? '15rem' : '0rem', 
@@ -34,7 +37,8 @@
           <div ref="stepWrapperRef" class="relative w-full transition-[height] duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)]" :style="{ height: wrapperHeight }">
             <TransitionGroup name="form-step">
               <template v-for="(stepData, idx) in steps" :key="stepData.key">
-                <div v-if="step === idx + 1"
+                <div
+v-if="step === idx + 1"
                      :data-step="idx + 1"
                      class="absolute top-0 left-0 w-full flex flex-col items-start justify-center pointer-events-auto">
                    
@@ -42,11 +46,12 @@
                 <div class="text-[clamp(12px,0.65vw,13px)] font-secondary tracking-widest text-white/50 uppercase mb-6 flex items-center gap-4">
                   <span>Шаг {{ idx + 1 }} / {{ steps.length }}</span>
                   <div class="w-12 h-[1px] bg-white/20">
-                    <div class="h-full bg-white transition-all duration-500" :style="{ width: `${((idx + 1) / steps.length) * 100}%` }"></div>
+                    <div class="h-full bg-white transition-all duration-500" :style="{ width: `${((idx + 1) / steps.length) * 100}%` }"/>
                   </div>
                 </div>
 
-                <h3 class="font-primary text-[clamp(1.75rem,2.8vw,3rem)] font-bold uppercase tracking-tight leading-tight text-balance"
+                <h3
+class="font-primary text-[clamp(1.75rem,2.8vw,3rem)] font-bold uppercase tracking-tight leading-tight text-balance"
                     :class="stepData.key === 'services' ? 'mb-5' : 'mb-8'">
                   {{ stepData.question }}
                 </h3>
@@ -98,22 +103,23 @@
           </div>
 
           <!-- Глобальная панель навигации по форме (скрывается плавно на последнем шаге) -->
-          <div class="flex flex-col items-start transition-all duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] mt-8 w-full"
+          <div
+class="flex flex-col items-start transition-all duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] mt-8 w-full"
                :class="step <= steps.length ? 'opacity-100 blur-none pointer-events-auto' : 'opacity-0 blur-md pointer-events-none'">
             
             <Transition name="error-fade">
               <div v-if="error" class="mb-6 flex items-center gap-3 px-4 py-2.5 border border-red-500/20 bg-red-500/5 backdrop-blur-md rounded-xl md:rounded-full w-full md:w-max max-w-full pointer-events-none">
-                <span class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse shrink-0"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse shrink-0"/>
                 <span class="text-red-400/90 text-[10px] md:text-[11px] tracking-[0.15em] font-secondary uppercase leading-relaxed text-balance">{{ error }}</span>
               </div>
             </Transition>
 
             <TransitionGroup name="btn-group" tag="div" class="flex items-center relative w-full">
                 <div v-if="step > 1 && step <= steps.length" key="back" class="flex items-center">
-                  <button @click="prevStep" aria-label="Вернуться на предыдущий шаг" class="text-white/50 hover:text-white uppercase tracking-widest font-secondary text-[clamp(12px,0.65vw,13px)] pb-1 border-b border-transparent hover:border-white transition-all whitespace-nowrap min-w-[44px] min-h-[44px] flex items-center justify-center">
+                  <button aria-label="Вернуться на предыдущий шаг" class="text-white/50 hover:text-white uppercase tracking-widest font-secondary text-[clamp(12px,0.65vw,13px)] pb-1 border-b border-transparent hover:border-white transition-all whitespace-nowrap min-w-[44px] min-h-[44px] flex items-center justify-center" @click="prevStep">
                     Назад
                   </button>
-                  <div class="w-6"></div> <!-- Имитация gap-6 (24px) -->
+                  <div class="w-6"/> <!-- Имитация gap-6 (24px) -->
                 </div>
 
                 <div v-if="(step === 1 || step > steps.length) && canProceed(1)" key="send" class="flex items-center mr-6">
@@ -157,14 +163,15 @@
         </div>
 
         <!-- Контакты (внизу) -->
-        <div class="shrink-0 pointer-events-auto transition-transform duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] delay-100"
+        <div
+class="shrink-0 pointer-events-auto transition-transform duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] delay-100"
              :class="step > steps.length ? '-translate-y-24' : 'translate-y-0'">
           <div class="flex flex-col gap-4 font-secondary text-lg md:text-xl text-white/70">
             <div class="flex items-center gap-4 relative">
               <button 
                 type="button" 
-                @click="copyEmail" 
-                class="hover:text-white transition-colors w-max block border-b border-transparent hover:border-white pb-1 cursor-pointer text-left focus:outline-none"
+                class="hover:text-white transition-colors w-max block border-b border-transparent hover:border-white pb-1 cursor-pointer text-left focus:outline-none" 
+                @click="copyEmail"
               >
                 kvazarweb@gmail.com
               </button>
@@ -183,7 +190,7 @@
       </div>
 
       <!-- Правая половина: Пустая (для живой сферы) -->
-      <div class="hidden md:block w-full md:w-1/2 pointer-events-none"></div>
+      <div class="hidden md:block w-full md:w-1/2 pointer-events-none"/>
 
     </div>
   </section>
@@ -217,7 +224,7 @@ const copyEmail = async () => {
     } else {
       throw new Error('Clipboard API unavailable')
     }
-  } catch (err) {
+  } catch {
     try {
       const textArea = document.createElement('textarea')
       textArea.value = 'kvazarweb@gmail.com'

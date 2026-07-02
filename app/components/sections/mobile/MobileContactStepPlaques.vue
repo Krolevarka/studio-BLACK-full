@@ -9,12 +9,14 @@
     @touchend="enableCustomScroll ? onTouchEnd($event) : undefined"
   >
     <!-- Верхний градиент для мягкого растворения плашек при скролле -->
-    <div v-if="enableCustomScroll && hasOverflow && scrollY < -4" 
-         class="absolute top-0 left-0 w-full h-6 bg-gradient-to-b from-[#050505] to-transparent z-[20] pointer-events-none transition-opacity duration-300"></div>
+    <div
+v-if="enableCustomScroll && hasOverflow && scrollY < -4" 
+         class="absolute top-0 left-0 w-full h-6 bg-gradient-to-b from-[#050505] to-transparent z-[20] pointer-events-none transition-opacity duration-300"/>
 
     <!-- Нижний градиент для мягкого растворения снизу -->
-    <div v-if="enableCustomScroll && hasOverflow && scrollY > -maxScrollDisplay + 4" 
-         class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-[#050505] to-transparent z-[20] pointer-events-none transition-opacity duration-300"></div>
+    <div
+v-if="enableCustomScroll && hasOverflow && scrollY > -maxScrollDisplay + 4" 
+         class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-[#050505] to-transparent z-[20] pointer-events-none transition-opacity duration-300"/>
 
     <div 
       ref="contentRef"
@@ -24,16 +26,18 @@
       <button 
         v-for="opt in options" 
         :key="opt"
-        @click="handleClick(opt)"
         class="w-full min-h-[3rem] px-4 py-3 rounded-[1rem] border transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] font-secondary text-[0.875rem] text-left touch-manipulation active:scale-[0.98]"
         :class="isSelected(opt) ? 'bg-white text-black border-transparent shadow-[0_0_20px_rgba(255,255,255,0.2)] font-bold' : 'bg-white/5 text-white border-white/10 hover:bg-white/10 active:bg-white/20'"
+        @click="handleClick(opt)"
       >
         <div class="flex items-center justify-between gap-3">
           <span class="leading-snug">{{ opt }}</span>
-          <div class="w-4 h-4 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0"
+          <div
+class="w-4 h-4 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0"
                :class="isSelected(opt) ? 'border-black bg-black' : 'border-white/30'">
-            <div class="w-2 h-2 rounded-full bg-white transition-transform duration-300"
-                 :class="isSelected(opt) ? 'scale-100' : 'scale-0'"></div>
+            <div
+class="w-2 h-2 rounded-full bg-white transition-transform duration-300"
+                 :class="isSelected(opt) ? 'scale-100' : 'scale-0'"/>
           </div>
         </div>
       </button>

@@ -1,6 +1,5 @@
 <template>
-  <div v-if="isVisible" ref="preloaderRef" class="preloader fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none">
-  </div>
+  <div v-if="isVisible" ref="preloaderRef" class="preloader fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none"/>
 </template>
 
 <script setup lang="ts">

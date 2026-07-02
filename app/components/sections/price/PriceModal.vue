@@ -7,7 +7,7 @@
       <div 
         class="absolute inset-0 bg-black/60 backdrop-blur-md" 
         @click="$emit('close')" 
-      ></div>
+      />
       
       <!-- Panel -->
       <div 
@@ -19,7 +19,7 @@
       >
         <div class="flex justify-between items-center mb-8">
           <h3 id="modal-title" class="text-xl md:text-2xl font-bold uppercase tracking-widest text-white">Модули проекта</h3>
-          <button @click="$emit('close')" aria-label="Закрыть модальное окно" class="text-white/50 hover:text-white text-3xl leading-none min-w-[44px] min-h-[44px] flex items-center justify-center">&times;</button>
+          <button aria-label="Закрыть модальное окно" class="text-white/50 hover:text-white text-3xl leading-none min-w-[44px] min-h-[44px] flex items-center justify-center" @click="$emit('close')">&times;</button>
         </div>
         
         <div class="flex flex-col gap-6">

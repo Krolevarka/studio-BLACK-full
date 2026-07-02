@@ -1,20 +1,20 @@
 <template>
   <div 
     v-show="isVisible"
+    ref="containerRef"
     class="absolute inset-0 w-full h-full z-50 overflow-hidden flex"
     :class="[isMenuTransitioning ? 'transition-opacity' : '', isMenuOpenLocal ? '!opacity-0 duration-[1000ms]' : '']"
-    ref="containerRef"
   >
 
     <!-- Контент -->
     <div ref="contentRef" class="relative z-10 flex w-full h-full opacity-0 pointer-events-none">
       
       <!-- Левая часть: Место под движок сферы (OrganicCore рисует под нами) -->
-      <div class="w-1/2 h-full flex items-center justify-center relative pointer-events-none">
-      </div>
+      <div class="w-1/2 h-full flex items-center justify-center relative pointer-events-none"/>
 
       <!-- Правая часть: Список технологий -->
-      <div class="w-1/2 h-full flex flex-col justify-center pr-24 relative" 
+      <div
+class="w-1/2 h-full flex flex-col justify-center pr-24 relative" 
            :class="isInteractive ? 'pointer-events-auto' : 'pointer-events-none'" 
            @mouseleave="clearSphereDistortion">
         <h3 class="tech-title font-primary text-[clamp(2rem,4vw,3rem)] font-black text-white uppercase mb-12">Технологии</h3>

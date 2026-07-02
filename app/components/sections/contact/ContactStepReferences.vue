@@ -5,16 +5,16 @@
       <input 
         v-model="inputUrl"
         type="text" 
+        class="w-full bg-transparent text-xl md:text-2xl font-secondary text-left text-white outline-none focus:outline-none ring-0 placeholder-white/20 pr-28"
+        :placeholder="placeholder || 'Введите URL сайта (например, apple.com)'"
         @focus="$emit('focus')"
         @blur="$emit('blur')"
         @keydown.enter.prevent="handleAddUrl"
-        class="w-full bg-transparent text-xl md:text-2xl font-secondary text-left text-white outline-none focus:outline-none ring-0 placeholder-white/20 pr-28"
-        :placeholder="placeholder || 'Введите URL сайта (например, apple.com)'"
       >
       <button 
-        @click.prevent="handleAddUrl"
         type="button"
         class="absolute right-0 uppercase tracking-widest font-secondary text-xs px-4 py-1.5 rounded-full border border-white/30 hover:border-white hover:bg-white hover:text-black transition-all duration-300"
+        @click.prevent="handleAddUrl"
       >
         + Добавить
       </button>
@@ -42,10 +42,10 @@
           >
             <a :href="url.startsWith('http://') || url.startsWith('https://') ? url : 'https://' + url" target="_blank" class="hover:underline truncate max-w-[220px]" @click.stop>{{ url }}</a>
             <button 
-              @click.prevent="$emit('removeUrl', idx)"
               type="button"
               aria-label="Удалить ссылку"
               class="text-white/40 group-hover:text-white transition-colors ml-1 font-bold text-base leading-none"
+              @click.prevent="$emit('removeUrl', idx)"
             >&times;</button>
           </div>
         </TransitionGroup>
@@ -65,9 +65,9 @@
       <Transition name="btn-bounce" mode="out-in">
         <button 
           v-if="attachedFiles.length < 4"
-          @click.prevent="openFileDialog"
           type="button"
           class="group relative inline-flex items-center gap-3 px-6 py-3.5 rounded-full border border-white/40 bg-white/[0.03] hover:bg-white hover:text-black hover:border-white transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-hidden cursor-pointer shadow-[0_4px_20px_rgba(255,255,255,0.05)]"
+          @click.prevent="openFileDialog"
         >
           <span class="text-lg transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110 shrink-0">📎</span>
           <span class="font-secondary text-xs md:text-sm tracking-widest uppercase font-medium">Прикрепить файлы</span>
@@ -102,10 +102,10 @@
               </div>
             </div>
             <button 
-              @click.prevent="$emit('removeFile', item.id)"
               type="button"
               aria-label="Удалить файл"
               class="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all shrink-0 font-bold text-base"
+              @click.prevent="$emit('removeFile', item.id)"
             >&times;</button>
           </div>
         </TransitionGroup>
@@ -125,12 +125,12 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'addUrl', url: string): void
-  (e: 'removeUrl', idx: number): void
-  (e: 'attachFiles', files: FileList | File[]): void
-  (e: 'removeFile', id: string): void
-  (e: 'focus'): void
-  (e: 'blur'): void
+  addUrl: [url: string]
+  removeUrl: [idx: number]
+  attachFiles: [files: FileList | File[]]
+  removeFile: [id: string]
+  focus: []
+  blur: []
 }>()
 
 const inputUrl = ref('')
