@@ -2,14 +2,14 @@
   <nav aria-label="Основное меню" class="fixed inset-0 w-full h-full z-50 pointer-events-none mix-blend-difference transform-gpu">
     <div class="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-1 md:gap-4 overflow-hidden">
       <!-- Container for physics items -->
-      <nuxt-link
-        v-for="(item, index) in items" 
+      <button
+        v-for="(item, index) in items"
         :key="index"
-        :href="item.href"
-        class="physics-item relative flex items-center justify-center cursor-pointer select-none py-1 md:py-2"
+        type="button"
+        class="physics-item relative flex items-center justify-center cursor-pointer select-none py-1 md:py-2 bg-transparent border-0"
         :class="isOpen ? 'pointer-events-auto' : 'pointer-events-none'"
         :aria-label="item.label"
-        @click.prevent="$emit('navigate', item.href)"
+        @click="$emit('navigate', item.href)"
         @mouseenter="onMouseEnter(index)"
         @mouseleave="onMouseLeave(index)"
       >
@@ -29,7 +29,7 @@
         >
           [ 0{{ index + 1 }} ]
         </span>
-      </nuxt-link>
+      </button>
     </div>
 
   </nav>

@@ -55,7 +55,7 @@ class="absolute w-6 h-[1.5px] rounded-full bg-white transition-[transform,opacit
                   !isBackMode ? 'transform-gpu' : '',
                   isBackMode ? 'opacity-100' : 'opacity-0 scale-x-0'
                 ]"
-                :style="isBackMode ? { transform: 'scaleX(0.70)' } : {}"/>
+                :style="isBackMode ? { transform: 'scaleX(0.75)' } : {}"/>
 
           <!-- Верхняя линия -->
           <span

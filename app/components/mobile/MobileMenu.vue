@@ -3,14 +3,14 @@
     <div
 class="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-6 sm:gap-8 overflow-hidden transition-opacity duration-500"
          :class="isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0'">
-      <nuxt-link
-        v-for="(item, index) in items" 
+      <button
+        v-for="(item, index) in items"
         :key="index"
-        :href="item.href"
-        class="mobile-physics-item relative flex items-center justify-center cursor-pointer select-none py-3 px-8 min-h-[2.75rem] min-w-[2.75rem]"
+        type="button"
+        class="mobile-physics-item relative flex items-center justify-center cursor-pointer select-none py-3 px-8 min-h-[2.75rem] min-w-[2.75rem] bg-transparent border-0"
         :aria-label="item.label"
         style="touch-action: none;"
-        @click.prevent="$emit('navigate', item.href)"
+        @click="$emit('navigate', item.href)"
       >
         <span 
           class="relative z-10 text-white font-primary font-black uppercase tracking-tighter leading-none whitespace-nowrap text-4xl sm:text-5xl transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]" 
@@ -19,7 +19,7 @@ class="absolute inset-0 w-full h-full flex flex-col items-center justify-center 
         >
           {{ item.label }}
         </span>
-      </nuxt-link>
+      </button>
     </div>
   </nav>
 </template>

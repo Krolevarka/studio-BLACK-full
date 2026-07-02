@@ -123,6 +123,13 @@ class="flex flex-col items-center w-full shrink-0 z-20"
           </div>
         </Transition>
 
+        <!-- Согласие на обработку ПД (на шагах отправки: первый и последний) -->
+        <Transition name="error-fade">
+          <div v-if="step === 1 || step === steps.length" class="w-full mb-4">
+            <LegalConsentCheckbox v-model="consent" :highlight="consentError" />
+          </div>
+        </Transition>
+
         <div class="flex items-center w-full justify-between gap-3">
           <!-- Левая кнопка: Назад (шаги 2-5) или Отправить (шаг 1) -->
           <div class="w-1/2 h-[3.5rem] relative">
@@ -171,6 +178,11 @@ class="flex flex-col items-center w-full shrink-0 z-20"
             </Transition>
           </div>
         </div>
+
+        <!-- Правовые ссылки (скрываются при активной клавиатуре) -->
+        <Transition name="btn-swap">
+          <LegalFooterLinks v-if="!isTyping" align="center" class="mt-5" />
+        </Transition>
       </div>
 
       <!-- Контакты (внизу, если успех) -->
@@ -195,9 +207,10 @@ class="absolute bottom-8 w-full left-0 px-6 shrink-0 transition-all duration-100
           <a href="https://t.me/kvazarweb" target="_blank" class="active:text-white transition-colors block border-b border-white/20 pb-1 touch-manipulation min-h-[2.75rem] flex items-center justify-center">
             @kvazarweb
           </a>
+          <LegalFooterLinks align="center" class="mt-4" />
         </div>
       </div>
-      
+
     </div>
   </section>
 </template>
@@ -213,6 +226,8 @@ import MobileContactStepPlaques from './MobileContactStepPlaques.vue'
 import MobileContactStepReferences from './MobileContactStepReferences.vue'
 import MobileContactDevModeSwitch from './MobileContactDevModeSwitch.vue'
 import ContactStepSuccess from '~/components/sections/contact/ContactStepSuccess.vue'
+import LegalConsentCheckbox from '~/components/legal/LegalConsentCheckbox.vue'
+import LegalFooterLinks from '~/components/legal/LegalFooterLinks.vue'
 
 defineOptions({ inheritAttrs: false })
 
@@ -273,6 +288,8 @@ const {
   isTyping,
   isLoading,
   error,
+  consent,
+  consentError,
   answers,
   steps,
   canProceed,

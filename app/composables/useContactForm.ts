@@ -31,6 +31,9 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
   const isSuccess = ref(false)
   const isTransitioningStep = ref(false)
   const error = ref<string | null>(null)
+  // Согласие на обработку ПД (152-ФЗ). Не предустановлено — обязательное активное действие.
+  const consent = ref(false)
+  const consentError = ref(false)
   
   const timeoutIds: ReturnType<typeof setTimeout>[] = []
   
@@ -64,6 +67,14 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
   watch(() => answers.devMode, (newVal) => {
     if (priceDevMode.value !== newVal) {
       setMode(newVal)
+    }
+  })
+
+  // Как только пользователь дал согласие — снимаем подсветку ошибки
+  watch(consent, (given) => {
+    if (given) {
+      consentError.value = false
+      if (error.value && error.value.includes('согласие')) error.value = null
     }
   })
 
@@ -248,7 +259,14 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
     const sanitizedDevMode = answers.devMode === 'ai' ? 'AI-Сборка (-30%)' : 'Ручная классическая разработка'
     
     if (!sanitizedContact) return
-    
+
+    // Блокируем отправку без согласия на обработку ПД
+    if (!consent.value) {
+      consentError.value = true
+      error.value = 'Пожалуйста, подтвердите согласие на обработку персональных данных'
+      return
+    }
+
     isLoading.value = true
     error.value = null
     
@@ -343,6 +361,8 @@ export function useContactForm(emit: ReturnType<typeof useEventBus>['emit'], upd
     isLoading,
     isSuccess,
     error,
+    consent,
+    consentError,
     answers,
     steps,
     canProceed,

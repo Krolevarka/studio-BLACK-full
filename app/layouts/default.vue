@@ -56,6 +56,12 @@
     <!-- ОВЕРЛЕЙ «ПОВЕРНИТЕ УСТРОЙСТВО» (только телефоны в landscape, чисто CSS) -->
     <MobileRotateNotice />
 
+    <!-- ПРАВОВОЙ МОДУЛЬ (Политика / Реквизиты / Cookie) -->
+    <LegalModal />
+    <ClientOnly>
+      <CookieBanner />
+    </ClientOnly>
+
   </div>
 </template>
 
@@ -67,7 +73,10 @@ import { ANIMATION_TIMINGS } from '~/utils/animation.config'
 import { useOrganicCore } from '~/composables/useOrganicCore'
 import { triggeriOSGyroPermission } from '~/composables/useMobileGyroMenu'
 import { useDeviceSwitch } from '~/composables/useDeviceSwitch'
+import { useLegalModal } from '~/composables/useLegalModal'
 import DeviceSwitch from '~/components/DeviceSwitch.vue'
+import LegalModal from '~/components/legal/LegalModal.vue'
+import CookieBanner from '~/components/legal/CookieBanner.vue'
 import DesktopLayoutHeader from '~/components/desktop/LayoutHeader.vue'
 import MobileLayoutHeader from '~/components/mobile/LayoutHeader.vue'
 import DesktopPhysicsMenu from '~/components/desktop/PhysicsMenu.vue'
@@ -78,6 +87,8 @@ import MobileRotateNotice from '~/components/MobileRotateNotice.vue'
 const { $lenis } = useNuxtApp()
 const { isPreloading } = useOrganicCore()
 const { needsCursor, isDesktopDevice } = useDeviceSwitch()
+const { activeDoc } = useLegalModal()
+const isLegalOpen = computed(() => activeDoc.value !== null)
 
 const layoutRef = ref<HTMLElement | null>(null)
 const mainRef = ref<HTMLElement | null>(null)
@@ -96,14 +107,14 @@ const { emit, on } = useEventBus()
 useHead({
   bodyAttrs: {
     class: computed(() => isMenuOpen.value ? 'menu-is-open' : ''),
-    style: computed(() => (isPreloading.value || isTechStackOpen.value || isPriceModalOpen.value) ? 'overflow: hidden;' : '')
+    style: computed(() => (isPreloading.value || isTechStackOpen.value || isPriceModalOpen.value || isLegalOpen.value) ? 'overflow: hidden;' : '')
   }
 })
 
-// Блокируем скролл во время загрузки (прелоадер), открытия TechStack или модалки Прайса
-watch([isPreloading, isTechStackOpen, isPriceModalOpen], ([preloading, techStackOpen, priceModalOpen]) => {
+// Блокируем скролл во время загрузки (прелоадер), открытия TechStack, модалки Прайса или правовой модалки
+watch([isPreloading, isTechStackOpen, isPriceModalOpen, isLegalOpen], ([preloading, techStackOpen, priceModalOpen, legalOpen]) => {
   if (import.meta.client) {
-    if (preloading || techStackOpen || priceModalOpen) {
+    if (preloading || techStackOpen || priceModalOpen || legalOpen) {
       if ($lenis) $lenis.stop()
     } else {
       if ($lenis) $lenis.start()

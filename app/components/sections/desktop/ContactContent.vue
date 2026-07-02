@@ -114,6 +114,13 @@ class="flex flex-col items-start transition-all duration-[800ms] ease-[cubic-bez
               </div>
             </Transition>
 
+            <!-- Согласие на обработку ПД (на шагах отправки: первый и последний) -->
+            <Transition name="error-fade">
+              <div v-if="step === 1 || step === steps.length" class="w-full max-w-md mb-6">
+                <LegalConsentCheckbox v-model="consent" :highlight="consentError" />
+              </div>
+            </Transition>
+
             <TransitionGroup name="btn-group" tag="div" class="flex items-center relative w-full">
                 <div v-if="step > 1 && step <= steps.length" key="back" class="flex items-center">
                   <button aria-label="Вернуться на предыдущий шаг" class="text-white/50 hover:text-white uppercase tracking-widest font-secondary text-[clamp(12px,0.65vw,13px)] pb-1 border-b border-transparent hover:border-white transition-all whitespace-nowrap min-w-[44px] min-h-[44px] flex items-center justify-center" @click="prevStep">
@@ -185,8 +192,11 @@ class="shrink-0 pointer-events-auto transition-transform duration-[1000ms] ease-
               @kvazarweb
             </a>
           </div>
+
+          <!-- Правовые ссылки (естественный «футер» лендинга) -->
+          <LegalFooterLinks class="mt-8" />
         </div>
-        
+
       </div>
 
       <!-- Правая половина: Пустая (для живой сферы) -->
@@ -207,6 +217,8 @@ import ContactStepPlaques from '~/components/sections/contact/ContactStepPlaques
 import ContactStepReferences from '~/components/sections/contact/ContactStepReferences.vue'
 import ContactStepSuccess from '~/components/sections/contact/ContactStepSuccess.vue'
 import ContactDevModeSwitch from '~/components/sections/contact/ContactDevModeSwitch.vue'
+import LegalConsentCheckbox from '~/components/legal/LegalConsentCheckbox.vue'
+import LegalFooterLinks from '~/components/legal/LegalFooterLinks.vue'
 
 defineOptions({ inheritAttrs: false })
 
@@ -276,6 +288,8 @@ const {
   isLoading,
   isSuccess,
   error,
+  consent,
+  consentError,
   answers,
   steps,
   canProceed,

@@ -11,15 +11,15 @@
       <!-- Заголовок модального окна (Компактный швейцарский стиль с линиями сетки) -->
       <div class="poster-header relative flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-4 pb-[clamp(0.5rem,1.5dvh,1.5rem)] shrink-0">
         <div class="flex flex-col max-w-xl pr-14 md:pr-0">
-          <span class="text-[11px] font-mono font-bold text-white/40 uppercase tracking-[0.3em] mb-2">
+          <span class="text-[clamp(11px,1.2dvh,17px)] font-mono font-bold text-white/40 uppercase tracking-[0.3em] mb-2">
             Сравнение подходов // Чистая типографика
           </span>
-          <h3 class="font-primary text-[clamp(1.4rem,min(2.5vw,4dvh),2.8rem)] font-black text-white uppercase leading-[1.05] tracking-tight">
+          <h3 class="font-primary text-[clamp(1.4rem,min(3vw,4.5dvh),5rem)] font-black text-white uppercase leading-[1.05] tracking-tight">
             Эволюция разработки
           </h3>
         </div>
         <div class="max-w-md md:text-right">
-          <p class="font-secondary text-xs text-white/60 leading-relaxed">
+          <p class="font-secondary text-[clamp(12px,1.3dvh,19px)] text-white/60 leading-relaxed">
             Генерация кода под контролем <span class="text-white font-bold">Senior-архитекторов</span>: вдвое быстрее, на 30% выгоднее и с нулевым техническим долгом.
           </p>
         </div>
@@ -38,7 +38,7 @@
           <div class="giant-letter shrink-0 overflow-visible py-1">
             <!-- Контент статический (локальные данные), пользовательский ввод сюда не попадает -->
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <span class="block font-primary font-black uppercase text-[clamp(1.8rem,min(5vw,6dvh),7.5rem)] leading-[0.95] tracking-tighter text-white transition-colors duration-300 hover:text-white/90" v-html="formatTypography(row.giantText)"/>
+            <span class="block font-primary font-black uppercase text-[clamp(1.8rem,min(7vw,13dvh),14rem)] leading-[0.95] tracking-tighter text-white transition-colors duration-300 hover:text-white/90" v-html="formatTypography(row.giantText)"/>
           </div>
 
           <!-- Редакционный блок в едином плотном ритме -->
@@ -48,16 +48,16 @@
             :class="row.align === 'right' ? 'md:text-left' : 'md:text-right'"
           >
             <div class="flex flex-col" :class="row.align === 'right' ? 'md:items-start' : 'md:items-end'">
-              <span class="text-[10px] font-mono font-bold text-white/50 tracking-[0.25em] uppercase mb-[clamp(0.1rem,0.5dvh,0.35rem)]">
+              <span class="text-[clamp(10px,1.1dvh,15px)] font-mono font-bold text-white/50 tracking-[0.25em] uppercase mb-[clamp(0.1rem,0.5dvh,0.35rem)]">
                 {{ row.editorial.tag }}
               </span>
-              <h4 class="text-[clamp(0.9rem,min(1.2vw,1.8dvh),1.15rem)] font-primary font-bold text-white uppercase tracking-tight mb-[clamp(0.15rem,0.5dvh,0.35rem)] leading-tight">
+              <h4 class="text-[clamp(0.9rem,min(1.6vw,1.9dvh),2.4rem)] font-primary font-bold text-white uppercase tracking-tight mb-[clamp(0.15rem,0.5dvh,0.35rem)] leading-tight">
                 {{ row.editorial.headline }}
               </h4>
-              <p class="text-[clamp(11px,min(0.9vw,1.4dvh),13px)] font-secondary text-white/70 leading-snug mb-[clamp(0.25rem,0.8dvh,0.5rem)]">
+              <p class="text-[clamp(11px,min(1.2vw,1.6dvh),24px)] font-secondary text-white/70 leading-snug mb-[clamp(0.25rem,0.8dvh,0.5rem)]">
                 {{ row.editorial.body }}
               </p>
-              <span v-if="row.editorial.stat" class="px-2 py-0.5 rounded-full text-[9px] font-mono font-extrabold bg-white text-black uppercase tracking-widest inline-block">
+              <span v-if="row.editorial.stat" class="px-2 py-0.5 rounded-full text-[clamp(9px,1dvh,14px)] font-mono font-extrabold bg-white text-black uppercase tracking-widest inline-block">
                 {{ row.editorial.stat }}
               </span>
             </div>
@@ -71,7 +71,7 @@
       </div>
 
       <!-- Футер плаката -->
-      <div class="poster-footer relative pt-[clamp(0.5rem,1.5dvh,1.5rem)] flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-white/40 tracking-widest uppercase shrink-0 gap-2">
+      <div class="poster-footer relative pt-[clamp(0.5rem,1.5dvh,1.5rem)] flex flex-col sm:flex-row items-center justify-between text-[clamp(11px,1.2dvh,17px)] font-mono text-white/40 tracking-widest uppercase shrink-0 gap-2">
         <div class="footer-line absolute top-0 left-0 w-full h-[1px] bg-white/15" :class="posterRows[posterRows.length - 1]?.align === 'right' ? 'origin-right' : 'origin-left'"/>
         <span>STUDIO-BLACK // ARCHITECTURAL AI SYSTEM</span>
         <span>NO BORDERS • PURE TYPOGRAPHY</span>
